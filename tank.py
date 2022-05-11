@@ -13,6 +13,9 @@ from sklearn.metrics import auc
 import matplotlib.pyplot as plt
 from matplotlib import cm
 
+from fish import Fish
+from fight import Fight
+
 class Tank():
     def __init__(self,fishes,fight_list = None,n_fights = None,
                  f_method='balanced',f_outcome='math',f_params=[.3,.3,.3],u_method='bayes'):
@@ -31,7 +34,7 @@ class Tank():
                 self.n_fights = len(self.fight_list)
             else:
                 self.fight_list = self.get_matchups(f_method,f_outcome,n_fights)
-        self.history = np.zeros([n_fights,len(fishes),len(fishes)])
+        self.history = np.zeros([self.n_fights,len(fishes),len(fishes)])
 
 
     ## Randomly match up fishes
@@ -89,3 +92,6 @@ class Tank():
     def __getitem__(self,idx):
         return self.fishes[idx]
 
+if __name__ == '__main__':
+    fishes = [Fish(),Fish()]
+    t = Tank(fishes)
