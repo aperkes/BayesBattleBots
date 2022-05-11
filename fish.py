@@ -35,11 +35,11 @@ class Fish:
         self.xs = xs
         if size is not None:
             if size == 0:   
-                self.size = growth_func(self.age)
+                self.size = self._growth_func(self.age)
             else:
                 self.size = size
         else:
-            mean = growth_func(self.age)
+            mean = self._growth_func(self.age)
             sd = mean/5
             self.size = np.random.normal(mean,sd)
         if prior is not None:
@@ -61,6 +61,7 @@ class Fish:
         self.est_record = [self.estimate]
         self.est_record_ = [self.estimate_]
         self.sdest_record = [prior_std]
+        
         
     def _get_cdf_prior(self,prior):
         normed_prior = self.prior / np.sum(self.prior)
@@ -197,4 +198,5 @@ class Fish:
         
         return prior_mean,prior_std
         
-        
+if __name__ == '__main__':
+    f1 = Fish() 

@@ -13,6 +13,8 @@ from sklearn.metrics import auc
 import matplotlib.pyplot as plt
 from matplotlib import cm
 
+from fish import Fish
+
 ## Simple-ish object to keep track of matchups (and decide outcome if necessary)
 class Fight():
     def __init__(self,fish1,fish2,outcome="math",outcome_params=[.3,.3,.3],level=None,idx=0):
@@ -177,3 +179,7 @@ class Fight():
         
         return ' '.join([str(self.fish1.name),'vs',str(self.fish2.name),str(self.outcome),': So,',str(self.winner.name),'won, with probability',str(prob_outcome)])
 
+if __name__ == "__main__":
+    f1 = Fish()
+    f2 = Fish()
+    f = Fight(f1,f2)
