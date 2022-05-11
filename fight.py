@@ -1,0 +1,179 @@
+
+## Load required packages
+import numpy as np
+
+import itertools,random
+
+from scipy.special import rel_entr
+from scipy.stats import mode
+from scipy.stats import norm
+
+from sklearn.metrics import auc
+
+import matplotlib.pyplot as plt
+from matplotlib import cm
+
+## Simple-ish object to keep track of matchups (and decide outcome if necessary)
+class Fight():
+    def __init__(self,fish1,fish2,outcome="math",outcome_params=[.3,.3,.3],level=None,idx=0):
+        self.fish1 = fish1
+        self.fish2 = fish2
+        self.fishes = [fish1,fish2]
+        self.mechanism = outcome
+        self.level = level
+        self.outcome = '?'
+        self.params = outcome_params
+        self.idx = idx
+        
+    def run_outcome(self):
+        if self.mechanism == 'chance':
+            self.outcome = self.chance_outcome()
+        elif self.mechanism == 'escalate':
+            self.outcome,self.level = self.escalating_outcome()
+        elif self.mechanism == 'escalate_level':
+            self.outcome,self.level = self.escalating_by_level()
+        elif self.mechanism == 'wager':
+            self.outcome,self.level = self.wager()
+        elif self.mechanism == 'wager_estimate':
+            self.outcome,self.level = self.wager_estimate()
+        elif self.mechanism == 'wager_chance':
+            self.outcome,self.level = self.wager_chance()
+        elif self.mechanism == 'hock':
+            self.outcome,self.level = self.hock_huber()
+        elif self.mechanism == 'math':
+            self.outcome,self.level = self.mathy(self.params)
+            
+        else:
+            self.outcome = self.mechanism
+      
+        self.winner = self.fishes[self.outcome]
+        self.loser = self.fishes[1-self.outcome]
+        
+    def chance_outcome(self): ## This just pulls from the fish.fight, basically a dice roll vs the likelihood
+        prob_win = likelihood_function_size(self.fish1.size,self.fish2.size)
+        self.prob_win = prob_win
+        if np.random.random() < prob_win:
+            return 0
+        else:
+            return 1
+    
+    def escalating_outcome(self):
+        cont = True
+        level = 0
+        focal_fish = np.random.choice([0,1])
+        while cont and level < 5:
+            focal_fish = 1-focal_fish  ## define the focal fish
+            other_fish = 1-focal_fish  ## The other fish is defined as the other fish
+            cont = self.fishes[focal_fish].escalate_(self.fishes[other_fish].size)
+            if cont == True:
+                level += 1
+            else:
+                return 1-focal_fish,level
+        ## IF you escalate to 3, return the winner based on likelihood curve
+        winner = self.chance_outcome()
+        return winner,level
+            
+    def escalating_by_level(self):
+        cont = True
+        level = 0
+        focal_fish = np.random.choice([0,1])
+        while cont and level < 5:
+            focal_fish = 1-focal_fish  ## define the focal fish
+            other_fish = 1-focal_fish  ## The other fish is defined as the other fish
+            cont = self.fishes[focal_fish].escalate(self.fishes[other_fish].size,level)
+            if cont == True:
+                level += 1
+            else:
+                return 1-focal_fish,level
+        ## IF you escalate to 3, return the winner based on likelihood curve
+        winner = self.chance_outcome()
+        return winner,level
+
+    def _wager_curve(self,w,l=.25):
+        a = logit(1-l)
+        prob_win = w ** (float(np.abs(a))**np.sign(a)) / 2
+        return prob_win
+
+    ## This is useful because it paramaterizes the relative impact of size, effort, and luck
+    def mathy(self,param=[.5,.5,.5]):
+        s,e,l = param
+        f1_size = self.fish1.size
+        f2_size = self.fish2.size
+        max_size = max([f1_size,f2_size])
+        f1_rel_size = f1_size / max_size
+        f2_rel_size = f2_size / max_size
+        f1_effort = self.fish1.choose_effort(self.fish2)
+        f2_effort = self.fish2.choose_effort(self.fish1)
+        f1_wager = (f1_rel_size ** s) * (f1_effort ** e)
+        f2_wager = (f2_rel_size ** s) * (f2_effort ** e)
+        min_wager = min([f1_wager,f2_wager]) / (f1_wager + f2_wager)
+        f_min = np.argmin([f1_wager,f2_wager])
+        p_win = self._wager_curve(min_wager,l)
+        if random.random() < p_win: ## probability that the "lower invested" fish wins
+            winner = f_min
+            level = min_wager
+        else:
+            winner = 1-f_min
+            level = min_wager
+        return winner,level
+    
+    ## Choose based off of estimate
+    def wager(self):
+        ## Get each fish's estimated probability of being bigger 
+        f1_wager = 1 - self.fish1.cdf_prior[np.argmax(self.fish1.xs > self.fish2.size)]
+        f2_wager = 1 - self.fish2.cdf_prior[np.argmax(self.fish2.xs > self.fish1.size)]
+        if f1_wager > f2_wager:
+            winner = 0
+            level = f2_wager
+        elif f2_wager > f1_wager:
+            winner = 1
+            level = f1_wager
+        elif f2_wager == f1_wager:
+            winner = self.chance_outcome()
+            level = f1_wager
+        return winner, level
+    
+    def wager_estimate(self):
+        f1_wager = self.fish1.estimate
+        f2_wager = self.fish2.estimate
+        if f1_wager > f2_wager:
+            winner = 0
+            level = f2_wager
+        elif f2_wager > f1_wager:
+            winner = 1
+            level = f1_wager
+        elif f2_wager == f1_wager:
+            winner = self.chance_outcome()
+            level = f1_wager
+        return winner, level
+    
+    def wager_chance(self):
+        f1_wager = self.fish1.estimate
+        f2_wager = self.fish2.estimate
+        #prob_f1 = f1_wager / (f1_wager + f2_wager)
+        prob_f1 = likelihood_function_size(f1_wager,f2_wager)
+        if random.random() < prob_f1:
+            winner = 0
+        else:
+            winner = 1
+        level = min([f1_wager,f2_wager])
+        return winner,level
+    
+    def hock_huber(self,scale=.1):
+        f1_est = self.fish1.hock_estimate
+        f2_est = self.fish1.hock_estimate
+        prob_f1 = f1_est / (f1_est + f2_est)
+        if random.random() < prob_f1:
+            winner = 0
+        else:
+            winner = 1
+        level = min([f1_est,f2_est]) * scale
+        return winner,level
+    
+    def summary(self):
+        prob_outcome = self.prob_win
+        if self.outcome:
+            prob_outcome = 1 - prob_outcome
+        
+        return ' '.join([str(self.fish1.name),'vs',str(self.fish2.name),str(self.outcome),': So,',str(self.winner.name),'won, with probability',str(prob_outcome)])
+
