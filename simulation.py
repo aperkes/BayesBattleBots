@@ -15,6 +15,11 @@ from matplotlib import cm
 
 ## Define simulation class:
 
+from fish import Fish
+from fight import Fight
+from tank import Tank
+
+
 class SimParams():
     def __init__(self,n_iterations=1000,n_fish=4,n_rounds=200,fight_selection='random',
                 effort_method=[1,1],outcome_params=[.3,.3,.3],update_method='bayes',effect_strength=[1,1]):
@@ -36,14 +41,51 @@ class SimParams():
         print('Effort Method:',self.effort_method)
         print('Update Method:',self.update_method)
 
-"""    def __init__(self,fishes,fight_list = None,n_fights = None,
-                 f_method='balanced',f_outcome='math',f_params=[.3,.3,.3],u_method='bayes'):
-"""
-        
 class Simulation():
     def __init__(self,params=SimParams()):
         self.params = params
-        
+## Frustratingly long table to get p values for stats
+        self._applebys = {
+            3:{0:0.750},
+            4:{0:0.375},
+            5:{0:0.117},
+            6:{0:0.022,
+                1:0.051,
+                2:0.120},
+            7:{1:0.006,
+                2:0.017,
+                3:0.033,
+                4:0.069,
+                5:0.112},
+            8:{4:0.006,
+                5:0.011,
+                6:0.023,
+                7:0.037,
+                8:0.063,
+                9:0.094,
+                10:0.153
+            },
+            9:{9:0.007,
+                10:0.012,
+                11:0.019,
+                12:0.030,
+                13:0.045,
+                14:0.067,
+                15:0.095,
+                16:0.138
+            },
+            10:{16:0.008,
+                17:0.012,
+                18:0.018,
+                19:0.026,
+                20:0.038,
+                21:0.052,
+                22:0.073,
+                23:0.097,
+                24:0.131
+            }
+            }
+
     def run_simulation(self):
         all_stats = []
         for i in range(self.n_iterations):
@@ -60,7 +102,10 @@ class Simulation():
         return Tank(fishes,n_fights=p.n_rounds,f_method=p.fight_selection,f_params=p.outcome_params)
     
     def _get_tank_stats(self,tank):
-        return self._calc_linearity(tank),self._calc_stability(tank),self._calc_accuracy(tank)
+        linearity,_ = self._calc_linearity(tank)
+        return linearity,self._calc_stability(tank),self._calc_accuracy(tank)
+
+    
     
     def _calc_linearity(self,tank):
         n_fish = len(tank.fishes)
@@ -70,8 +115,20 @@ class Simulation():
         tank.h_matrix = h_matrix
         
         ## DO THE MATHY THING HERE
-        
-        return linearity
+        N = n_fish
+
+        D = N * (N-1) * (N-2) / 6 ## Total number of possible triads
+## Calculate the number of triads: 
+        d = N * (N-1) * (2N-1) / 12 - 1/2 * np.sum(h_matrix) ** 2 ## From Appleby, 1983
+        if N <= 10:
+            if d in self._applebys[N]:
+                p = self._applebys[N][round(d)]
+            elif d < min(self._applebys[N].keys()):
+                p = max(self._applebys[N].values())
+            else:
+                p = min(self._applebys[N].values())
+        linearity = 1 - (d / D) ## Percentage of non triadic interactions
+        return linearity,[d,p]
         
     def _calc_stability(self,tank):
         ## This means working through tank matrix by time, and I guess it's the standard deviation or something?
