@@ -143,6 +143,7 @@ class Simulation():
         return stability
     
     def _calc_accuracy(self,tank):
+## NOTE: START HERE!
         ## This is the correlation between size rank and hierarchy rank
         ## It could also be the coefficient, to be even more precise...
         return 0
@@ -158,3 +159,9 @@ class Simulation():
     def get_final_stats(self): ## This is calculating across all thanks, but only using the final info
         
         return final_linearity,final_stability,final_accuracy
+
+
+if __name__ == "__main__":
+    params = SimParams()
+    s = Simulation(params)
+    s.run_simulation()
