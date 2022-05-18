@@ -20,6 +20,7 @@ class Tank():
     def __init__(self,fishes,fight_list = None,n_fights = None,
                  f_method='balanced',f_outcome='math',f_params=[.3,.3,.3],u_method='bayes'):
         self.fishes = fishes
+        self.sizes = [f.size for f in fishes]
         self.f_method = f_method
         self.f_outcome = f_outcome
         self.u_method = u_method

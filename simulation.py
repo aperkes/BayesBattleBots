@@ -19,6 +19,8 @@ from fish import Fish
 from fight import Fight
 from tank import Tank
 
+from elosports.elo import Elo
+
 
 class SimParams():
     def __init__(self,n_iterations=1000,n_fish=4,n_rounds=200,fight_selection='random',
@@ -142,12 +144,31 @@ class Simulation():
             stability = np.mean(np.std(binned_history,axis=0))
         return stability
     
+## Calculate dominance using some metric...ELO? 
+    def _calc_dominance(self,tank):
+        ## There is almost certainly a better package for this...
+        eloTank = Elo(k=20)
+        for f in tank.fishes: # add all the fishes to the 'league'
+            eloTank.addPlayer(f.idx) 
+        for c in tank.fight_list: # work through all the fights (slow...)
+            eloTank.gameOver(winner = c.winner.idx,loser=c.loser.idx)
+        dominance = [eloTank.ratingDict[f.idx] for f in tank.fishes]
+        return dominance
+
+
     def _calc_accuracy(self,tank):
 ## NOTE: START HERE!
+        tank.rankings = _calc_dominance(self,tank)
+        accuracy,_ = spearman(tank.sizes,tank.rankings)
         ## This is the correlation between size rank and hierarchy rank
         ## It could also be the coefficient, to be even more precise...
-        return 0
+        return accuracy
     
+    def _calc_est_accuracy(self,tank):
+        tank.estimates = [f.estimate for f in tank.fishes]
+        accuracy,_ = spearman(tank.sizes,tank.estimates)
+        return accuracy
+
     def get_timed_means(self):
         ## Maybe this is a bad idea actually...It's really just binned history.
         return linearity_history,stability_history,accuracy_history
