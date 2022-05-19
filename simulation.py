@@ -127,9 +127,6 @@ class Simulation():
 
         D = N * (N-1) * (N-2) / 6 ## Total number of possible triads
 ## Calculate the number of triads: 
-        print('h_matrix, and squared sum:')
-        print(h_matrix)
-        print(np.sum(h_matrix,1)**2)
         d = N * (N-1) * (2*N-1) / 12 - 1/2 * np.sum(np.sum(h_matrix,1) ** 2) ## From Appleby, 1983
         if N <= 10:
             if d in self._applebys[N]:
@@ -141,18 +138,31 @@ class Simulation():
         linearity = 1 - (d / D) ## Percentage of non triadic interactions
         return linearity,[d,p]
         
+## Stability is the mean standard deviation. It would be good to have a more intuitive metric...
     def _calc_stability(self,tank):
         ## This means working through tank matrix by time, and I guess it's the standard deviation or something?
+## A nicer metric would be the proportion of bins where mean heirarchy == overall hierarchy, 
         if tank.f_method == 'balanced':
-            stability = np.mean(np.std(tank.history,axis=0))
+            binned_history = tank.history
         else:
             ## First calculate a sliding window bigger than 2*n^2. We're going to have some missing values
             min_slide = 2*tank.n_fish*(tank.n_fish-1)
             ## will need to test this...
             kernel = np.ones([min_slide,tank.n_fish,tank.n_fish])
             binned_history = convolve(tank.history,kernel)
-            stability = np.mean(np.std(binned_history,axis=0))
-        return stability
+# Instead, calculate the proportion of binned interactions that = overall interactions
+        binary_bins = np.sign(binned_history - np.transpose(binned_history,axes=[0,2,1]))
+        mean_history = np.mean(tank.history,0)
+        binary_final = np.sign(mean_history - np.transpose(mean_history))
+
+        print(tank.history.shape)
+        print(tank.f_method)
+        print(np.shape(binary_bins))
+        print(np.sum(np.abs(binary_bins),axis=(1,2)))
+## Use nCr formulat to get the total number of possible interactions
+        proportion_consistent = np.sum(np.abs(binary_bins - binary_final)) / (len(binary_bins) * tank.n_fish * (tank.n_fish-1) / 2 * 2) ## because the matrix is full, we need 2x as many interactions.
+        #stability = np.mean(np.std(binned_history,axis=0))
+        return proportion_consistent
     
 ## Calculate dominance using some metric...ELO? 
     def _calc_dominance(self,tank):
