@@ -171,10 +171,12 @@ class Simulation():
         dominance = [eloTank.ratingDict[f.idx] for f in tank.fishes]
         return dominance
 
+    ## This is the spearman correlation between size rank and hierarchy rank
     def _calc_accuracy(self,tank):
         tank.rankings = self._calc_dominance(tank)
+        #print('rankings,sizes:')
+        #print(np.round(tank.rankings,2)[np.argsort(tank.sizes)],np.round(tank.sizes,2)[np.argsort(tank.sizes)])
         accuracy,_ = spearmanr(tank.sizes,tank.rankings)
-        ## This is the correlation between size rank and hierarchy rank
         ## It could also be the coefficient, to be even more precise...
         return accuracy
     
