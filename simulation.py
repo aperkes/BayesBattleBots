@@ -155,10 +155,6 @@ class Simulation():
         mean_history = np.mean(tank.history,0)
         binary_final = np.sign(mean_history - np.transpose(mean_history))
 
-        print(tank.history.shape)
-        print(tank.f_method)
-        print(np.shape(binary_bins))
-        print(np.sum(np.abs(binary_bins),axis=(1,2)))
 ## Use nCr formulat to get the total number of possible interactions
         proportion_consistent = np.sum(np.abs(binary_bins - binary_final)) / (len(binary_bins) * tank.n_fish * (tank.n_fish-1) / 2 * 2) ## because the matrix is full, we need 2x as many interactions.
         #stability = np.mean(np.std(binned_history,axis=0))
