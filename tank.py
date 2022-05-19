@@ -36,7 +36,12 @@ class Tank():
             else:
                 self.fight_list = self.get_matchups(f_method,f_outcome,n_fights)
             self.n_fights = len(self.fight_list)
-        self.history = np.zeros([self.n_fights,len(fishes),len(fishes)])
+        if f_method == 'balanced':
+            self.n_rounds = int(len(self.fight_list) / (self.n_fish * (self.n_fish-1) / 2))
+            print('n rounds:',self.n_rounds)
+        else:
+            self.n_rounds = len(self.fight_list)
+        self.history = np.zeros([self.n_rounds,len(fishes),len(fishes)])
 
 
     ## Randomly match up fishes
