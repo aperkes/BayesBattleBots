@@ -162,7 +162,6 @@ class Simulation():
         dominance = [eloTank.ratingDict[f.idx] for f in tank.fishes]
         return dominance
 
-
     def _calc_accuracy(self,tank):
         tank.rankings = self._calc_dominance(tank)
         accuracy,_ = spearmanr(tank.sizes,tank.rankings)
