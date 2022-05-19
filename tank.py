@@ -24,6 +24,7 @@ class Tank():
         self.sizes = [f.size for f in fishes]
         self.f_method = f_method
         self.f_outcome = f_outcome
+        self.f_params = f_params
         self.u_method = u_method
         self.win_record = np.zeros([len(fishes),len(fishes)])
 
@@ -52,12 +53,12 @@ class Tank():
             short_list = []
             for i in range(n_fights):
                 for f1,f2 in itertools.combinations(self.fishes, 2):
-                    fight_list.append(Fight(f1,f2,outcome=f_outcome,idx=i)) ## So balanced is organized as rounds
+                    fight_list.append(Fight(f1,f2,outcome=f_outcome,outcome_params=self.f_params,idx=i)) ## So balanced is organized as rounds
         if f_method == 'random':
             combs = list(itertools.combinations(self.fishes,2))
             for i in range(n_fights):
                 f1,f2 = random.choice(combs)
-                fight_list.append(Fight(f1,f2,outcome=f_outcome,idx=i))
+                fight_list.append(Fight(f1,f2,outcome=f_outcome,outcome_params=self.f_params,idx=i))
         return fight_list
 
     def process_fight(self,fight): ## This works without returning because of how objects work in python

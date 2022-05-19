@@ -43,6 +43,7 @@ class Fight():
         elif self.mechanism == 'hock':
             self.outcome,self.level = self.hock_huber()
         elif self.mechanism == 'math':
+            #print('using mathy.',self.params)
             self.outcome,self.level = self.mathy(self.params)
             
         else:
@@ -108,7 +109,7 @@ class Fight():
         f2_effort = self.fish2.choose_effort(self.fish1)
         f1_wager = (f1_rel_size ** s) * (f1_effort ** e)
         f2_wager = (f2_rel_size ** s) * (f2_effort ** e)
-        min_wager = min([f1_wager,f2_wager]) / (f1_wager + f2_wager)
+        min_wager = min([f1_wager,f2_wager]) / max([f1_wager,f2_wager])
         f_min = np.argmin([f1_wager,f2_wager])
         p_win = self._wager_curve(min_wager,l)
         if random.random() < p_win: ## probability that the "lower invested" fish wins

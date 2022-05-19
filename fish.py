@@ -28,7 +28,8 @@ naive_escalation = {
 ## Fish object with internal rules and estimates
 class Fish:
     def __init__(self,idx=0,age=50,size=None,
-                 prior=None,likelihood=None,hock_estimate=.5,escalation=naive_escalation,xs=np.linspace(5,150,500)):
+                 prior=None,likelihood=None,hock_estimate=.5,
+                 effort_method=[1,1],escalation=naive_escalation,xs=np.linspace(5,150,500)):
         self.idx = idx
         self.name = idx
         self.age = age
@@ -61,8 +62,8 @@ class Fish:
         self.est_record = [self.estimate]
         self.est_record_ = [self.estimate_]
         self.sdest_record = [prior_std]
-        
-        
+        self.effort_method = effort_method
+
     def _get_cdf_prior(self,prior):
         normed_prior = self.prior / np.sum(self.prior)
         cdf_prior = np.cumsum(normed_prior)
@@ -154,14 +155,15 @@ class Fish:
         return self.name,self.size,self.estimate,self.win_record
     
     ## This needs to be divied up by strategy somehow...
-    def choose_effort(self,f_opp,strategy='sa'):
-        if strategy == 'sa':
+    def choose_effort(self,f_opp,strategy=[1,0]):
+        if strategy == [1,0]:
             return self.estimate / 100 ## This is defined as the max fish size, which could change...
-        elif strategy == 'oa':
+        elif strategy == [0,1]:
             return 1 - f_opp.size / 100
-        elif strategy == 'ma':
+        elif strategy == [1,1]:
             ## I think we could do np.sum(self.cdf_prior * f_opp.cdf_prior)
             return np.sum(self.cdf_prior[self.xs > f_opp.size])
+
         elif strategy == 'ma_c': ## This is the continuous version where there is opponent uncertainty
             total_prob = 0
             opp_estimate = self.estimate_opponent(f_opp.size)

@@ -105,15 +105,15 @@ class Simulation():
          
     def _build_tank(self,i): ## I Might want the iteration info available
         p = self.params
-        fishes = [Fish() for f in range(p.n_fish)]
+        fishes = [Fish(f,effort_method=p.effort_method) for f in range(p.n_fish)]
         n_fights = p.n_rounds
         
         return Tank(fishes,n_fights=p.n_rounds,f_method=p.fight_selection,f_params=p.outcome_params)
     
 ## NOTE: Start here next time, linearity looks ok, stability and accuracy aren't working
     def _get_tank_stats(self,tank):
-        linearity,_ = self._calc_linearity(tank)
-        return linearity,self._calc_stability(tank),self._calc_accuracy(tank)
+        linearity,(d,p) = self._calc_linearity(tank)
+        return p,self._calc_stability(tank),self._calc_accuracy(tank)
     
     def _calc_linearity(self,tank):
         n_fish = len(tank.fishes)
@@ -121,7 +121,6 @@ class Simulation():
         win_record_dif = tank.win_record - np.transpose(tank.win_record)
         h_matrix[win_record_dif > 0] = 1
         tank.h_matrix = h_matrix
-        
         ## DO THE MATHY THING HERE
         N = n_fish
 
@@ -129,12 +128,13 @@ class Simulation():
 ## Calculate the number of triads: 
         d = N * (N-1) * (2*N-1) / 12 - 1/2 * np.sum(np.sum(h_matrix,1) ** 2) ## From Appleby, 1983
         if N <= 10:
-            if d in self._applebys[N]:
+            print('d,N:',d,N)
+            if d in self._applebys[N].keys():
                 p = self._applebys[N][round(d)]
             elif d < min(self._applebys[N].keys()):
-                p = max(self._applebys[N].values())
-            else:
                 p = min(self._applebys[N].values())
+            else:
+                p = max(self._applebys[N].values())
         linearity = 1 - (d / D) ## Percentage of non triadic interactions
         return linearity,[d,p]
         
