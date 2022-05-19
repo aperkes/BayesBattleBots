@@ -110,11 +110,10 @@ class Simulation():
         
         return Tank(fishes,n_fights=p.n_rounds,f_method=p.fight_selection,f_params=p.outcome_params)
     
+## NOTE: Start here next time, linearity looks ok, stability and accuracy aren't working
     def _get_tank_stats(self,tank):
         linearity,_ = self._calc_linearity(tank)
         return linearity,self._calc_stability(tank),self._calc_accuracy(tank)
-
-    
     
     def _calc_linearity(self,tank):
         n_fish = len(tank.fishes)
@@ -165,7 +164,6 @@ class Simulation():
 
 
     def _calc_accuracy(self,tank):
-## NOTE: START HERE!
         tank.rankings = self._calc_dominance(tank)
         accuracy,_ = spearmanr(tank.sizes,tank.rankings)
         ## This is the correlation between size rank and hierarchy rank
