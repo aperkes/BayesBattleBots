@@ -20,6 +20,7 @@ class Tank():
     def __init__(self,fishes,fight_list = None,n_fights = None,
                  f_method='balanced',f_outcome='math',f_params=[.3,.3,.3],u_method='bayes'):
         self.fishes = fishes
+        self.n_fish = len(fishes)
         self.sizes = [f.size for f in fishes]
         self.f_method = f_method
         self.f_outcome = f_outcome
@@ -32,9 +33,9 @@ class Tank():
             if n_fights is None:
                 ## if n is not defined, just run each one once
                 self.fight_list = self.get_matchups(f_method,f_outcome)
-                self.n_fights = len(self.fight_list)
             else:
                 self.fight_list = self.get_matchups(f_method,f_outcome,n_fights)
+            self.n_fights = len(self.fight_list)
         self.history = np.zeros([self.n_fights,len(fishes),len(fishes)])
 
 
@@ -50,7 +51,7 @@ class Tank():
                     fight_list.append(Fight(f1,f2,outcome=f_outcome,idx=i)) ## So balanced is organized as rounds
         if f_method == 'random':
             combs = list(itertools.combinations(self.fishes,2))
-            for n in range(n_fights):
+            for i in range(n_fights):
                 f1,f2 = random.choice(combs)
                 fight_list.append(Fight(f1,f2,outcome=f_outcome,idx=i))
         return fight_list
@@ -74,7 +75,7 @@ class Tank():
 
     def print_status(self):
         for f in self.fishes:
-            print(f.name,':',f.size,f.estimate)
+            print(f.name,':','size=',np.round(f.size,3),'estimate=',np.round(f.estimate,3))
     def run_all(self,print_me=False):
         if print_me:
             print("Starting fights!")

@@ -9,7 +9,7 @@ class Elo:
 	def addPlayer(self,name,rating = 1500):
 		self.ratingDict[name] = rating
 		
-	def gameOver(self, winner, loser, winnerHome):
+	def gameOver(self, winner, loser, winnerHome=False):
 		if winnerHome:
 			result = self.expectResult(self.ratingDict[winner] + self.homefield, self.ratingDict[loser])
 		else:

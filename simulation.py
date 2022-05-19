@@ -5,10 +5,12 @@ import numpy as np
 import itertools,random
 
 from scipy.special import rel_entr
-from scipy.stats import mode
-from scipy.stats import norm
-
+from scipy.stats import mode,norm
+from scipy.stats import spearmanr
+from scipy.ndimage import convolve
 from sklearn.metrics import auc
+
+from tqdm import tqdm
 
 import matplotlib.pyplot as plt
 from matplotlib import cm
@@ -24,7 +26,7 @@ from elosports.elo import Elo
 
 class SimParams():
     def __init__(self,n_iterations=1000,n_fish=4,n_rounds=200,fight_selection='random',
-                effort_method=[1,1],outcome_params=[.3,.3,.3],update_method='bayes',effect_strength=[1,1]):
+                effort_method=[1,1],outcome_params=[.3,.3,.3],update_method='bayes',effect_strength=[1,1],verbose=False):
         self.n_iterations = n_iterations
         self.n_fish = n_fish
         self.n_rounds = n_rounds
@@ -33,6 +35,7 @@ class SimParams():
         self.outcome_params = outcome_params   ## This determines how fights are settled, skill,effort,luck
         self.update_method = update_method     ## This determines how individuals update their self assessment
         self.effect_strength = effect_strength ## This determines the relative strenght of the winner & loser effects
+        self.verbose=verbose
         
     def summary(self):
         print('Number iterations:',self.n_iterations)
@@ -90,15 +93,19 @@ class Simulation():
 
     def run_simulation(self):
         all_stats = []
-        for i in range(self.n_iterations):
+        if self.params.verbose:
+            print('Running simulation, n_iterations:',self.params.n_iterations)
+        #for i in range(self.params.n_iterations):
+        for i in tqdm(range(self.params.n_iterations)):
             tank = self._build_tank(i)
             tank.run_all()
-            t_stats = _get_tank_stats(tank)
+            t_stats = self._get_tank_stats(tank)
             all_stats.append(t_stats)
-    
+        return all_stats
+         
     def _build_tank(self,i): ## I Might want the iteration info available
         p = self.params
-        fishes = [Fish() for f in p.n_fish]
+        fishes = [Fish() for f in range(p.n_fish)]
         n_fights = p.n_rounds
         
         return Tank(fishes,n_fights=p.n_rounds,f_method=p.fight_selection,f_params=p.outcome_params)
@@ -121,7 +128,7 @@ class Simulation():
 
         D = N * (N-1) * (N-2) / 6 ## Total number of possible triads
 ## Calculate the number of triads: 
-        d = N * (N-1) * (2N-1) / 12 - 1/2 * np.sum(h_matrix) ** 2 ## From Appleby, 1983
+        d = N * (N-1) * (2*N-1) / 12 - 1/2 * np.sum(h_matrix) ** 2 ## From Appleby, 1983
         if N <= 10:
             if d in self._applebys[N]:
                 p = self._applebys[N][round(d)]
@@ -134,13 +141,14 @@ class Simulation():
         
     def _calc_stability(self,tank):
         ## This means working through tank matrix by time, and I guess it's the standard deviation or something?
-        if tank.fight_selection == 'balanced':
+        if tank.f_method == 'balanced':
             stability = np.mean(np.std(tank.history,axis=0))
         else:
             ## First calculate a sliding window bigger than 2*n^2. We're going to have some missing values
             min_slide = 2*tank.n_fish*(tank.n_fish-1)
             ## will need to test this...
-            binned_history = np.convolve(mydata,np.ones([min_slide,tank.n_fish,tank.n_fish],dtype=int),'valid')
+            kernel = np.ones([min_slide,tank.n_fish,tank.n_fish])
+            binned_history = convolve(tank.history,kernel)
             stability = np.mean(np.std(binned_history,axis=0))
         return stability
     
@@ -158,15 +166,15 @@ class Simulation():
 
     def _calc_accuracy(self,tank):
 ## NOTE: START HERE!
-        tank.rankings = _calc_dominance(self,tank)
-        accuracy,_ = spearman(tank.sizes,tank.rankings)
+        tank.rankings = self._calc_dominance(tank)
+        accuracy,_ = spearmanr(tank.sizes,tank.rankings)
         ## This is the correlation between size rank and hierarchy rank
         ## It could also be the coefficient, to be even more precise...
         return accuracy
     
     def _calc_est_accuracy(self,tank):
         tank.estimates = [f.estimate for f in tank.fishes]
-        accuracy,_ = spearman(tank.sizes,tank.estimates)
+        accuracy,_ = spearmanr(tank.sizes,tank.estimates)
         return accuracy
 
     def get_timed_means(self):
@@ -183,6 +191,8 @@ class Simulation():
 
 
 if __name__ == "__main__":
-    params = SimParams()
+    params = SimParams(n_iterations=300)
+
     s = Simulation(params)
-    s.run_simulation()
+    all_stats = s.run_simulation()
+    print(all_stats)

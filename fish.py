@@ -86,10 +86,34 @@ class Fish:
         size = 7 + s_max - s_max/np.exp(t/100)
         return size
     
+    def _win_by_ratio(self,r, k=0.1,m=0):
+        # sigmoid function
+        # use k to adjust the slope
+        p = 1 / (1 + np.exp(-(r-m) / k))
+        return p
+
+    def _likelihood_function_size(self,x,x_opp=50):
+        if x >=x_opp:
+            r_diff = (x - x_opp)/x # Will be positive
+        elif x_opp > x:
+            r_diff = (x - x_opp)/x_opp # Will be negative
+        p_win = self._win_by_ratio(r_diff)
+        return p_win
+
+    def _define_likelihood(self,x_opp=50,xs=np.arange(5,150),win=True):
+        likelihood = np.zeros(len(xs))
+        if win:
+            for s in range(len(xs)):
+                likelihood[s] = self._likelihood_function_size(xs[s],x_opp)
+        elif not win:
+            for s in range(len(xs)):
+                likelihood[s] = 1-self._likelihood_function_size(xs[s],x_opp)
+        return likelihood
+     
     def update_prior(self,win,x_opp,xs=None):
         if xs is None:
             xs = self.xs
-        likelihood = define_likelihood(x_opp,xs,win)
+        likelihood = self._define_likelihood(x_opp,xs,win)
         self.win_record.append([x_opp,win])
         self.prior = self._update(self.prior,likelihood,xs)
         self.cdf_prior = self._get_cdf_prior(self.prior)
@@ -178,7 +202,7 @@ class Fish:
     
 
     def fight(self,x_opp): # Decide if you win against another fish
-        prob_win = likelihood_function_size(self.size,x_opp)
+        prob_win = self._likelihood_function_size(self.size,x_opp)
         roll = np.random.random()
         if roll < prob_win: # This should be right, >= would bias it, < is fair I think
             return True

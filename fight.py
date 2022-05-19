@@ -4,7 +4,7 @@ import numpy as np
 
 import itertools,random
 
-from scipy.special import rel_entr
+from scipy.special import rel_entr, logit
 from scipy.stats import mode
 from scipy.stats import norm
 
@@ -173,11 +173,8 @@ class Fight():
         return winner,level
     
     def summary(self):
-        prob_outcome = self.prob_win
-        if self.outcome:
-            prob_outcome = 1 - prob_outcome
-        
-        return ' '.join([str(self.fish1.name),'vs',str(self.fish2.name),str(self.outcome),': So,',str(self.winner.name),'won, with probability',str(prob_outcome)])
+        sum_str =  ' '.join([str(self.fish1.idx),'vs',str(self.fish2.idx),str(self.outcome),': So,',str(self.winner.idx),'won'])
+        return sum_str
 
 if __name__ == "__main__":
     f1 = Fish()
