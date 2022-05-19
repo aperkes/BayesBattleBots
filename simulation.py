@@ -127,7 +127,10 @@ class Simulation():
 
         D = N * (N-1) * (N-2) / 6 ## Total number of possible triads
 ## Calculate the number of triads: 
-        d = N * (N-1) * (2*N-1) / 12 - 1/2 * np.sum(h_matrix) ** 2 ## From Appleby, 1983
+        print('h_matrix, and squared sum:')
+        print(h_matrix)
+        print(np.sum(h_matrix,1)**2)
+        d = N * (N-1) * (2*N-1) / 12 - 1/2 * np.sum(np.sum(h_matrix,1) ** 2) ## From Appleby, 1983
         if N <= 10:
             if d in self._applebys[N]:
                 p = self._applebys[N][round(d)]
