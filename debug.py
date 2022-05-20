@@ -7,12 +7,12 @@ from simulation import Simulation,SimParams
 import numpy as np
 
 params = SimParams()
-params.outcome_params = [1.0,0.0,.0]
+params.outcome_params = [0.0,1.0,.0]
 params.effort_method = [1,0]
 params.n_fights = 100
 params.n_iterations = 2
 params.n_fish = 7
-
+params.f_method = 'balanced'
 fishes = [Fish(n,effort_method=params.effort_method) for n in range(7)]
 
 s = Simulation(params)

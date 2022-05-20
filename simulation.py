@@ -25,12 +25,12 @@ from elosports.elo import Elo
 
 
 class SimParams():
-    def __init__(self,n_iterations=1000,n_fish=4,n_rounds=200,fight_selection='random',
+    def __init__(self,n_iterations=1000,n_fish=4,n_rounds=200,f_method='random',
                 effort_method=[1,1],outcome_params=[.3,.3,.3],update_method='bayes',effect_strength=[1,1],verbose=False):
         self.n_iterations = n_iterations
         self.n_fish = n_fish
         self.n_rounds = n_rounds
-        self.fight_selection = fight_selection ## this defines how much fish can pick their opponents
+        self.f_method = f_method ## this defines how much fish can pick their opponents
         self.effort_method = effort_method     ## This is self-assessment vs opponent assessment, [1,1] is MA
         self.outcome_params = outcome_params   ## This determines how fights are settled, skill,effort,luck
         self.update_method = update_method     ## This determines how individuals update their self assessment
@@ -41,7 +41,7 @@ class SimParams():
         print('Number iterations:',self.n_iterations)
         print('Number of Fish:',self.n_fish)
         print('Number of rounds:',self.n_rounds)
-        print('Fight Selection:',self.fight_selection)
+        print('Fight Selection Method:',self.f_method)
         print('Fight Outcome:',self.outcome_params)
         print('Effort Method:',self.effort_method)
         print('Update Method:',self.update_method)
@@ -108,7 +108,7 @@ class Simulation():
         fishes = [Fish(f,effort_method=p.effort_method) for f in range(p.n_fish)]
         n_fights = p.n_rounds
         
-        return Tank(fishes,n_fights=p.n_rounds,f_method=p.fight_selection,f_params=p.outcome_params)
+        return Tank(fishes,n_fights=p.n_rounds,f_method=p.f_method,f_params=p.outcome_params)
     
 ## NOTE: Start here next time, linearity looks ok, stability and accuracy aren't working
     def _get_tank_stats(self,tank):
@@ -141,14 +141,25 @@ class Simulation():
     def _calc_stability(self,tank):
         ## This means working through tank matrix by time, and I guess it's the standard deviation or something?
 ## A nicer metric would be the proportion of bins where mean heirarchy == overall hierarchy, 
+        print(tank.f_method)
         if tank.f_method == 'balanced':
             binned_history = tank.history
-        else:
+        else: # NOTE: this is currently broken.
             ## First calculate a sliding window bigger than 2*n^2. We're going to have some missing values
             min_slide = 2*tank.n_fish*(tank.n_fish-1)
-            ## will need to test this...
-            kernel = np.ones([min_slide,tank.n_fish,tank.n_fish])
-            binned_history = convolve(tank.history,kernel)
+            n_points = len(tank.history)
+            stagger = 2 # determines the degree to which windows overlap
+            n_bins = int(n_points / min_slide * stagger)
+            win_size = int(n_points / n_bins)
+            binned_history = np.zeros([n_bins,tank.n_fish,tank.n_fish])
+## There might be a more efficient way to do this, but this shoudl work.
+            for w in np.arange(n_bins):
+                h0 = w*win_size
+                h1 = (w+1)*win_size
+                binned_history[w] = np.sum(tank.history[h0:h1],0)
+            ## This doesn't quite work
+            #kernel = np.ones([min_slide,tank.n_fish,tank.n_fish])
+            #binned_history = convolve(tank.history,kernel)
 # Instead, calculate the proportion of binned interactions that = overall interactions
         binary_bins = np.sign(binned_history - np.transpose(binned_history,axes=[0,2,1]))
         mean_history = np.mean(tank.history,0)
@@ -156,7 +167,11 @@ class Simulation():
 
 ## Use nCr formulat to get the total number of possible interactions
         total_interactions = len(binary_bins) * tank.n_fish * (tank.n_fish-1) 
-        binary_difference = np.clip(np.abs(binary_bins - binary_final),0,1)
+        #binary_difference = np.clip(np.abs(binary_bins - binary_final),0,1)
+        binary_difference = np.abs(binary_bins - binary_final) == 2
+        print(tank.history[0])
+        print(np.sum(tank.history,0))
+        print(binned_history[0])
         print(binary_bins[0])
         print(binary_final)
         print(binary_difference[0])
