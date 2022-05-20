@@ -169,12 +169,6 @@ class Simulation():
         total_interactions = len(binary_bins) * tank.n_fish * (tank.n_fish-1) 
         #binary_difference = np.clip(np.abs(binary_bins - binary_final),0,1)
         binary_difference = np.abs(binary_bins - binary_final) == 2
-        print(tank.history[0])
-        print(np.sum(tank.history,0))
-        print(binned_history[0])
-        print(binary_bins[0])
-        print(binary_final)
-        print(binary_difference[0])
         number_consistent = total_interactions - np.sum(binary_difference)
         proportion_consistent = number_consistent / total_interactions 
         #stability = np.mean(np.std(binned_history,axis=0))
