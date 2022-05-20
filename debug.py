@@ -10,7 +10,7 @@ params = SimParams()
 params.outcome_params = [1.0,0.0,.0]
 params.effort_method = [1,0]
 params.n_fights = 100
-params.n_iterations = 50
+params.n_iterations = 2
 params.n_fish = 7
 
 fishes = [Fish(n,effort_method=params.effort_method) for n in range(7)]
