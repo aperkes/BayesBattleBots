@@ -33,7 +33,7 @@ for s_i in range(5):
 
                 print('Working on',params.outcome_params)
                 sim = Simulation(params)
-                all_stats = np.array(s.run_simulation())
+                all_stats = np.array(sim.run_simulation())
                 results_array[s_i,e_j,l_k] = np.mean(all_stats,axis=0)
 if False:
     all_stats = s.run_simulation()
