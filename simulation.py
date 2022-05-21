@@ -141,7 +141,6 @@ class Simulation():
     def _calc_stability(self,tank):
         ## This means working through tank matrix by time, and I guess it's the standard deviation or something?
 ## A nicer metric would be the proportion of bins where mean heirarchy == overall hierarchy, 
-        print(tank.f_method)
         if tank.f_method == 'balanced':
             binned_history = tank.history
         else: # NOTE: this is currently broken.
