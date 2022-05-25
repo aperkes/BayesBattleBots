@@ -108,7 +108,7 @@ class Simulation():
         fishes = [Fish(f,effort_method=p.effort_method) for f in range(p.n_fish)]
         n_fights = p.n_rounds
         
-        return Tank(fishes,n_fights=p.n_rounds,f_method=p.f_method,f_params=p.outcome_params)
+        return Tank(fishes,n_fights=p.n_rounds,f_method=p.f_method,f_params=p.outcome_params,u_method=p.update_method)
     
 ## NOTE: Start here next time, linearity looks ok, stability and accuracy aren't working
     def _get_tank_stats(self,tank):
@@ -213,7 +213,18 @@ class Simulation():
 
 if __name__ == "__main__":
     params = SimParams(n_iterations=300)
+    s = 0
+    e = 1
+    l = 0
+    params.outcome_params = [s,e,l]
+    params.effort_method = [1,1]
+    params.n_fights = 10*50
+    params.n_iterations = 50
+    params.n_fish = 7
+    params.f_method = 'random' 
+    params.update_method = 'hock'
 
     s = Simulation(params)
     all_stats = s.run_simulation()
     print(all_stats)
+    print(np.mean(all_stats,axis=0))

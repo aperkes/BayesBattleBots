@@ -155,13 +155,19 @@ class Fish:
         return self.name,self.size,self.estimate,self.win_record
     
     ## This needs to be divied up by strategy somehow...
-    def choose_effort(self,f_opp,strategy=[1,0]):
+    def choose_effort(self,f_opp,strategy=None):
+        if strategy is None:
+            strategy = self.effort_method
         if strategy == [1,0]:
             return self.estimate / 100 ## This is defined as the max fish size, which could change...
         elif strategy == [0,1]:
             return 1 - f_opp.size / 100
         elif strategy == [1,1]:
+#NOTE: I think cdf_prior is still a bit off, since it's summing to a very large number. 
             ## I think we could do np.sum(self.cdf_prior * f_opp.cdf_prior)
+            #print('judging size:',np.sum(self.cdf_prior[self.xs > f_opp.size]))
+            #print('self.estimate:',self.estimate/100)
+            #print('opp assessment:',1 - f_opp.size /100)
             return np.sum(self.cdf_prior[self.xs > f_opp.size])
 
         elif strategy == 'ma_c': ## This is the continuous version where there is opponent uncertainty
