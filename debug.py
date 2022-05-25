@@ -6,18 +6,20 @@ from simulation import Simulation,SimParams
 
 import numpy as np
 
-s_space = [0.0,.25,.5,.75,1.0]
-e_space = [0.0,.25,.5,.75,1.0]
-l_space = [0.0,0.1,0.5,0.9,1.0]
-
-results_array = np.empty([5,5,5,3])
+#s_space = [0.0,.25,.5,.75,1.0]
+#e_space = [0.0,.25,.5,.75,1.0]
+#l_space = [0.0,0.1,0.5,0.9,1.0]
+s_space = [0.0,0.2,0.4,0.6,0.8,1.0]
+e_space = [0.0,0.2,0.4,0.6,0.8,1.0]
+l_space = [0.0,.05,0.1,0.2,0.3,0.5]
+results_array = np.empty([6,6,6,3])
 
 params = SimParams()
 params.effort_method = [1,0]
-params.n_fights = 5
-params.n_iterations = 5
+params.n_fights = 10*50
+params.n_iterations = 15 
 params.n_fish = 7
-params.f_method = 'balanced'
+params.f_method = 'random'
 
 for s_i in range(5):
     for e_j in range(5):
@@ -25,16 +27,13 @@ for s_i in range(5):
             s = s_space[s_i]
             e = e_space[e_j]
             l = l_space[l_k]
-            if s == e and s != 0.0:
-                results_array[s_i,e_j,l_k] = results_array[0,0,l_k]
-            else:
-                params.outcome_params = [s,e,l]
-                fishes = [Fish(n,effort_method=params.effort_method) for n in range(7)]
+            params.outcome_params = [s,e,l]
+            fishes = [Fish(n,effort_method=params.effort_method) for n in range(7)]
 
-                print('Working on',params.outcome_params)
-                sim = Simulation(params)
-                all_stats = np.array(sim.run_simulation())
-                results_array[s_i,e_j,l_k] = np.mean(all_stats,axis=0)
+            print('Working on',params.outcome_params)
+            sim = Simulation(params)
+            all_stats = np.array(sim.run_simulation())
+            results_array[s_i,e_j,l_k] = np.mean(all_stats,axis=0)
 if False:
     all_stats = s.run_simulation()
     print(all_stats)
@@ -50,4 +49,4 @@ elif False:
 
 else:
     print('all done!')
-    np.save('restuls_array.npy',results_array)
+    np.save('results_array.npy',results_array)
