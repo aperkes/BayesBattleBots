@@ -77,6 +77,8 @@ class Tank():
         fight.run_outcome()
         fight.winner.update_hock(True,fight.loser.hock_estimate,fight.level)
         fight.loser.update_hock(False,fight.winner.hock_estimate,fight.level)
+        self.win_record[fight.winner.idx,fight.loser.idx] += 1
+        self.history[fight.idx,fight.winner.idx,fight.loser.idx] = 1 ## Note, this works a bit different for 'random' and 'balanced'
 
     def print_status(self):
         for f in self.fishes:
@@ -96,6 +98,26 @@ class Tank():
                 print('UPDATE:_____')
                 print(c.summary())
                 self.print_status()
+
+    def plot_estimates(self):
+        fig,ax = plt.subplots()
+        if self.f_outcome = 'bayes':
+            for i in range(len(self.fishes)):
+                f = self.fishes[i]
+                ax.plot(f.est_record, color=cm.tab10(i))
+                ax.hline(f.size,color=cm.tab10(i))
+                ax.fill_between((np.arange(len(f.est_record)),np.array(f.est_record_) + np.array(f.sdest_record),
+                                np.array(f.est_record_) - np.array(f.sdest_record),
+                                color=cm.tab10(i),alpha=.3)    
+        elif self.f_outcome = 'hock':
+            for i in range(len(self.fishes)):
+                f = self.fishes[i]
+                ax.plot(f.hock_record,color=cm.tab10(i))
+        ax.set_xlabel('contest number')
+        ax.set_ylabel('Hock Estimate')
+        fig.show()
+        return fig,ax
+
     def __getitem__(self,idx):
         return self.fishes[idx]
 

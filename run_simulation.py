@@ -19,24 +19,33 @@ params.n_fights = 10*50
 params.n_iterations = 15 
 params.n_fish = 7
 params.f_method = 'random'
-params.u_method = 'hock'
-params.f_outcome = 'hock'
 
-s = Simulation()
+for s_i in range(6):
+    for e_j in range(6):
+        for l_k in range(6):
+            s = s_space[s_i]
+            e = e_space[e_j]
+            l = l_space[l_k]
+            params.outcome_params = [s,e,l]
+            fishes = [Fish(n,effort_method=params.effort_method) for n in range(7)]
+
+            print('Working on',params.outcome_params)
+            sim = Simulation(params)
+            all_stats = np.array(sim.run_simulation())
+            results_array[s_i,e_j,l_k] = np.mean(all_stats,axis=0)
+            print(np.mean(all_stats,axis=0))
 if False:
     all_stats = s.run_simulation()
     print(all_stats)
     all_stats = np.array(all_stats)
     print(np.mean(all_stats,axis=0))
-elif True:
-    fishes = [Fish(f,effort_method=params.effort_method) for f in range(params.n_fish)]
-    tank = Tank(fishes,n_fights = 100,f_params=params.outcome_params,f_outcome=params.f_outcome,f_method=params.f_method,u_method=params.u_method)
+elif False:
+    tank = Tank(fishes,n_fights = 100,f_params=params.outcome_params)
     tank.run_all()
     lin,p = s._calc_linearity(tank)
     stab = s._calc_stability(tank)
     accu = s._calc_accuracy(tank)
     print(stab)
-    _ = tank.plot_estimates()
 
 else:
     print('all done!')
