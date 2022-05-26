@@ -1,0 +1,19 @@
+### Add from top:
+
+22 May 25:
+Ran all the simulations, things are looking quite good. Ended with running Hock approach
+One thing to keep in mind here is that "stability" measures fight performance, while "estimate" measures internal state. 
+So when I'm plotting the est_history, I'm plotting their internal states, while stability is based on their wins/losses. 
+
+In any case, it does seem like Hock is a lot less stable, but that could be in part just because of the inherent luck in the approach. 
+The next thing to do in order for a fair comparison is to build hock-huber into my existing 'mathy' approach. 
+This will allow me to control the role of luck, to compare apples to apples. It will even let me bring in skill, to fully explore the space. 
+
+I'll also need to come up with the naive winner effects: a n-round boost to estimate, or simple jump in estimate (either additive, or a scale factor)
+Once that's done, I can make some contrasting predictions on behavior. 
+
+Keep in mind that Bayes should be the ideal solution to this problem, so the question is whether it is feasible, and whether it's 
+actually that much better than a very simple heuristic. 
+
+The other thing to think about is the likelihood function, since that could also be explored. 
+
