@@ -18,7 +18,7 @@ params.effort_method = [0,1]
 params.n_fights = 10*50
 params.n_iterations = 15 
 params.n_fish = 7
-params.f_method = 'balanced'
+params.f_method = 'random'
 HOCK = False
 if HOCK:
     params.u_method = 'hock'
@@ -29,7 +29,7 @@ else:
     params.f_outcome = 'math'
     params.outcome_params = [1.0,0.3,.1]
 s = Simulation(params)
-if True:
+if False:
     all_stats = s.run_simulation()
     print(all_stats)
     all_stats = np.array(all_stats)

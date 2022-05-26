@@ -13,6 +13,8 @@ from sklearn.metrics import auc
 import matplotlib.pyplot as plt
 from matplotlib import cm
 
+from tqdm import tqdm
+
 from fish import Fish
 from fight import Fight
 
@@ -60,6 +62,7 @@ class Tank():
             for i in range(n_fights):
                 f1,f2 = random.choice(combs)
                 fight_list.append(Fight(f1,f2,outcome=f_outcome,outcome_params=self.f_params,scale=scale,idx=i))
+        print('n_fights:',len(fight_list))
         return fight_list
 
     def process_fight(self,fight): ## This works without returning because of how objects work in python
@@ -93,7 +96,8 @@ class Tank():
             process = self.process_hock
         else:
             process = self.process_fight
-        for c in self.fight_list:
+        for i in tqdm(range(len(self.fight_list))):
+            c = self.fight_list[i]
             process(c)
             if print_me:
                 print('UPDATE:_____')
