@@ -30,7 +30,7 @@ if False:
     print(np.mean(all_stats,axis=0))
 elif True:
     fishes = [Fish(f,effort_method=params.effort_method) for f in range(params.n_fish)]
-    tank = Tank(fishes,n_fights = 100,f_params=params.outcome_params,f_outcome=params.f_outcome,f_method=params.f_method,u_method=params.u_method)
+    tank = Tank(fishes,n_fights = 1000,f_params=params.outcome_params,f_outcome=params.f_outcome,f_method=params.f_method,u_method=params.u_method)
     tank.run_all()
     lin,p = s._calc_linearity(tank)
     stab = s._calc_stability(tank)

@@ -150,6 +150,7 @@ class Simulation():
             n_points = len(tank.history)
             stagger = 2 # determines the degree to which windows overlap
             n_bins = int(n_points / min_slide * stagger)
+            print(n_bins)
             win_size = int(n_points / n_bins)
             binned_history = np.zeros([n_bins,tank.n_fish,tank.n_fish])
 ## There might be a more efficient way to do this, but this shoudl work.
