@@ -41,7 +41,9 @@ class Fight():
         elif self.mechanism == 'wager_chance':
             self.outcome,self.level = self.wager_chance()
         elif self.mechanism == 'hock':
-            self.outcome,self.level = self.hock_huber()
+            scale = self.params[0] ## Could use this, but have to remember it...
+            scale = .1
+            self.outcome,self.level = self.hock_huber(scale=scale,l=self.params[2])
         elif self.mechanism == 'math':
             #print('using mathy.',self.params)
             self.outcome,self.level = self.mathy(self.params)
@@ -110,6 +112,8 @@ class Fight():
         f1_wager = (f1_rel_size ** s) * (f1_effort ** e)
         f2_wager = (f2_rel_size ** s) * (f2_effort ** e)
         min_wager = min([f1_wager,f2_wager]) / max([f1_wager,f2_wager])
+## Alternatively:
+        ##min_wager = min([f1_wager,f2_wager]) / (f1_wager + f2_wager)
         f_min = np.argmin([f1_wager,f2_wager]) ## note, this means that second fish always wins ties. That's not ideal
         p_win = self._wager_curve(min_wager,l)
         if random.random() < p_win: ## probability that the "lower invested" fish wins
@@ -118,6 +122,24 @@ class Fight():
         else:
             winner = 1-f_min
             level = min_wager
+        return winner,level
+     
+    def hock_huber(self,scale=.1,l=.5):
+        f1_est = self.fish1.hock_estimate
+        f2_est = self.fish1.hock_estimate
+        prob_f1 = f1_est / (f1_est + f2_est)
+        f_min = 0
+## Alternatively:
+        if True:
+            min_wager = min([f1_est,f2_est]) / max([f1_est,f2_est])
+            f_min = np.argmin([f1_est,f2_est])
+            prob_fmin = self._wager_curve(f_min,l)
+            prob_f1 = prob_fmin
+        if random.random() < prob_f1:
+            winner = f_min 
+        else:
+            winner = 1-f_min
+        level = min([f1_est,f2_est]) * scale
         return winner,level
     
     ## Choose based off of estimate
@@ -161,18 +183,7 @@ class Fight():
             winner = 1
         level = min([f1_wager,f2_wager])
         return winner,level
-    
-    def hock_huber(self,scale=.1):
-        f1_est = self.fish1.hock_estimate
-        f2_est = self.fish1.hock_estimate
-        prob_f1 = f1_est / (f1_est + f2_est)
-        if random.random() < prob_f1:
-            winner = 0
-        else:
-            winner = 1
-        level = min([f1_est,f2_est]) * scale
-        return winner,level
-    
+   
     def summary(self):
         sum_str =  ' '.join([str(self.fish1.idx),'vs',str(self.fish2.idx),str(self.outcome),': So,',str(self.winner.idx),'won'])
         return sum_str
