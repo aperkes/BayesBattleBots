@@ -18,7 +18,7 @@ from fight import Fight
 
 class Tank():
     def __init__(self,fishes,fight_list = None,n_fights = None,
-                 f_method='balanced',f_outcome='math',f_params=[.3,.3,.3],u_method='bayes'):
+                 f_method='balanced',f_outcome='math',f_params=[.3,.3,.3],u_method='bayes',scale=.1):
         self.fishes = fishes
         self.n_fish = len(fishes)
         self.sizes = [f.size for f in fishes]
@@ -26,6 +26,7 @@ class Tank():
         self.f_outcome = f_outcome
         self.f_params = f_params
         self.u_method = u_method
+        self.scale = scale
         self.win_record = np.zeros([len(fishes),len(fishes)])
 
         if fight_list is not None:
@@ -33,7 +34,7 @@ class Tank():
         else:
             if n_fights is None:
                 ## if n is not defined, just run each one once
-                self.fight_list = self.get_matchups(f_method,f_outcome)
+                self.fight_list = self.get_matchups(f_method,f_outcome,scale=scale)
             else:
                 self.fight_list = self.get_matchups(f_method,f_outcome,n_fights)
             self.n_fights = len(self.fight_list)
@@ -46,19 +47,19 @@ class Tank():
 
     ## Randomly match up fishes
 
-    def get_matchups(self,f_method='balanced',f_outcome='chance',n_fights=10):
+    def get_matchups(self,f_method='balanced',f_outcome='chance',n_fights=10,scale=.1):
         fight_list = []
 
         if f_method == 'balanced':
             short_list = []
             for i in range(n_fights):
                 for f1,f2 in itertools.combinations(self.fishes, 2):
-                    fight_list.append(Fight(f1,f2,outcome=f_outcome,outcome_params=self.f_params,idx=i)) ## So balanced is organized as rounds
+                    fight_list.append(Fight(f1,f2,outcome=f_outcome,outcome_params=self.f_params,scale=scale,idx=i)) ## So balanced is organized as rounds
         if f_method == 'random':
             combs = list(itertools.combinations(self.fishes,2))
             for i in range(n_fights):
                 f1,f2 = random.choice(combs)
-                fight_list.append(Fight(f1,f2,outcome=f_outcome,outcome_params=self.f_params,idx=i))
+                fight_list.append(Fight(f1,f2,outcome=f_outcome,outcome_params=self.f_params,scale=scale,idx=i))
         return fight_list
 
     def process_fight(self,fight): ## This works without returning because of how objects work in python
@@ -101,19 +102,21 @@ class Tank():
 
     def plot_estimates(self):
         fig,ax = plt.subplots()
-        if self.f_outcome == 'bayes':
+        if self.u_method == 'bayes':
             for i in range(len(self.fishes)):
                 f = self.fishes[i]
                 ax.plot(f.est_record, color=cm.tab10(i))
-                ax.hline(f.size,color=cm.tab10(i))
+                ax.axhline(f.size,color=cm.tab10(i))
                 ax.fill_between(np.arange(len(f.est_record)),np.array(f.est_record_) + np.array(f.sdest_record),
                     np.array(f.est_record_) - np.array(f.sdest_record),color=cm.tab10(i),alpha=.3)
-        elif self.f_outcome == 'hock':
+            ax.set_ylabel('Estimate')
+        elif self.u_method == 'hock':
             for i in range(len(self.fishes)):
                 f = self.fishes[i]
                 ax.plot(f.hock_record,color=cm.tab10(i))
+                ax.axhline(f.size/100,color=cm.tab10(i))
+            ax.set_ylabel('Hock Estimate')
         ax.set_xlabel('contest number')
-        ax.set_ylabel('Hock Estimate')
         fig.show()
         return fig,ax
 

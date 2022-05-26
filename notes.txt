@@ -1,5 +1,18 @@
 ### Add from top:
 
+22 May 26:
+Did a lot of work to get Hock-Huber approach working. I made a slight modification to the way they calculate probability so that it matches
+the more empirically driven idea of the outcome being decided by the percent difference, with marginal effort having a bigger impact when 
+you're close to the opponent's investment. 
+
+I also brought it into my wager function, so that I could play with the amount of luck involved, as well as add a size component (by default, 
+Hock assumed l=0.5, which is a linear relationship between relative effort and probability of winning)
+
+Surprisingly, although the stability of the hock estimate swings widely, as I would have guessed, the stability of fights is fairly comparable. 
+The caveat here is I still don't entirely trust my stability metric...so I should check on that next. 
+On top of that, I should probably calculate the strength of the winner effect: i.e. the increased probability of winning following a win. 
+
+
 22 May 25:
 Ran all the simulations, things are looking quite good. Ended with running Hock approach
 One thing to keep in mind here is that "stability" measures fight performance, while "estimate" measures internal state. 

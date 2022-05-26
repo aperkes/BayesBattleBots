@@ -26,7 +26,7 @@ from elosports.elo import Elo
 
 class SimParams():
     def __init__(self,n_iterations=1000,n_fish=4,n_rounds=200,f_method='random',
-                effort_method=[1,1],f_outcome='math',outcome_params=[.3,.3,.3],u_method='bayes',effect_strength=[1,1],verbose=False):
+                effort_method=[1,1],f_outcome='math',outcome_params=[.3,.3,.3],u_method='bayes',effect_strength=[1,1],scale=.1,verbose=False):
         self.n_iterations = n_iterations
         self.n_fish = n_fish
         self.n_rounds = n_rounds
@@ -36,6 +36,7 @@ class SimParams():
         self.outcome_params = outcome_params   ## This determines how fights are settled, skill,effort,luck
         self.u_method = u_method     ## This determines how individuals update their self assessment
         self.effect_strength = effect_strength ## This determines the relative strenght of the winner & loser effects
+        self.scale = .1 ## determines scale of hock effect
         self.verbose=verbose
         
     def summary(self):
@@ -109,9 +110,8 @@ class Simulation():
         fishes = [Fish(f,effort_method=p.effort_method) for f in range(p.n_fish)]
         n_fights = p.n_rounds
         
-        return Tank(fishes,n_fights=p.n_rounds,f_method=p.f_method,f_outcome=p.f_outcome,f_params=p.outcome_params,u_method=p.u_method)
+        return Tank(fishes,n_fights=p.n_rounds,f_method=p.f_method,f_outcome=p.f_outcome,f_params=p.outcome_params,u_method=p.u_method,scale=p.scale)
     
-## NOTE: Start here next time, linearity looks ok, stability and accuracy aren't working
     def _get_tank_stats(self,tank):
         linearity,(d,p) = self._calc_linearity(tank)
         return p,self._calc_stability(tank),self._calc_accuracy(tank)
@@ -144,13 +144,12 @@ class Simulation():
 ## A nicer metric would be the proportion of bins where mean heirarchy == overall hierarchy, 
         if tank.f_method == 'balanced':
             binned_history = tank.history
-        else: # NOTE: this is currently broken.
+        else: ## Something feels wrong here... 
             ## First calculate a sliding window bigger than 2*n^2. We're going to have some missing values
             min_slide = 2*tank.n_fish*(tank.n_fish-1)
             n_points = len(tank.history)
             stagger = 2 # determines the degree to which windows overlap
             n_bins = int(n_points / min_slide * stagger)
-            print(n_bins)
             win_size = int(n_points / n_bins)
             binned_history = np.zeros([n_bins,tank.n_fish,tank.n_fish])
 ## There might be a more efficient way to do this, but this shoudl work.

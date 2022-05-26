@@ -17,7 +17,7 @@ from fish import Fish
 
 ## Simple-ish object to keep track of matchups (and decide outcome if necessary)
 class Fight():
-    def __init__(self,fish1,fish2,outcome="math",outcome_params=[.3,.3,.3],level=None,idx=0):
+    def __init__(self,fish1,fish2,outcome="math",outcome_params=[.3,.3,.3],level=None,scale=.1,idx=0):
         self.fish1 = fish1
         self.fish2 = fish2
         self.fishes = [fish1,fish2]
@@ -25,6 +25,7 @@ class Fight():
         self.level = level
         self.outcome = '?'
         self.params = outcome_params
+        self.scale=scale
         self.idx = idx
         
     def run_outcome(self):
@@ -41,9 +42,9 @@ class Fight():
         elif self.mechanism == 'wager_chance':
             self.outcome,self.level = self.wager_chance()
         elif self.mechanism == 'hock':
-            scale = self.params[0] ## Could use this, but have to remember it...
-            scale = .1
-            self.outcome,self.level = self.hock_huber(scale=scale,l=self.params[2])
+            scale = self.scale ## Could use this, but have to remember it...
+            #scale = .1
+            self.outcome,self.level = self.hock_huber(scale=scale,params = self.params)
         elif self.mechanism == 'math':
             #print('using mathy.',self.params)
             self.outcome,self.level = self.mathy(self.params)
@@ -100,8 +101,8 @@ class Fight():
         return prob_win
 
     ## This is useful because it paramaterizes the relative impact of size, effort, and luck
-    def mathy(self,param=[.5,.5,.5]):
-        s,e,l = param
+    def mathy(self,params=[.5,.5,.5]):
+        s,e,l = params
         f1_size = self.fish1.size
         f2_size = self.fish2.size
         max_size = max([f1_size,f2_size])
@@ -124,22 +125,31 @@ class Fight():
             level = min_wager
         return winner,level
      
-    def hock_huber(self,scale=.1,l=.5):
-        f1_est = self.fish1.hock_estimate
-        f2_est = self.fish1.hock_estimate
-        prob_f1 = f1_est / (f1_est + f2_est)
+    def hock_huber(self,scale=.1,params=[.5,.5,.5]):
+        f1_effort = self.fish1.hock_estimate
+        f2_effort = self.fish2.hock_estimate
+        prob_f1 = f1_effort / (f1_effort + f2_effort)
         f_min = 0
 ## Alternatively:
         if True:
-            min_wager = min([f1_est,f2_est]) / max([f1_est,f2_est])
-            f_min = np.argmin([f1_est,f2_est])
-            prob_fmin = self._wager_curve(f_min,l)
+            s,e,l = params
+            f1_size = self.fish1.size
+            f2_size = self.fish2.size
+            max_size = max([f1_size,f2_size])
+            f1_rel_size = f1_size / max_size
+            f2_rel_size = f2_size / max_size
+
+            f1_wager = (f1_rel_size ** s) * (f1_effort ** e)
+            f2_wager = (f2_rel_size ** s) * (f2_effort ** e)
+            min_wager = min([f1_wager,f2_wager]) / max([f1_wager,f2_wager])
+            f_min = np.argmin([f1_wager,f2_wager])
+            prob_fmin = self._wager_curve(min_wager,l)
             prob_f1 = prob_fmin
         if random.random() < prob_f1:
             winner = f_min 
         else:
             winner = 1-f_min
-        level = min([f1_est,f2_est]) * scale
+        level = min([f1_effort,f2_effort]) * scale
         return winner,level
     
     ## Choose based off of estimate

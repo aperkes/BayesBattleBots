@@ -19,6 +19,10 @@ params.n_fights = 10*50
 params.n_iterations = 15 
 params.n_fish = 7
 params.f_method = 'random'
+HOCK = True
+if HOCK:
+    params.u_method = 'hock'
+    params.f_outcome = 'hock'
 
 for s_i in range(6):
     for e_j in range(6):

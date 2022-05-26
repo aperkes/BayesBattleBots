@@ -19,9 +19,15 @@ params.n_fights = 10*50
 params.n_iterations = 15 
 params.n_fish = 7
 params.f_method = 'random'
-params.u_method = 'hock'
-params.f_outcome = 'hock'
-
+HOCK = True
+if HOCK:
+    params.u_method = 'hock'
+    params.f_outcome = 'hock'
+    params.outcome_params = [1.0,0.3,.1]
+else:
+    params.u_method = 'bayes'
+    params.f_outcome = 'math'
+    params.outcome_params = [1.0,0.3,.1]
 s = Simulation()
 if False:
     all_stats = s.run_simulation()
