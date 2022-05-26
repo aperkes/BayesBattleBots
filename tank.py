@@ -101,15 +101,14 @@ class Tank():
 
     def plot_estimates(self):
         fig,ax = plt.subplots()
-        if self.f_outcome = 'bayes':
+        if self.f_outcome == 'bayes':
             for i in range(len(self.fishes)):
                 f = self.fishes[i]
                 ax.plot(f.est_record, color=cm.tab10(i))
                 ax.hline(f.size,color=cm.tab10(i))
-                ax.fill_between((np.arange(len(f.est_record)),np.array(f.est_record_) + np.array(f.sdest_record),
-                                np.array(f.est_record_) - np.array(f.sdest_record),
-                                color=cm.tab10(i),alpha=.3)    
-        elif self.f_outcome = 'hock':
+                ax.fill_between(np.arange(len(f.est_record)),np.array(f.est_record_) + np.array(f.sdest_record),
+                    np.array(f.est_record_) - np.array(f.sdest_record),color=cm.tab10(i),alpha=.3)
+        elif self.f_outcome == 'hock':
             for i in range(len(self.fishes)):
                 f = self.fishes[i]
                 ax.plot(f.hock_record,color=cm.tab10(i))

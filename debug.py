@@ -35,9 +35,9 @@ elif True:
     lin,p = s._calc_linearity(tank)
     stab = s._calc_stability(tank)
     accu = s._calc_accuracy(tank)
-    print(stab)
-    _ = tank.plot_estimates()
-
+    print(stab,lin)
+    fig,ax = tank.plot_estimates()
+    fig.savefig('test.jpg',dpi=300)
 else:
     print('all done!')
     np.save('results_array.npy',results_array)
