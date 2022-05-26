@@ -26,14 +26,15 @@ from elosports.elo import Elo
 
 class SimParams():
     def __init__(self,n_iterations=1000,n_fish=4,n_rounds=200,f_method='random',
-                effort_method=[1,1],outcome_params=[.3,.3,.3],update_method='bayes',effect_strength=[1,1],verbose=False):
+                effort_method=[1,1],f_outcome='math',outcome_params=[.3,.3,.3],u_method='bayes',effect_strength=[1,1],verbose=False):
         self.n_iterations = n_iterations
         self.n_fish = n_fish
         self.n_rounds = n_rounds
         self.f_method = f_method ## this defines how much fish can pick their opponents
+        self.f_outcome = f_outcome ## This defines how fights are determined.
         self.effort_method = effort_method     ## This is self-assessment vs opponent assessment, [1,1] is MA
         self.outcome_params = outcome_params   ## This determines how fights are settled, skill,effort,luck
-        self.update_method = update_method     ## This determines how individuals update their self assessment
+        self.u_method = u_method     ## This determines how individuals update their self assessment
         self.effect_strength = effect_strength ## This determines the relative strenght of the winner & loser effects
         self.verbose=verbose
         
@@ -44,7 +45,7 @@ class SimParams():
         print('Fight Selection Method:',self.f_method)
         print('Fight Outcome:',self.outcome_params)
         print('Effort Method:',self.effort_method)
-        print('Update Method:',self.update_method)
+        print('Update Method:',self.u_method)
 
 class Simulation():
     def __init__(self,params=SimParams()):
@@ -108,7 +109,7 @@ class Simulation():
         fishes = [Fish(f,effort_method=p.effort_method) for f in range(p.n_fish)]
         n_fights = p.n_rounds
         
-        return Tank(fishes,n_fights=p.n_rounds,f_method=p.f_method,f_params=p.outcome_params,u_method=p.update_method)
+        return Tank(fishes,n_fights=p.n_rounds,f_method=p.f_method,f_outcome=p.f_outcome,f_params=p.outcome_params,u_method=p.u_method)
     
 ## NOTE: Start here next time, linearity looks ok, stability and accuracy aren't working
     def _get_tank_stats(self,tank):
@@ -222,7 +223,8 @@ if __name__ == "__main__":
     params.n_iterations = 50
     params.n_fish = 7
     params.f_method = 'random' 
-    params.update_method = 'hock'
+    params.f_outcome = 'hock'
+    params.u_method = 'hock'
 
     s = Simulation(params)
     all_stats = s.run_simulation()
