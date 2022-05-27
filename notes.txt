@@ -1,5 +1,27 @@
 ### Add from top:
 
+22 May 27:
+I got back into the likelihood function, and boy is that a mess. 
+So it's probably not very reasonable to say that fish know exactly the size of their opponent, especially
+if we're doing a Self Assessment model. So in that case, what do fish know? 
+    My assumptions are that they know Own Effort, and the Opponent Wager. 
+So that's pretty good, and then you can just infer your size based on those two things, EXCEPT!! The 
+size variable that goes into determining the fight is relative size. So in order to do a likelihood function
+of relative size, you need to know something about the size of the opponent (or the effort). 
+
+I think the most reasonable assumption to make there is that in pure self assessment, you assume average
+effort by the other fish. So I set effort to .5, and then infer the size of the opponent from that and then 
+calculate a likelihood function for relative size in that way. This is basically a transformation of my size
+to relative size for that fight. Obviously, if you know the opponent's size, this is much easier (and I should
+probably update that as well eventually...). 
+
+So in summary, under SA, fish base their likelihood functions from their known effort, the assumed effort of the opponent, and the experienced wager from the opponent.
+
+Even this is a little weird, like you only really know that the opponent wagered as much as or more than you...
+but this feels fine for now. Definitely something to think about. 
+
+I think in the long run, we'll have these general predictions, and then we'll see what it takes to fit the data, and then we'll ask if such a model is biologically plausible. 
+
 22 May 26:
 Did a lot of work to get Hock-Huber approach working. I made a slight modification to the way they calculate probability so that it matches
 the more empirically driven idea of the outcome being decided by the percent difference, with marginal effort having a bigger impact when 

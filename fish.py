@@ -129,16 +129,20 @@ class Fish:
 
     def _define_likelihood_f(self,fight,win):
         likelihood = np.zeros(len(self.xs))
+        e = fight.params[1]
         if win:
             e_self = fight.winner.effort
             w_opp = fight.loser.wager
+## Assume fixed, avg effort for all opponents
+            xs_rel = self.xs / max([fight.winner.size,fight.loser.wager / (.5**e)])
             for s in range(len(self.xs)):
-                likelihood[s] = self._likelihood_function_wager(self.xs[s],e_self,w_opp,fight.params)
+                likelihood[s] = self._likelihood_function_wager(xs_rel[s],e_self,w_opp,fight.params)
         elif not win:
             e_self = fight.loser.effort
             w_opp = fight.winner.wager
+            xs_rel = self.xs / max([fight.loser.size,fight.winner.wager / (.5**e)])
             for s in range(len(self.xs)):
-                likelihood[s] = 1 - self._likelihood_function_wager(self.xs[s],e_self,w_opp,fight.params)
+                likelihood[s] = 1 - self._likelihood_function_wager(xs_rel[s],e_self,w_opp,fight.params)
         return likelihood
          
 
@@ -225,11 +229,12 @@ class Fish:
         ax.plot(self.xs,self.prior)
         if ax is None:
             fig.show()
-    def summary(self): # print off a summary of the fish
-        print('My number is:',self.idx)
-        print('Actual size:',self.size)
-        print('Size estimate:',self.estimate)
-        print('Win record:',self.win_record)
+    def summary(self,print_me): # print off a summary of the fish
+        if print_me:
+            print('My number is:',self.idx)
+            print('Actual size:',self.size)
+            print('Size estimate:',self.estimate)
+            print('Win record:',self.win_record)
         return self.name,self.size,self.estimate,self.win_record
     
     ## This needs to be divied up by strategy somehow...
