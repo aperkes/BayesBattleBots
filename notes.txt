@@ -1,5 +1,12 @@
 ### Add from top:
 
+22 May 27b:
+So, things got too messy with the below approach, so to simplify self assessment, I assumed
+that you only know your own effort, and you assume every fish you meet is average size and effort.
+This actually seems to work pretty well. With pure SA, you get nice, correct hierarchies (assuming size 
+matters somewhat). The function is set up so that you *could* use additional info if you wanted to, 
+although I haven't tested that yet. 
+
 22 May 27:
 I got back into the likelihood function, and boy is that a mess. 
 So it's probably not very reasonable to say that fish know exactly the size of their opponent, especially
