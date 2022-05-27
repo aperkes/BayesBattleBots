@@ -63,6 +63,8 @@ class Fish:
         self.est_record_ = [self.estimate_]
         self.sdest_record = [prior_std]
         self.effort_method = effort_method
+        self.effort = 0
+        self.wager = 0
 
     def _get_cdf_prior(self,prior):
         normed_prior = self.prior / np.sum(self.prior)
@@ -101,7 +103,7 @@ class Fish:
         return prob_win
 
 ## As below, but instead it's based on the wager (assuming opponent size and effort are unknown)
-    def _likelihood_function_wager(self,x,e_self=1.0,w_opp=.5,outcome_params = [.3,.3,.3]):
+    def _likelihood_function_wager(self,x,w_opp=.5,e_self=1.0,outcome_params = [.3,.3,.3]):
         s,e,l = outcome_params
         w_self = (x**s) * (e_self ** e) 
         if w_self>=w_opp:
@@ -112,7 +114,8 @@ class Fish:
             p_win = self._wager_curve(r_diff,l)
         return p_win
 
-    def _define_likelihood_w(self,e_self=1.0,w_opp=.5,outcome_params = [.3,.3,.3],xs=None,win=True):
+## It would be nice to just update all this to include fight info
+    def _define_likelihood_w(self,w_opp=.5,e_self=1.0,outcome_params = [.3,.3,.3],xs=None,win=True):
         if xs is None:
             xs = self.xs
         likelihood = np.zeros(len(xs))
@@ -124,7 +127,22 @@ class Fish:
                 likelihood[s] = 1-self._likelihood_function_wager(xs[s],e_self,w_opp,outcome_params)
         return likelihood
 
-   def _likelihood_function_size(self,x,x_opp=50):
+    def _define_likelihood_f(self,fight,win):
+        likelihood = np.zeros(len(self.xs))
+        if win:
+            e_self = fight.winner.effort
+            w_opp = fight.loser.wager
+            for s in range(len(self.xs)):
+                likelihood[s] = self._likelihood_function_wager(self.xs[s],e_self,w_opp,fight.outcome_params)
+        elif not win:
+            e_self = fight.loser.effort
+            w_opp = fight.winner.wager
+            for s in range(len(self.xs)):
+                likelihood[s] = 1 - self._likelihood_function_wager(self.xs[s],e_self,w_opp,fight.outcome_params)
+        return likelihood
+         
+
+    def _likelihood_function_size(self,x,x_opp=50):
         if x >=x_opp:
             r_diff = (x - x_opp)/x # Will be positive
         elif x_opp > x:
@@ -144,10 +162,13 @@ class Fish:
                 likelihood[s] = 1-self._likelihood_function_size(xs[s],x_opp)
         return likelihood
      
-    def update_prior(self,win,x_opp,xs=None):
+    def update_prior(self,win,x_opp=False,xs=None,w_opp=None,e_self=None,outcome_params=None):
         if xs is None:
             xs = self.xs
-        likelihood = self._define_likelihood(x_opp,xs,win)
+        if x_opp == False:
+            likelihood = self._define_likelihood_w(e_self,w_opp,outcome_params,self.xs,win)
+        else:
+            likelihood = self._define_likelihood(x_opp,xs,win)
         self.win_record.append([x_opp,win])
         self.prior = self._update(self.prior,likelihood,xs)
         self.cdf_prior = self._get_cdf_prior(self.prior)
@@ -166,6 +187,29 @@ class Fish:
         
         return self.prior,self.estimate
     
+## A cleaner version so I'm not passing so many arguments
+    def update_prior_(self,win,fight):
+        if win:
+            other_fish = fight.loser
+        else:
+            other_fish = fight.winner
+        likelihood = self._define_likelihood_f(fight,win) 
+        self.win_record.append([other_fish.size,win])
+        self.prior = self._update(self.prior,likelihood,xs)
+        self.cdf_prior = self._get_cdf_prior(self.prior)
+        estimate = self.xs[np.argmax(self.prior)]
+
+        self.estimate_ = np.sum(self.prior * self.xs / np.sum(self.prior))
+        
+        prior_mean,prior_std = self.get_stats()
+        self.est_record_.append(prior_mean)
+        self.sdest_record.append(prior_std)
+        
+        self.estimate = estimate
+        self.est_record.append(estimate)
+        
+        return self.prior,self.estimate
+
     def update_hock(self,win,h_opp,scale=.1):
         rel_hock = self.hock_estimate / (self.hock_estimate + h_opp)
         estimate = self.hock_estimate + scale * (win-rel_hock)
