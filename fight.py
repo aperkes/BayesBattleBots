@@ -110,12 +110,12 @@ class Fight():
         f2_rel_size = f2_size / max_size
         f1_effort = self.fish1.choose_effort(self.fish2)
         f2_effort = self.fish2.choose_effort(self.fish1)
-        fish1.effort = f1_effort
-        fish2.effort = f2_effort
+        self.fish1.effort = f1_effort
+        self.fish2.effort = f2_effort
         f1_wager = (f1_rel_size ** s) * (f1_effort ** e)
         f2_wager = (f2_rel_size ** s) * (f2_effort ** e)
-        fish1.wager = f1_wager
-        fish2.wager = f2_wager
+        self.fish1.wager = f1_wager
+        self.fish2.wager = f2_wager
 
         min_wager = min([f1_wager,f2_wager]) / max([f1_wager,f2_wager])
 ## Alternatively:

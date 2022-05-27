@@ -188,6 +188,7 @@ class Fish:
         return self.prior,self.estimate
     
 ## A cleaner version so I'm not passing so many arguments
+## What if I want the old way though...
     def update_prior_(self,win,fight):
         if win:
             other_fish = fight.loser
