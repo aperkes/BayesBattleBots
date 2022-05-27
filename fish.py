@@ -133,12 +133,12 @@ class Fish:
             e_self = fight.winner.effort
             w_opp = fight.loser.wager
             for s in range(len(self.xs)):
-                likelihood[s] = self._likelihood_function_wager(self.xs[s],e_self,w_opp,fight.outcome_params)
+                likelihood[s] = self._likelihood_function_wager(self.xs[s],e_self,w_opp,fight.params)
         elif not win:
             e_self = fight.loser.effort
             w_opp = fight.winner.wager
             for s in range(len(self.xs)):
-                likelihood[s] = 1 - self._likelihood_function_wager(self.xs[s],e_self,w_opp,fight.outcome_params)
+                likelihood[s] = 1 - self._likelihood_function_wager(self.xs[s],e_self,w_opp,fight.params)
         return likelihood
          
 
@@ -196,7 +196,7 @@ class Fish:
             other_fish = fight.winner
         likelihood = self._define_likelihood_f(fight,win) 
         self.win_record.append([other_fish.size,win])
-        self.prior = self._update(self.prior,likelihood,xs)
+        self.prior = self._update(self.prior,likelihood,self.xs)
         self.cdf_prior = self._get_cdf_prior(self.prior)
         estimate = self.xs[np.argmax(self.prior)]
 
