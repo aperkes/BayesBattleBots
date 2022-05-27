@@ -4,7 +4,7 @@ import numpy as np
 
 import itertools,random
 
-from scipy.special import rel_entr
+from scipy.special import rel_entr, logit
 from scipy.stats import mode
 from scipy.stats import norm
 
@@ -93,7 +93,38 @@ class Fish:
         p = 1 / (1 + np.exp(-(r-m) / k))
         return p
 
-    def _likelihood_function_size(self,x,x_opp=50):
+## This is a little clunky to have to define this here also, be sure to know if it matches the fight._wager_curve
+## Technically, fight could inherit this from here, but this opens the possibility of having different fish with different LF's. 
+    def _wager_curve(self,w,l=.25):
+        a = logit(1-l)
+        prob_win = w ** (float(np.abs(a))**np.sign(a)) / 2
+        return prob_win
+
+## As below, but instead it's based on the wager (assuming opponent size and effort are unknown)
+    def _likelihood_function_wager(self,x,e_self=1.0,w_opp=.5,outcome_params = [.3,.3,.3]):
+        s,e,l = outcome_params
+        w_self = (x**s) * (e_self ** e) 
+        if w_self>=w_opp:
+            r_diff = w_opp/w_self
+            p_win = 1 - self._wager_curve(r_diff,l)
+        elif w_opp > w_self:
+            r_diff = w_self / w_opp 
+            p_win = self._wager_curve(r_diff,l)
+        return p_win
+
+    def _define_likelihood_w(self,e_self=1.0,w_opp=.5,outcome_params = [.3,.3,.3],xs=None,win=True):
+        if xs is None:
+            xs = self.xs
+        likelihood = np.zeros(len(xs))
+        if win:
+            for s in range(len(xs)):
+                likelihood[s] = self._likelihood_function_wager(xs[s],e_self,w_opp,outcome_params)
+        elif not win:
+            for s in range(len(xs)):
+                likelihood[s] = 1-self._likelihood_function_wager(xs[s],e_self,w_opp,outcome_params)
+        return likelihood
+
+   def _likelihood_function_size(self,x,x_opp=50):
         if x >=x_opp:
             r_diff = (x - x_opp)/x # Will be positive
         elif x_opp > x:
@@ -101,7 +132,9 @@ class Fish:
         p_win = self._win_by_ratio(r_diff)
         return p_win
 
-    def _define_likelihood(self,x_opp=50,xs=np.arange(5,150),win=True):
+    def _define_likelihood(self,x_opp=50,xs=None,win=True):
+        if xs is None:
+            xs = self.xs
         likelihood = np.zeros(len(xs))
         if win:
             for s in range(len(xs)):
