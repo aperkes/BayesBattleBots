@@ -103,46 +103,61 @@ class Fish:
         return prob_win
 
 ## As below, but instead it's based on the wager (assuming opponent size and effort are unknown)
-    def _likelihood_function_wager(self,x,w_opp=.5,e_self=1.0,outcome_params = [.3,.3,.3]):
+## Assumes opponent size is your own estimate. It's all a mess. 
+## NOTE: Come back
+    def _likelihood_function_wager(self,x,opp_size=None,opp_effort=None,opp_wager=None,outcome_params = [.3,.3,.3]):
         s,e,l = outcome_params
-        w_self = (x**s) * (e_self ** e) 
-        if w_self>=w_opp:
-            r_diff = w_opp/w_self
-            p_win = 1 - self._wager_curve(r_diff,l)
-        elif w_opp > w_self:
-            r_diff = w_self / w_opp 
-            p_win = self._wager_curve(r_diff,l)
+        if opp_size is None:
+            opp_size = self.est_record[0] ## Assume all opponents are average size
+        opp_rel_size = opp_size / max([opp_size,x])
+        if opp_effort is None:
+            if opp_wager is not None:
+                opp_effort = (opp_wager ** (1/e)) / (opp_rel_size ** s) ## This should work, but check it
+            else:
+                opp_effort = opp_size / 100
+        if opp_wager is None:
+            opp_wager = (opp_rel_size ** s) * (opp_effort ** e)
+        rel_size = x / max([opp_size,x])
+        my_wager = (rel_size ** s) * (self.effort ** e)
+        if my_wager > opp_wager:
+            rel_wager = opp_wager / max([my_wager,opp_wager])
+            p_win = 1-self._wager_curve(rel_wager,l)
+        else:
+            rel_wager = my_wager / max([my_wager,opp_wager])
+            p_win = self._wager_curve(rel_wager,l)
         return p_win
 
 ## It would be nice to just update all this to include fight info
-    def _define_likelihood_w(self,w_opp=.5,e_self=1.0,outcome_params = [.3,.3,.3],xs=None,win=True):
+    def _define_likelihood_w(self,outcome_params = [.3,.3,.3],win=True):
         if xs is None:
             xs = self.xs
         likelihood = np.zeros(len(xs))
         if win:
             for s in range(len(xs)):
-                likelihood[s] = self._likelihood_function_wager(xs[s],e_self,w_opp,outcome_params)
+                likelihood[s] = self._likelihood_function_wager(xs[s],outcome_params=outcome_params)
         elif not win:
             for s in range(len(xs)):
-                likelihood[s] = 1-self._likelihood_function_wager(xs[s],e_self,w_opp,outcome_params)
+                likelihood[s] = 1-self._likelihood_function_wager(xs[s],outcome_params=outcome_params)
         return likelihood
 
     def _define_likelihood_f(self,fight,win):
         likelihood = np.zeros(len(self.xs))
-        e = fight.params[1]
+        s,e,l = fight.params
         if win:
             e_self = fight.winner.effort
             w_opp = fight.loser.wager
 ## Assume fixed, avg effort for all opponents
-            xs_rel = self.xs / max([fight.winner.size,fight.loser.wager / (.5**e)])
+## NOTE: Somehow you need to transform size to relative size, without knowing opponent size.
+            xs_rel = self.xs / self.estimate 
             for s in range(len(self.xs)):
-                likelihood[s] = self._likelihood_function_wager(xs_rel[s],e_self,w_opp,fight.params)
+                likelihood[s] = self._likelihood_function_wager(self.xs[s],outcome_params=fight.params)
         elif not win:
+            #print('they lost!')
             e_self = fight.loser.effort
             w_opp = fight.winner.wager
-            xs_rel = self.xs / max([fight.loser.size,fight.winner.wager / (.5**e)])
+            xs_rel = self.xs / max([fight.loser.size,fight.winner.wager / (self.effort**e)])
             for s in range(len(self.xs)):
-                likelihood[s] = 1 - self._likelihood_function_wager(xs_rel[s],e_self,w_opp,fight.params)
+                likelihood[s] = 1 - self._likelihood_function_wager(self.xs[s],outcome_params=fight.params)
         return likelihood
          
 
@@ -170,7 +185,7 @@ class Fish:
         if xs is None:
             xs = self.xs
         if x_opp == False:
-            likelihood = self._define_likelihood_w(e_self,w_opp,outcome_params,self.xs,win)
+            likelihood = self._define_likelihood_w(outcome_params,win)
         else:
             likelihood = self._define_likelihood(x_opp,xs,win)
         self.win_record.append([x_opp,win])

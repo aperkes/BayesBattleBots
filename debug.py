@@ -15,7 +15,7 @@ e_space = [0.0,0.2,0.4,0.6,0.8,1.0]
 l_space = [0.0,.05,0.1,0.2,0.3,0.5]
 results_array = np.full([6,6,6,3],np.nan)
 params = SimParams()
-params.effort_method = [0,1]
+params.effort_method = [1,1]
 params.n_fights = 10*50
 params.n_iterations = 15 
 params.n_fish = 7
@@ -29,7 +29,7 @@ if HOCK:
 else:
     params.u_method = 'bayes'
     params.f_outcome = 'math'
-    params.outcome_params = [1.0,0.3,.1]
+    params.outcome_params = [0.3,0.3,.1]
 s = Simulation(params)
 ## Check whether simulation is working and print stats
 if False:
