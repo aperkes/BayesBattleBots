@@ -130,15 +130,16 @@ class Tank():
         fig.show()
         return fig,ax
 
-    def calc_winner_effect(self):
+    ## Function to calculate winner effect. s allows you to calculate n-steps into the future
+    def calc_winner_effect(self,s=1):
         we_by_fish = []
         le_by_fish = []
         mean_by_fish = []
         size_by_fish = []
         for f in self.fishes:
             win_record = np.array(f.win_record)
-            record_post_win = win_record[1:][win_record[0:-1,1] == 1]
-            record_post_loss = win_record[1:][win_record[0:-1,1] == 0]
+            record_post_win = win_record[s:][win_record[0:-s,1] == 1]
+            record_post_loss = win_record[s:][win_record[0:-s,1] == 0]
             mean_record = np.mean(win_record[:,1]
             mean_post_win = np.mean(record_post_win)
             mean_post_loss = np.mean(record_post_loss)
