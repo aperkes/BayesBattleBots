@@ -1,5 +1,14 @@
 ### Add from top:
 
+22 May 31:
+I've started working on the more naive winner effect approaches:
+- A clipped, decaying boost. Several parameters here, but for now, after fight +/- .1 to effort (clipped to 0,1)
+- Non decaying boost (+/- .1 to effort, clipped to (0,1), doesn't decay), just set self.decay = 1
+I've also added a tank.function to calculate the strenght of the winner effect for each fish.
+
+I need to clean up the update_prior methods, right now I use one for opponent assessment, 
+and a differently structured one for self assessment. Would be much cleaner if they were consistent
+
 22 May 27b:
 So, things got too messy with the below approach, so to simplify self assessment, I assumed
 that you only know your own effort, and you assume every fish you meet is average size and effort.

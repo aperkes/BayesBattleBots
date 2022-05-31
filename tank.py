@@ -130,6 +130,26 @@ class Tank():
         fig.show()
         return fig,ax
 
+    def calc_winner_effect(self):
+        we_by_fish = []
+        le_by_fish = []
+        mean_by_fish = []
+        size_by_fish = []
+        for f in self.fishes:
+            win_record = np.array(f.win_record)
+            record_post_win = win_record[1:][win_record[0:-1,1] == 1]
+            record_post_loss = win_record[1:][win_record[0:-1,1] == 0]
+            mean_record = np.mean(win_record[:,1]
+            mean_post_win = np.mean(record_post_win)
+            mean_post_loss = np.mean(record_post_loss)
+            winner_effect = mean_post_win / mean_record
+            loser_effect = mean_post_loss / (1-mean_record)
+            we_by_fish.append(winner_effect)
+            le_by_fish.append(loser_effect)
+            mean_by_fish.append(mean_record)
+            size_by_fish.append(f.size)
+        return we_by_fish,le_by_fish,mean_by_fish,size_by_fish
+
     def __getitem__(self,idx):
         return self.fishes[idx]
 

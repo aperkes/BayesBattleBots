@@ -65,7 +65,16 @@ class Fish:
         self.effort_method = effort_method
         self.effort = 0
         self.wager = 0
+        self.boost = 0 ## Initial boost, needs to be 0, will change with winner/loser effect
+        self.decay = 2 ## Rate at which boost decays, the higher it is, the fast it decays to 0 
 
+## Apply winner/loser effect. This could be more nuanced, eventually should be parameterized.
+    def _set_boost(self,win):
+        if win:
+            self.boost = .1
+        else:
+            self.boost = -.1
+        
     def _get_cdf_prior(self,prior):
         normed_prior = self.prior / np.sum(self.prior)
         cdf_prior = np.cumsum(normed_prior)
@@ -180,7 +189,8 @@ class Fish:
             for s in range(len(xs)):
                 likelihood[s] = 1-self._likelihood_function_size(xs[s],x_opp)
         return likelihood
-     
+    
+## This also includes opponent assesment...need to fix that
     def update_prior(self,win,x_opp=False,xs=None,w_opp=None,e_self=None,outcome_params=None):
         if xs is None:
             xs = self.xs
@@ -189,6 +199,7 @@ class Fish:
         else:
             likelihood = self._define_likelihood(x_opp,xs,win)
         self.win_record.append([x_opp,win])
+        self.win_record.append([x_opp,win,self.effort])
         self.prior = self._update(self.prior,likelihood,xs)
         self.cdf_prior = self._get_cdf_prior(self.prior)
         if True: ## Need to decide which of these to use...
@@ -214,7 +225,7 @@ class Fish:
         else:
             other_fish = fight.winner
         likelihood = self._define_likelihood_f(fight,win) 
-        self.win_record.append([other_fish.size,win])
+        self.win_record.append([other_fish.size,win,self.effort])
         self.prior = self._update(self.prior,likelihood,self.xs)
         self.cdf_prior = self._get_cdf_prior(self.prior)
         estimate = self.xs[np.argmax(self.prior)]
@@ -257,16 +268,16 @@ class Fish:
         if strategy is None:
             strategy = self.effort_method
         if strategy == [1,0]:
-            return self.estimate / 100 ## This is defined as the max fish size, which could change...
+            effort = self.estiamte / 100
         elif strategy == [0,1]:
-            return 1 - f_opp.size / 100
+            effort = 1 - f_opp.size / 100
         elif strategy == [1,1]:
 #NOTE: I think cdf_prior is still a bit off, since it's summing to a very large number. 
             ## I think we could do np.sum(self.cdf_prior * f_opp.cdf_prior)
             #print('judging size:',np.sum(self.cdf_prior[self.xs > f_opp.size]))
             #print('self.estimate:',self.estimate/100)
             #print('opp assessment:',1 - f_opp.size /100)
-            return np.sum(self.cdf_prior[self.xs > f_opp.size])
+            effort =  np.sum(self.cdf_prior[self.xs > f_opp.size])
 
         elif strategy == 'ma_c': ## This is the continuous version where there is opponent uncertainty
             total_prob = 0
@@ -274,10 +285,19 @@ class Fish:
             for i in range(len(f_opp.xs)):
                 s = f_opp.xs[i]
                 total_prop += np.sum(self.cdf_prior[self.xs > s]) * opp_estimate[i]
-            return total_prob
+            effort =  total_prob
         else:
-            return 1
-    
+            effort = 1
+        effort = self._boost_effort(effort)
+        return effort
+
+## Proc effort and decay when you check it
+## This also allows for nuanced winner loser effects
+    def _boost_effort(self,effort):
+        #effort = np.clip(effort + self.boost,0,1)
+        self.boost = self.boost ** self.decay
+        return effort
+
     ## Function to estimate opponent size, should return a prior distribution of opponent size like own prior_cdf
     def estimate_opponent(self,f_opp):
         return f_opp.cdf_prior
