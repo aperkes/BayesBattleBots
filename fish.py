@@ -28,7 +28,7 @@ naive_escalation = {
 ## Fish object with internal rules and estimates
 class Fish:
     def __init__(self,idx=0,age=50,size=None,
-                 prior=None,likelihood=None,hock_estimate=.5,
+                 prior=None,likelihood=None,hock_estimate=.5,update_method='bayes',
                  effort_method=[1,1],escalation=naive_escalation,xs=np.linspace(5,150,500)):
         self.idx = idx
         self.name = idx
@@ -63,13 +63,23 @@ class Fish:
         self.est_record_ = [self.estimate_]
         self.sdest_record = [prior_std]
         self.effort_method = effort_method
+        self.decay = 1
+        if update_method == 'bayes':
+            self.update = self.update_prior
+        elif update_method == 'hock':
+            self.update = self.update_hock
+        elif update_method == 'fixed':
+            self.update = self._set_boost
+        elif update_method == 'decay':
+            self.update = self._set_boost
+            self.decay = decay 
+        self.update_method = update_method
         self.effort = 0
         self.wager = 0
         self.boost = 0 ## Initial boost, needs to be 0, will change with winner/loser effect
-        self.decay = 2 ## Rate at which boost decays, the higher it is, the fast it decays to 0 
 
 ## Apply winner/loser effect. This could be more nuanced, eventually should be parameterized.
-    def _set_boost(self,win):
+    def _set_boost(self,win,fight=None):
         if win:
             self.boost = .1
         else:
@@ -182,10 +192,10 @@ class Fish:
     def _define_likelihood_mutual(self,fight,win=True):
         xs = self.xs
         likelihood = np.zeros(len(xs))
-        if fight.fish1.idx == self.idx:
-            other_fish = fight.fish2
+        if win:
+            other_fish = fight.loser
         else:
-            other_fish = fight.fish1
+            other_fish = fight.winner
         x_opp = other_fish.size
         if win:
             for s in range(len(xs)):
@@ -224,12 +234,12 @@ class Fish:
     
 ## A cleaner version so I'm not passing so many arguments
 ## What if I want the old way though...
-    def update_prior(self,win,fight,x_opp=False):
+    def update_prior(self,win,fight):
         if win:
             other_fish = fight.loser
         else:
             other_fish = fight.winner
-        if x_opp == False:
+        if self.effort_method[1] == 0:
             likelihood = self._define_likelihood_solo(fight,win)
         else:
             likelihood = self._define_likelihood_mutual(fight,win)
@@ -250,7 +260,12 @@ class Fish:
         
         return self.prior,self.estimate
 
-    def update_hock(self,win,h_opp,scale=.1):
+    def update_hock(self,win,fight,scale=.1):
+        if win:
+            other_fish = fight.loser
+        else:
+            other_fish = fight.winner
+        h_opp = other_fish.hock_estimate
         rel_hock = self.hock_estimate / (self.hock_estimate + h_opp)
         estimate = self.hock_estimate + scale * (win-rel_hock)
         if estimate < .001:
