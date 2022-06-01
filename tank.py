@@ -70,6 +70,8 @@ class Tank():
         #print('before,after')
         #print(fight.winner.estimate)
 
+## NOTE: Eventually should be able to delete all this, but for now let's jsut comment it
+        """
         if False:
             if fight.winner.effort_method[1] == 1:
                 fight.winner.update_prior(True,fight,fight.loser.size)
@@ -79,8 +81,9 @@ class Tank():
                 fight.winner.update_prior(True,fight)
                 fight.loser.update_prior(False,fight)
         else:
-            fight.winner.update(True,fight)
-            fight.loser.update(False,fight)
+        """
+        fight.winner.update(True,fight)
+        fight.loser.update(False,fight)
         #print(fight.winner.estimate)
         #print()
 
