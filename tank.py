@@ -70,8 +70,8 @@ class Tank():
         #print('before,after')
         #print(fight.winner.estimate)
         if fight.winner.effort_method[1] == 1:
-            fight.winner.update_prior(True,fight.loser.size)
-            fight.loser.update_prior(False,fight.winner.size)
+            fight.winner.update_prior(True,fight,fight.loser.size)
+            fight.loser.update_prior(False,fight,fight.winner.size)
         #NOTE: uncomment these two lines to try the fancy prior.
         else:
             fight.winner.update_prior(True,fight)
@@ -140,7 +140,7 @@ class Tank():
             win_record = np.array(f.win_record)
             record_post_win = win_record[s:][win_record[0:-s,1] == 1]
             record_post_loss = win_record[s:][win_record[0:-s,1] == 0]
-            mean_record = np.mean(win_record[:,1]
+            mean_record = np.mean(win_record[:,1])
             mean_post_win = np.mean(record_post_win)
             mean_post_loss = np.mean(record_post_loss)
             winner_effect = mean_post_win / mean_record

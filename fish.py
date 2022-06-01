@@ -182,7 +182,7 @@ class Fish:
     def _define_likelihood_mutual(self,fight,win=True):
         xs = self.xs
         likelihood = np.zeros(len(xs))
-        if fight.fish1.idx = self.idx:
+        if fight.fish1.idx == self.idx:
             other_fish = fight.fish2
         else:
             other_fish = fight.fish1
