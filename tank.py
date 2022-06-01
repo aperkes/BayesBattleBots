@@ -74,8 +74,8 @@ class Tank():
             fight.loser.update_prior(False,fight.winner.size)
         #NOTE: uncomment these two lines to try the fancy prior.
         else:
-            fight.winner.update_prior_(True,fight)
-            fight.loser.update_prior_(False,fight)
+            fight.winner.update_prior(True,fight)
+            fight.loser.update_prior(False,fight)
         #print(fight.winner.estimate)
         #print()
 

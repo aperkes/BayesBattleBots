@@ -149,7 +149,8 @@ class Fish:
                 likelihood[s] = 1-self._likelihood_function_wager(xs[s],outcome_params=outcome_params)
         return likelihood
 
-    def _define_likelihood_f(self,fight,win):
+## Uses fight as input, runs solo, should be one likelihood to rule them all
+    def _define_likelihood_solo(self,fight,win):
         likelihood = np.zeros(len(self.xs))
         s,e,l = fight.params
         if win:
@@ -178,10 +179,14 @@ class Fish:
         p_win = self._win_by_ratio(r_diff)
         return p_win
 
-    def _define_likelihood(self,x_opp=50,xs=None,win=True):
-        if xs is None:
-            xs = self.xs
+    def _define_likelihood_mutual(self,fight,win=True):
+        xs = self.xs
         likelihood = np.zeros(len(xs))
+        if fight.fish1.idx = self.idx:
+            other_fish = fight.fish2
+        else:
+            other_fish = fight.fish1
+        x_opp = other_fish.size
         if win:
             for s in range(len(xs)):
                 likelihood[s] = self._likelihood_function_size(xs[s],x_opp)
@@ -191,13 +196,13 @@ class Fish:
         return likelihood
     
 ## This also includes opponent assesment...need to fix that
-    def update_prior(self,win,x_opp=False,xs=None,w_opp=None,e_self=None,outcome_params=None):
+    def update_prior_old(self,win,x_opp=False,xs=None,w_opp=None,e_self=None,outcome_params=None):
         if xs is None:
             xs = self.xs
         if x_opp == False:
             likelihood = self._define_likelihood_w(outcome_params,win)
         else:
-            likelihood = self._define_likelihood(x_opp,xs,win)
+            likelihood = self._define_likelihood(fight,win)
         self.win_record.append([x_opp,win])
         self.win_record.append([x_opp,win,self.effort])
         self.prior = self._update(self.prior,likelihood,xs)
@@ -219,12 +224,16 @@ class Fish:
     
 ## A cleaner version so I'm not passing so many arguments
 ## What if I want the old way though...
-    def update_prior_(self,win,fight):
+    def update_prior(self,win,fight,x_opp=False):
         if win:
             other_fish = fight.loser
         else:
             other_fish = fight.winner
-        likelihood = self._define_likelihood_f(fight,win) 
+        if x_opp == False:
+            likelihood = self._define_likelihood_solo(fight,win)
+        else:
+            likelihood = self._define_likelihood_mutual(fight,win)
+
         self.win_record.append([other_fish.size,win,self.effort])
         self.prior = self._update(self.prior,likelihood,self.xs)
         self.cdf_prior = self._get_cdf_prior(self.prior)
