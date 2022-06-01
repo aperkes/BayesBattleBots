@@ -28,7 +28,7 @@ naive_escalation = {
 ## Fish object with internal rules and estimates
 class Fish:
     def __init__(self,idx=0,age=50,size=None,
-                 prior=None,likelihood=None,hock_estimate=.5,update_method='bayes',
+                 prior=None,likelihood=None,hock_estimate=.5,update_method='bayes',decay=2,
                  effort_method=[1,1],escalation=naive_escalation,xs=np.linspace(5,150,500)):
         self.idx = idx
         self.name = idx

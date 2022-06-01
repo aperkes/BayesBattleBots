@@ -39,7 +39,7 @@ if False:
     print(np.mean(all_stats,axis=0))
 
 ## Check whether the tank is working and plot this history
-elif True:
+elif False:
     fishes = [Fish(f,effort_method=params.effort_method) for f in range(params.n_fish)]
     tank = Tank(fishes,n_fights = 1000,f_params=params.outcome_params,f_outcome=params.f_outcome,f_method=params.f_method,u_method=params.u_method)
     tank.run_all()
@@ -52,17 +52,20 @@ elif True:
 
 ## Check whether the fights are working:
 elif True:
-    fishes = [Fish(f,effort_method=params.effort_method) for f in range(2)] ## Make two fish
+    params.update_method = 'bayes'
+    fishes = [Fish(f,effort_method=params.effort_method,update_method=params.update_method) for f in range(2)] ## Make two fish
     f1,f2 = fishes
     print(f1.summary(False))
     print(f2.summary(False))
     fight = Fight(f1,f2)
     fight.run_outcome()
     print('winner:',fight.winner.idx)
-    fight.winner.update_prior(True,fight)
-    fight.loser.update_prior(False,fight)
+    fight.winner.update(True,fight)
+    fight.loser.update(False,fight)
     print(fight.winner.effort,fight.winner.size,fight.winner.wager)
     print(f1.summary(False))
+    print(f1.boost,f2.boost)
+    print(f1.hock_estimate,f2.hock_estimate)
     print('that is all for now')
     
 
