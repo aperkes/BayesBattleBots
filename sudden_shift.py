@@ -52,11 +52,14 @@ n_rounds = params.n_fights * (params.n_fish-1)+1
 xs = np.arange(n_rounds-1,n_rounds*2)
 for i in range (len(fishes)):
     f = fishes[i]
-    ax.plot(np.array(f.win_record)[:,2],color=cm.tab10(i))
-    ax.plot([0,n_rounds],[f.old_size/100,f.old_size/100],color=cm.tab10(i))
-    ax.plot([n_rounds,len(f.est_record)],[f.size/100,f.size/100],color=cm.tab10(i))
-    #ax.fill_between(np.arange(len(f.est_record)),np.array(f.est_record_) + np.array(f.sdest_record),
-    #                                             np.array(f.est_record_) - np.array(f.sdest_record),color=cm.tab10(i),alpha=.3)
+    if True:
+        ax.plot(np.array(f.est_record),color=cm.tab10(i))
+        ax.fill_between(np.arange(len(f.est_record)),np.array(f.est_record_) + np.array(f.sdest_record),
+                                                 np.array(f.est_record_) - np.array(f.sdest_record),color=cm.tab10(i),alpha=.3)
+    else:
+        ax.plot(np.array(f.win_record)[:,2],color=cm.tab10(i))
+    ax.plot([0,n_rounds],[f.old_size,f.old_size],color=cm.tab10(i))
+    ax.plot([n_rounds,len(f.est_record)],[f.size,f.size],color=cm.tab10(i))
 
 #print(np.array(f.win_record)[:,2])
 ax.axvline(params.n_fights * (params.n_fish-1),color='red',label='disruption')

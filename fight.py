@@ -117,7 +117,7 @@ class Fight():
         self.fish1.wager = f1_wager
         self.fish2.wager = f2_wager
 
-        min_wager = min([f1_wager,f2_wager]) / max([f1_wager,f2_wager])
+        min_wager = min([f1_wager,f2_wager]) / max([f1_wager,f2_wager,.0001])
 ## Alternatively:
         ##min_wager = min([f1_wager,f2_wager]) / (f1_wager + f2_wager)
         f_min = np.argmin([f1_wager,f2_wager]) ## note, this means that second fish always wins ties. That's not ideal

@@ -304,12 +304,13 @@ class Fish:
         elif strategy == [1,1]:
 #NOTE: I think cdf_prior is still a bit off, since it's summing to a very large number. 
             ## I think we could do np.sum(self.cdf_prior * f_opp.cdf_prior)
-            print('judging size:',self.cdf_prior[np.argmax(self.xs > f_opp.size)])
-            print('self.estimate/100:',self.estimate/100)
-            print('opp estimate/100:',f_opp.size/100)
-            print('opp assessment/100:',1 - f_opp.size /100)
+            #print('judging size:',1-self.cdf_prior[np.argmax(self.xs > f_opp.size)])
+            #print('self.estimate/100:',self.estimate/100)
+            #print('opp estimate/100:',f_opp.size/100)
+            #print('opp assessment/100:',1 - f_opp.size /100)
             
-            effort = self.cdf_prior[np.argmax(self.xs > f_opp.size)]
+            effort = 1 - self.cdf_prior[np.argmax(self.xs > f_opp.size)]
+            effort = np.round(effort,4)
             """
             if effort > .5 and self.estimate < f_opp.size:
                 import pdb
