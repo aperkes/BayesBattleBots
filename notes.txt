@@ -1,5 +1,16 @@
 ### Add from top:
 
+22 June 1: 
+I think everything works now...some tests would probably help, but I'm going to set up the code to run some tests.
+Hopefully any bugs will pop up as I go, if not I'll do some careful testing afterwards. 
+Still need to add a little more though: 
+-Calculating the longevity of the winner effect (the winner effect strength function is there, just iterate it)
+-I feel like stability is still a little sus, but I might not use it that much anyway
+Each test might as well be a custom script from here on out. 
+
+I made a little demo of duration and strength being a function of information. I'll need to actually 
+write a way to quantify that, so that I can then compare it to other winner-effect models, but we're getting there. 
+
 22 May 31:
 I've started working on the more naive winner effect approaches:
 - A clipped, decaying boost. Several parameters here, but for now, after fight +/- .1 to effort (clipped to 0,1)

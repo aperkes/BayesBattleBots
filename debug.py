@@ -29,7 +29,7 @@ if HOCK:
 else:
     params.u_method = 'bayes'
     params.f_outcome = 'math'
-    params.outcome_params = [0.3,0.3,.1]
+    params.outcome_params = [0.6,0.01,.01]
 s = Simulation(params)
 ## Check whether simulation is working and print stats
 if False:
@@ -39,7 +39,7 @@ if False:
     print(np.mean(all_stats,axis=0))
 
 ## Check whether the tank is working and plot this history
-elif False:
+elif True:
     fishes = [Fish(f,effort_method=params.effort_method) for f in range(params.n_fish)]
     tank = Tank(fishes,n_fights = 1000,f_params=params.outcome_params,f_outcome=params.f_outcome,f_method=params.f_method,u_method=params.u_method)
     tank.run_all()

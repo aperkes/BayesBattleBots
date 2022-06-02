@@ -62,7 +62,7 @@ class Tank():
             for i in range(n_fights):
                 f1,f2 = random.choice(combs)
                 fight_list.append(Fight(f1,f2,outcome=f_outcome,outcome_params=self.f_params,scale=scale,idx=i))
-        print('n_fights:',len(fight_list))
+        #print('n_fights:',len(fight_list))
         return fight_list
 
     def process_fight(self,fight): ## This works without returning because of how objects work in python
@@ -101,7 +101,7 @@ class Tank():
     def print_status(self):
         for f in self.fishes:
             print(f.name,':','size=',np.round(f.size,3),'estimate=',np.round(f.estimate,3))
-    def run_all(self,print_me=False):
+    def run_all(self,progress=True,print_me=False):
         if print_me:
             print("Starting fights!")
             print("Initial status_____")
@@ -110,7 +110,11 @@ class Tank():
             process = self.process_hock
         else:
             process = self.process_fight
-        for i in tqdm(range(len(self.fight_list))):
+        if progress:
+            iterator = tqdm(range(len(self.fight_list)))
+        else:
+            iterator = range(len(self.fight_list))
+        for i in iterator:
             c = self.fight_list[i]
             process(c)
             if print_me:
@@ -161,7 +165,7 @@ class Tank():
 
     def __getitem__(self,idx):
         return self.fishes[idx]
-
+    
 if __name__ == '__main__':
     fishes = [Fish(),Fish()]
     t = Tank(fishes)

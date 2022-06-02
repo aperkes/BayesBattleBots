@@ -292,7 +292,7 @@ class Fish:
         if strategy is None:
             strategy = self.effort_method
         if strategy == [1,0]:
-            effort = self.estiamte / 100
+            effort = self.estimate / 100
         elif strategy == [0,1]:
             effort = 1 - f_opp.size / 100
         elif strategy == [1,1]:
