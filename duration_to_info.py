@@ -30,7 +30,7 @@ winners,losers = [],[]
 
 ## Let fish duke it out, then pull a fish out, let it win, and put it back in with the rest.
 iterations = 100
-scale = 1
+scale = 2
 for i in tqdm(range(iterations)):
     fishes = [Fish(f,effort_method=params.effort_method,update_method=params.u_method) for f in range(params.n_fish)]
     tank = Tank(fishes,n_fights = params.n_fights,f_params=params.outcome_params,f_method=params.f_method,f_outcome=params.f_outcome,u_method=params.u_method)
@@ -67,10 +67,11 @@ for f in winners:
 for f in losers:
     ys = np.array(f.est_record) - f.est_record[n_rounds-1]
     ax.plot(ys,color='purple',alpha=.1)
-ax.axvline(params.n_fights * (params.n_fish-1),color='red',label='forced win')
+ax.axvline(params.n_fights * (params.n_fish-1),color='red',label='forced win/loss')
 ax.axhline(0,color='black',label='estimate prior to staged fight')
 ax.set_xlim([n_rounds-5,n_rounds+5])
 ax.set_ylim([-7.1,7.1])
 ax.legend()
 fig.savefig('test_staged.jpg',dpi=300)
 fig.show()
+plt.show()

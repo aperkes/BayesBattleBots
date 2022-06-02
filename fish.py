@@ -79,11 +79,14 @@ class Fish:
         self.boost = 0 ## Initial boost, needs to be 0, will change with winner/loser effect
 
 ## Apply winner/loser effect. This could be more nuanced, eventually should be parameterized.
-    def _set_boost(self,win,fight=None):
+    def _set_boost(self,win,fight):
         if win:
+            other_fish = fight.loser
             self.boost = .1
         else:
+            other_fish = fight.winner
             self.boost = -.1
+        self.win_record.append([other_fish.size,win,self.effort])
         
     def _get_cdf_prior(self,prior):
         normed_prior = self.prior / np.sum(self.prior)
@@ -98,7 +101,9 @@ class Fish:
         post = post / np.sum(post)
         return post
     
-    def _prior_size(self,t,xs = np.arange(5,150)):
+    def _prior_size(self,t,xs = None):
+        if xs is None:
+            xs = self.xs
         s_mean = self._growth_func(t)
         sd = s_mean / 5
         prior = norm.pdf(xs,s_mean,sd)
@@ -213,7 +218,7 @@ class Fish:
             likelihood = self._define_likelihood_w(outcome_params,win)
         else:
             likelihood = self._define_likelihood(fight,win)
-        self.win_record.append([x_opp,win])
+        #self.win_record.append([x_opp,win])
         self.win_record.append([x_opp,win,self.effort])
         self.prior = self._update(self.prior,likelihood,xs)
         self.cdf_prior = self._get_cdf_prior(self.prior)
@@ -253,6 +258,7 @@ class Fish:
         
         prior_mean,prior_std = self.get_stats()
         self.est_record_.append(prior_mean)
+
         self.sdest_record.append(prior_std)
         
         self.estimate = estimate
@@ -298,10 +304,18 @@ class Fish:
         elif strategy == [1,1]:
 #NOTE: I think cdf_prior is still a bit off, since it's summing to a very large number. 
             ## I think we could do np.sum(self.cdf_prior * f_opp.cdf_prior)
-            #print('judging size:',np.sum(self.cdf_prior[self.xs > f_opp.size]))
-            #print('self.estimate:',self.estimate/100)
-            #print('opp assessment:',1 - f_opp.size /100)
-            effort =  np.sum(self.cdf_prior[self.xs > f_opp.size])
+            print('judging size:',self.cdf_prior[np.argmax(self.xs > f_opp.size)])
+            print('self.estimate/100:',self.estimate/100)
+            print('opp estimate/100:',f_opp.size/100)
+            print('opp assessment/100:',1 - f_opp.size /100)
+            
+            effort = self.cdf_prior[np.argmax(self.xs > f_opp.size)]
+            """
+            if effort > .5 and self.estimate < f_opp.size:
+                import pdb
+                pdb.set_trace()
+            """
+            #effort =  np.sum(self.cdf_prior[self.xs > f_opp.size]) / np.sum(self.cdf_prior)
 
         elif strategy == 'ma_c': ## This is the continuous version where there is opponent uncertainty
             total_prob = 0

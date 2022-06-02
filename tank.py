@@ -93,8 +93,8 @@ class Tank():
 
     def process_hock(self,fight):
         fight.run_outcome()
-        fight.winner.update_hock(True,fight.loser.hock_estimate,fight.level)
-        fight.loser.update_hock(False,fight.winner.hock_estimate,fight.level)
+        fight.winner.update_hock(True,fight,fight.level)
+        fight.loser.update_hock(False,fight,fight.level)
         self.win_record[fight.winner.idx,fight.loser.idx] += 1
         self.history[fight.idx,fight.winner.idx,fight.loser.idx] = 1 ## Note, this works a bit different for 'random' and 'balanced'
 
@@ -122,23 +122,26 @@ class Tank():
                 print(c.summary())
                 self.print_status()
 
-    def plot_estimates(self):
+    def plot_estimates(self,fish_list=None):
         fig,ax = plt.subplots()
-        if self.u_method == 'bayes':
-            for i in range(len(self.fishes)):
-                f = self.fishes[i]
-                ax.plot(f.est_record, color=cm.tab10(i))
+        if fish_list is None:
+            fish_list = self.fishes
+        if self.u_method == 'hock':
+            for i in range(len(fish_list)):
+                f = fish_list[i]
+                ax.plot(f.hock_record,color=cm.tab10(i),label=str(i))
+                ax.axhline(f.size/100,color=cm.tab10(i))
+            ax.set_ylabel('Hock Estimate')
+        else:
+            for i in range(len(fish_list)):
+                f = fish_list[i]
+                ax.plot(f.est_record, color=cm.tab10(i),label=str(i))
                 ax.axhline(f.size,color=cm.tab10(i))
                 ax.fill_between(np.arange(len(f.est_record)),np.array(f.est_record_) + np.array(f.sdest_record),
                     np.array(f.est_record_) - np.array(f.sdest_record),color=cm.tab10(i),alpha=.3)
             ax.set_ylabel('Estimate')
-        elif self.u_method == 'hock':
-            for i in range(len(self.fishes)):
-                f = self.fishes[i]
-                ax.plot(f.hock_record,color=cm.tab10(i))
-                ax.axhline(f.size/100,color=cm.tab10(i))
-            ax.set_ylabel('Hock Estimate')
         ax.set_xlabel('contest number')
+        ax.legend()
         fig.show()
         return fig,ax
 

@@ -4,6 +4,7 @@ from fish import Fish
 from fight import Fight
 from tank import Tank
 from simulation import Simulation,SimParams
+from matplotlib import pyplot as plt
 
 import numpy as np
 
@@ -25,11 +26,11 @@ HOCK = False
 if HOCK:
     params.u_method = 'hock'
     params.f_outcome = 'hock'
-    params.outcome_params = [1.0,0.3,.1]
+    params.outcome_params = [0.6,0.3,.05]
 else:
     params.u_method = 'bayes'
     params.f_outcome = 'math'
-    params.outcome_params = [0.6,0.01,.01]
+    params.outcome_params = [0.6,0.3,.05]
 s = Simulation(params)
 ## Check whether simulation is working and print stats
 if False:
@@ -46,9 +47,16 @@ elif True:
     lin,p = s._calc_linearity(tank)
     stab = s._calc_stability(tank)
     accu = s._calc_accuracy(tank)
-    print(stab,lin)
+    print(stab,lin,accu)
     fig,ax = tank.plot_estimates()
-    fig.savefig('test.jpg',dpi=300)
+    tank.estimates = s._calc_dominance(tank)
+    print(tank.estimates)
+    print(tank.sizes)
+    print(np.arange(len(fishes))[np.argsort(tank.estimates)])
+    print(np.arange(len(fishes))[np.argsort(tank.sizes)])
+    #fig.savefig('test.jpg',dpi=300)
+    fig.show()
+    plt.show()
 
 ## Check whether the fights are working:
 elif True:

@@ -100,7 +100,7 @@ class Simulation():
         #for i in range(self.params.n_iterations):
         for i in tqdm(range(self.params.n_iterations)):
             tank = self._build_tank(i)
-            tank.run_all()
+            tank.run_all(False)
             t_stats = self._get_tank_stats(tank)
             all_stats.append(t_stats)
         return all_stats
