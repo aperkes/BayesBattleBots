@@ -82,10 +82,10 @@ class Fish:
     def _set_boost(self,win,fight):
         if win:
             other_fish = fight.loser
-            self.boost = .1
+            self.boost = np.clip(self.boost + .1,-.5,.5)
         else:
             other_fish = fight.winner
-            self.boost = -.1
+            self.boost = np.clip(self.boost - .1,-.5,.5)
         self.win_record.append([other_fish.size,win,self.effort])
         
     def _get_cdf_prior(self,prior):
@@ -333,7 +333,7 @@ class Fish:
 ## Proc effort and decay when you check it
 ## This also allows for nuanced winner loser effects
     def _boost_effort(self,effort):
-        #effort = np.clip(effort + self.boost,0,1)
+        effort = np.clip(effort + self.boost,0,1)
         self.boost = self.boost ** self.decay
         return effort
 

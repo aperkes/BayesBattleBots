@@ -11,6 +11,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib import cm
 
+from scipy.ndimage import gaussian_filter1d
 from tqdm import tqdm
 
 import random, copy
@@ -23,7 +24,7 @@ params.n_fights = 50
 params.n_iterations = 15
 params.n_fish = 5
 params.f_method = 'balanced'
-params.u_method = 'bayes'
+params.u_method = 'decay'
 params.f_outcome = 'math'
 params.outcome_params = [s,e,l]
 s = Simulation(params)
@@ -52,14 +53,18 @@ n_rounds = params.n_fights * (params.n_fish-1)+1
 xs = np.arange(n_rounds-1,n_rounds*2)
 for i in range (len(fishes)):
     f = fishes[i]
-    if True:
+    if False:
         ax.plot(np.array(f.est_record),color=cm.tab10(i))
         ax.fill_between(np.arange(len(f.est_record)),np.array(f.est_record_) + np.array(f.sdest_record),
                                                  np.array(f.est_record_) - np.array(f.sdest_record),color=cm.tab10(i),alpha=.3)
+        ax.plot([0,n_rounds],[f.old_size,f.old_size],color=cm.tab10(i))
+        ax.plot([n_rounds,len(f.est_record)],[f.size,f.size],color=cm.tab10(i))
     else:
-        ax.plot(np.array(f.win_record)[:,2],color=cm.tab10(i))
-    ax.plot([0,n_rounds],[f.old_size,f.old_size],color=cm.tab10(i))
-    ax.plot([n_rounds,len(f.est_record)],[f.size,f.size],color=cm.tab10(i))
+        effort_record = np.array(f.win_record)[:,2]
+        smooth_effort = gaussian_filter1d(effort_record,5)
+        ax.plot(smooth_effort,color=cm.tab10(i),alpha=.8,linestyle=':')
+        ax.plot([0,n_rounds],[f.old_size/100,f.old_size/100],color=cm.tab10(i))
+        ax.plot([n_rounds,len(f.win_record)],[f.size/100,f.size/100],color=cm.tab10(i))
 
 #print(np.array(f.win_record)[:,2])
 ax.axvline(params.n_fights * (params.n_fish-1),color='red',label='disruption')

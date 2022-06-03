@@ -36,7 +36,7 @@ else:
     if False:
         params.u_method = 'bayes'
         #params.outcome_params = [0.6,0.3,.05]
-    elif False:
+    elif True:
         params.u_method = 'decay'
     else:
         params.u_method = 'fixed'
@@ -50,5 +50,5 @@ all_stats = np.array(s.run_simulation())
 stab,lin,acc = np.mean(all_stats,axis=0)
 s_,l_,acc_std = np.std(all_stats,axis=0)
 
-print('Fixed WE')
+print('Decay WE')
 print(acc,acc_std / np.sqrt(params.n_iterations))

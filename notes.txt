@@ -1,5 +1,20 @@
 ### Add from top:
 
+22 June 2:
+Found a big bug in how effort was working, so everything will need to be redone. I expect this will happen a couple more times...
+Still, no harm done yet. 
+-I have this method for measuring 'estimate', but effort is nicer to measure. I wrote some code for that. 
+ This however brings up the fact that how effort is decided is such a huge part of this. 
+
+It's not just OA vs SA, how much effort should you give? Should you give max effort if you're guaranteed a win? 
+Or should you give the minimum effort it requires to win? 
+Seeing the biggest fish always giving max effort really raises some question as to the logic of that strategy
+I guess I should think of this more as the max bid, but you only have to give as much as the opponent did.
+
+With the effort fixed, I check accuracy. In order, most to least accurate: 
+Decay, Fixed, Bayes, (all essentially equal) and then 10% back, Hock-Huber (which is basically ELO)
+...It's a bit of a bummer that the stupid approaches are equally (if not more) accurate than bayesian updating. I'll need to think about that a bit. 
+
 22 June 1: 
 I think everything works now...some tests would probably help, but I'm going to set up the code to run some tests.
 Hopefully any bugs will pop up as I go, if not I'll do some careful testing afterwards. 
