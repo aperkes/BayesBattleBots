@@ -1,5 +1,40 @@
 ### Add from top:
 
+22 June 3b:
+Spent a long time working on my likelihood function for naive stuff. But things are working again. 
+I think the big insight here is that without an accurate self assessment, you're going to be 
+writing checks you can't cash, which, depending on how risky that is, could be bad. 
+
+So Measuring fight level in excess of fish size might be a nice one, since that will happen a lot with
+all the naive metrics, but doesn't happen much with bayes self assessment. Obviously, when you bring
+opponent assessment into the mix, you can be very precise about the amount of effort you put in, 
+but maybe self assessment is enough. 
+
+22 June 3:
+It occurred to me that maybe the initial prior is good enough that with opponent assessment, 
+you will get consistent, accurate hierarchies regardless of the winner effect. 
+To test this, I made a 'no_update' function, which just keeps the prior constant. 
+Results:
+accuracy drops to .82, which is low, but not as low as you might expect...Here the fight's are 
+largely determined by size. Obviously if that changes, accuracy will drop as well. 
+
+Frustratingly, bayes still doesn't perform better with pure self assessment. What happens if we make 
+effort more influential? The point here also is that I'm measuring the accuracy of fights, not the 
+accuracy of assessments. It may be that every fish thinks they're the biggest, even if they lose. 
+While this WE is "accurate" in the sense that you don't get wrong hierarchies, there's a lot of wasted 
+effort. And if there is a cost to effort, it's going to be bad. So I should be measuring that also...
+
+The fact that bayes' isn't doing anything for me though makes me think there is something wrong...
+there were some more bugs, and I started measuring effort and number of upsets, which are a nicer metric. 
+Accuracy is okay...but on average, even when things are very bad, if size factors in, the hierarchy will
+end up being roughly accurate. You need pretty strong winner effects, driven by initially wild estimates, 
+with a lack of good opponent assessment (I should figure out those exact conditions where you get 
+confident, stable, incorrect hierarchies, which are, imho, the coolest.) 
+
+In any case, bayes opponent assessment looks like what I would expect, but bayes self assessment 
+is pretty poor. They're just not figuring things out very well. I suspect my likelihood function is off. 
+Narrator: Likelihood function was indeed off.
+
 22 June 2:
 Found a big bug in how effort was working, so everything will need to be redone. I expect this will happen a couple more times...
 Still, no harm done yet. 

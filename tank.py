@@ -7,7 +7,7 @@ import itertools,random
 from scipy.special import rel_entr
 from scipy.stats import mode
 from scipy.stats import norm
-
+from scipy.ndimage import gaussian_filter1d 
 from sklearn.metrics import auc
 
 import matplotlib.pyplot as plt
@@ -101,7 +101,9 @@ class Tank():
     def print_status(self):
         for f in self.fishes:
             print(f.name,':','size=',np.round(f.size,3),'estimate=',np.round(f.estimate,3))
-    def run_all(self,progress=True,print_me=False):
+    def run_all(self,progress=True,print_me=False,plot_stuff=False):
+        if plot_stuff:
+            fig,ax = plt.subplots()
         if print_me:
             print("Starting fights!")
             print("Initial status_____")
@@ -117,10 +119,16 @@ class Tank():
         for i in iterator:
             c = self.fight_list[i]
             process(c)
+            if plot_stuff:
+                if c.fish1.idx == 0:
+                    ax.plot(c.fish1.naive_likelihood,alpha=.2)
+
             if print_me:
                 print('UPDATE:_____')
                 print(c.summary())
                 self.print_status()
+        if plot_stuff:
+            return fig,ax
 
     def plot_estimates(self,fish_list=None):
         fig,ax = plt.subplots()
@@ -141,6 +149,20 @@ class Tank():
                     np.array(f.est_record_) - np.array(f.sdest_record),color=cm.tab10(i),alpha=.3)
             ax.set_ylabel('Estimate')
         ax.set_xlabel('contest number')
+        ax.legend()
+        fig.show()
+        return fig,ax
+
+## Similar to above, but here simply plot effort
+    def plot_effort(self,fish_list=None):
+        fig,ax = plt.subplots()
+        if fish_list is None:
+            fish_list = self.fishes
+        for i in range(len(fish_list)):
+            f = fish_list[i]
+            effort_record = np.array(f.win_record)[:,2]
+            smooth_effort = gaussian_filter1d(effort_record,5)
+            ax.plot(smooth_effort,color=cm.tab10(i),alpha=.5,label=str(i))
         ax.legend()
         fig.show()
         return fig,ax

@@ -16,8 +16,8 @@ e_space = [0.0,0.2,0.4,0.6,0.8,1.0]
 l_space = [0.0,.05,0.1,0.2,0.3,0.5]
 results_array = np.full([6,6,6,3],np.nan)
 params = SimParams()
-params.effort_method = [1,1]
-params.n_fights = 10*50
+params.effort_method = [1,0]
+params.n_fights = 500
 params.n_iterations = 15 
 params.n_fish = 7
 params.f_method = 'random'
@@ -40,10 +40,24 @@ if False:
     print(np.mean(all_stats,axis=0))
 
 ## Check whether the tank is working and plot this history
+elif False:
+    f = Fish()
+    fig,ax = plt.subplots()
+    ax.plot(f.xs,f.naive_likelihood)
+    fig.show()
+    plt.show()
+
 elif True:
-    fishes = [Fish(f,effort_method=params.effort_method) for f in range(params.n_fish)]
-    tank = Tank(fishes,n_fights = 1000,f_params=params.outcome_params,f_outcome=params.f_outcome,f_method=params.f_method,u_method=params.u_method)
-    tank.run_all()
+    fishes = [Fish(f,effort_method=params.effort_method,update_method=params.u_method) for f in range(params.n_fish)]
+    tank = Tank(fishes,n_fights = params.n_fights,f_params=params.outcome_params,f_outcome=params.f_outcome,f_method=params.f_method,u_method=params.u_method)
+    fig,ax = plt.subplots()
+    #ax.plot(fishes[0].xs,fishes[0].prior * 10,color='green')
+    tank.run_all(False)
+    #for f in fishes:
+    #    ax.plot(f.xs,f.prior * 10)
+    #ax.plot(f.xs,f.naive_likelihood,color='black')
+    #fig.show()
+    #plt.show()
     lin,p = s._calc_linearity(tank)
     stab = s._calc_stability(tank)
     accu = s._calc_accuracy(tank)
@@ -56,8 +70,22 @@ elif True:
     print(np.arange(len(fishes))[np.argsort(tank.sizes)])
     #fig.savefig('test.jpg',dpi=300)
     fig.show()
-    plt.show()
 
+    fig2,ax2 = tank.plot_effort()
+
+    effort_record = [f.level for f in tank.fight_list]
+    upset_count = 0
+    for f in tank.fight_list:
+        if f.winner.size < f.loser.size:
+            upset_count += 1
+
+    print(upset_count / len(tank.fight_list))
+
+    #print(effort_record) 
+    fig3,ax3 = plt.subplots()
+    ax3.scatter(range(len(effort_record)),effort_record,alpha=.1) 
+    fig3.show()
+    plt.show()
 ## Check whether the fights are working:
 elif True:
     params.update_method = 'bayes'

@@ -107,7 +107,7 @@ class Simulation():
          
     def _build_tank(self,i): ## I Might want the iteration info available
         p = self.params
-        fishes = [Fish(f,effort_method=p.effort_method) for f in range(p.n_fish)]
+        fishes = [Fish(f,effort_method=p.effort_method,update_method=p.u_method) for f in range(p.n_fish)]
         n_fights = p.n_rounds
         
         return Tank(fishes,n_fights=p.n_rounds,f_method=p.f_method,f_outcome=p.f_outcome,f_params=p.outcome_params,u_method=p.u_method,scale=p.scale)

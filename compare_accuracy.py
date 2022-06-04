@@ -18,13 +18,13 @@ results_array = np.full([6,6,6,3],np.nan)
 params = SimParams()
 params.effort_method = [1,1]
 params.n_fights = 10*50
-params.n_iterations = 1000 
+params.n_iterations = 100
 params.n_fish = 7
 params.f_method = 'random'
 
 HOCK = True
 
-params.outcome_params = [0.6,0.3,.05]
+params.outcome_params = [0.0,0.6,.1]
 
 if False:
     params.u_method = 'hock'
@@ -36,11 +36,13 @@ else:
     if False:
         params.u_method = 'bayes'
         #params.outcome_params = [0.6,0.3,.05]
-    elif True:
+    elif False:
         params.u_method = 'decay'
-    else:
-        params.u_method = 'fixed'
 
+    elif False:
+        params.u_method = 'fixed'
+    else:
+        params.u_method = 'none'
 s = Simulation(params)
 ## Check whether simulation is working and print stats
 
@@ -52,3 +54,5 @@ s_,l_,acc_std = np.std(all_stats,axis=0)
 
 print('Decay WE')
 print(acc,acc_std / np.sqrt(params.n_iterations))
+#fig,ax = plt.subplots()
+

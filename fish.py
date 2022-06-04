@@ -64,7 +64,9 @@ class Fish:
         self.sdest_record = [prior_std]
         self.effort_method = effort_method
         self.decay = 1
+
         if update_method == 'bayes':
+            #print('using bayes')
             self.update = self.update_prior
         elif update_method == 'hock':
             self.update = self.update_hock
@@ -73,10 +75,17 @@ class Fish:
         elif update_method == 'decay':
             self.update = self._set_boost
             self.decay = decay 
+        else:
+            #print('setting no update')
+            self.update = self.no_update
         self.update_method = update_method
         self.effort = 0
         self.wager = 0
         self.boost = 0 ## Initial boost, needs to be 0, will change with winner/loser effect
+        ## Define naive prior/likelihood for 'SA'
+        self.naive_params = [.3,.3,.1]
+        self.naive_prior = self.prior
+        self.naive_likelihood = self._define_naive_likelihood()
 
 ## Apply winner/loser effect. This could be more nuanced, eventually should be parameterized.
     def _set_boost(self,win,fight):
@@ -164,6 +173,52 @@ class Fish:
                 likelihood[s] = 1-self._likelihood_function_wager(xs[s],outcome_params=outcome_params)
         return likelihood
 
+    def _use_simple_likelihood(self,fight,win):
+        if fight.params != self.naive_params:
+            self.naive_likelihood = self._define_naive_likelihood(fight)
+            self.naive_params = fight.params
+        if win:
+            likelihood = self.naive_likelihood
+        else:
+            likelihood = 1 - self.naive_likelihood
+        return likelihood
+
+## This is very slow, slow enough that for simulations, I should do it only once
+    def _define_naive_likelihood(self,fight=None):
+        #print('initializing likelihood')
+        if fight is None:
+            s,e,l = self.naive_params
+        else:
+            s,e,l = fight.params
+        likelihood = np.zeros(len(self.xs))
+## This assumes that all fish are the same age as you
+        for i_ in range(len(self.xs)):
+            i = self.xs[i_]
+            prob_ij = 0
+            for j_ in range(len(self.xs)):
+                j = self.xs[j_]
+                prob_j = self.naive_prior[j_]
+                if prob_j != 0:
+                    if i > j:
+                        i_wager = (i/100)**e
+                        j_wager = (j / i)**s * (j/100)**e
+                        rel_wager = j_wager / i_wager
+                        likelihood_j = 1 - self._wager_curve(rel_wager,l)
+                    elif i <= j:
+                        i_wager = (i/j)**s * (i/100)**e
+                        j_wager = (j/100)**e
+                        rel_wager = i_wager / j_wager
+                        likelihood_j = self._wager_curve(rel_wager,l)
+                    #print(rel_wager)
+                    #print(j,likelihood_j,prob_j)
+                    prob_ij += likelihood_j * prob_j
+                    #print(i,j,rel_wager)
+                else:
+                    continue
+            #print(prob_ij)
+            likelihood[i_] = prob_ij
+        return likelihood
+
 ## Uses fight as input, runs solo, should be one likelihood to rule them all
     def _define_likelihood_solo(self,fight,win):
         likelihood = np.zeros(len(self.xs))
@@ -237,6 +292,16 @@ class Fish:
         
         return self.prior,self.estimate
     
+## For testing what happens if you just don't update ever
+    def no_update(self,win,fight):
+        if win:
+            other_fish = fight.loser
+        else:
+            other_fish = fight.winner
+        self.win_record.append([other_fish.size,win,self.effort])
+        self.est_record.append(self.estimate)
+        return self.prior,self.estimate
+
 ## A cleaner version so I'm not passing so many arguments
 ## What if I want the old way though...
     def update_prior(self,win,fight):
@@ -245,17 +310,19 @@ class Fish:
         else:
             other_fish = fight.winner
         if self.effort_method[1] == 0:
-            likelihood = self._define_likelihood_solo(fight,win)
+
+            likelihood = self._use_simple_likelihood(fight,win)
+            i_estimate = np.argmax(self.xs > self.estimate)
         else:
             likelihood = self._define_likelihood_mutual(fight,win)
 
         self.win_record.append([other_fish.size,win,self.effort])
+        pre_prior = self.prior
         self.prior = self._update(self.prior,likelihood,self.xs)
         self.cdf_prior = self._get_cdf_prior(self.prior)
         estimate = self.xs[np.argmax(self.prior)]
 
         self.estimate_ = np.sum(self.prior * self.xs / np.sum(self.prior))
-        
         prior_mean,prior_std = self.get_stats()
         self.est_record_.append(prior_mean)
 
