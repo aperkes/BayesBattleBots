@@ -28,7 +28,7 @@ naive_escalation = {
 ## Fish object with internal rules and estimates
 class Fish:
     def __init__(self,idx=0,age=50,size=None,
-                 prior=None,likelihood=None,hock_estimate=.5,update_method='bayes',decay=2,
+                 prior=None,likelihood=None,likelihood_dict=None,hock_estimate=.5,update_method='bayes',decay=2,
                  effort_method=[1,1],fight_params=[.3,.3,.1],escalation=naive_escalation,xs=np.linspace(5,150,500)):
         self.idx = idx
         self.name = idx
@@ -96,7 +96,7 @@ class Fish:
             self.naive_likelihood = likelihood
         else:
             self.naive_likelihood = self._define_naive_likelihood()
-
+        self.likelihood_dict = likelihood_dict
 ## Apply winner/loser effect. This could be more nuanced, eventually should be parameterized.
     def _set_boost(self,win,fight):
         if win:
@@ -250,15 +250,42 @@ class Fish:
             for s in range(len(self.xs)):
                 likelihood[s] = 1 - self._likelihood_function_wager(self.xs[s],outcome_params=fight.params)
         return likelihood
-         
 
-    def _likelihood_function_size(self,x,x_opp=50):
+## Assumes equal effort, which probably isn't quite right. I could assume accurate effort
+    def _likelihood_function_size(self,x,x_opp=50,effort=False):
         if x >=x_opp:
             r_diff = (x - x_opp)/x # Will be positive
         elif x_opp > x:
             r_diff = (x - x_opp)/x_opp # Will be negative
         p_win = self._win_by_ratio(r_diff)
         return p_win
+
+## This is closer to the true likelihood, although maybe it should infer relative effort
+    def _likelihood_function_se(self,x,x_opp,fight_params=None):
+        if fight_params is None:
+            s,e,l = self.naive_params
+        else:
+            s,e,l = fight_params
+        x_eff = x/100
+        xo_eff = x_opp/100
+        if x >=x_opp:
+            r_diff = (x-x_opp)/x
+            wager = (r_dff ** s * x_eff ** e) / (x ** e)
+            p_win = 1-self._wager_curve(wager,l)
+        else:
+            r_diff = (x - x_opp)/x_opp # Will be negative
+            wager = r_dff ** s * x_eff ** e / (xo_eff ** e) 
+            p_win = self._wager_curve(wager,l)
+        return p_win
+
+    def _use_mutual_likelihood(self,fight,win=True):
+        if self.likelihood_dict is None:
+            likelihood = self._define_likelihood_mutual(fight,win) 
+        else:
+            likelihood = self.likelihood_dict[fight.loser.size,fight.winner.size]
+            if win:
+                likelihood = 1-self.likelihood_dict[fight.loser.size,fight.winner.size]
+        return likelihood
 
     def _define_likelihood_mutual(self,fight,win=True):
         xs = self.xs
@@ -325,6 +352,8 @@ class Fish:
             likelihood = self._use_simple_likelihood(fight,win)
             i_estimate = np.argmax(self.xs > self.estimate)
         else:
+            likelihood = self._use_mutual_likelihood(fight,win)
+
             likelihood = self._define_likelihood_mutual(fight,win)
 
         self.win_record.append([other_fish.size,win,self.effort])
