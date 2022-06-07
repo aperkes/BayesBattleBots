@@ -9,6 +9,9 @@ Easiest way to initialize is to make a pilot fish to build the likelihood, and t
 This makes me think I could speed things up a ton if I just pre-built the likelihood functions as a dict for OA as well. There's really only as many likelihood functions as their are fish, so it shouldn't be too bad. Not sure where that should live though...
 I put it in tank, you just have to initialize it after you build all the fish. In theory, I could have one for all possible fish sizes, but since it's continuous, I'd really need a good analytical solution. for now this is quite good. 
 
+The initialized likelihood is 25x faster, so that's not too shabby. 
+
+Ok, no more optimization, time to do science.
 
 22 June 6:
 I updated fish so that they could start with a correct prior. 

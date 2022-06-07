@@ -282,9 +282,10 @@ class Fish:
         if self.likelihood_dict is None:
             likelihood = self._define_likelihood_mutual(fight,win) 
         else:
-            likelihood = self.likelihood_dict[fight.loser.size,fight.winner.size]
             if win:
-                likelihood = 1-self.likelihood_dict[fight.loser.size,fight.winner.size]
+                likelihood = self.likelihood_dict[fight.winner.idx,fight.loser.idx]
+            else:
+                likelihood = 1-self.likelihood_dict[fight.loser.idx,fight.winner.idx]
         return likelihood
 
     def _define_likelihood_mutual(self,fight,win=True):
@@ -354,7 +355,7 @@ class Fish:
         else:
             likelihood = self._use_mutual_likelihood(fight,win)
 
-            likelihood = self._define_likelihood_mutual(fight,win)
+            #likelihood = self._define_likelihood_mutual(fight,win)
 
         self.win_record.append([other_fish.size,win,self.effort])
         pre_prior = self.prior

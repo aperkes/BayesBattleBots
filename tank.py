@@ -48,17 +48,21 @@ class Tank():
         self.history = np.zeros([self.n_rounds,len(fishes),len(fishes)])
 
 
-    ## Randomly match up fishes
-
+## Define a likelihood dict
+## Input is focal fish vs other fish, output is likelihood of focal fish *win*
     def _initialize_likelihood(self):
+        print('initializing likelihood for all possible match-ups ')
+        likelihood_dict = {}
         for i in range(len(self.fishes)):
-            for j in range(i+1,len(self.fishes)):
+            for j in range(len(self.fishes)):
                 max_idx = np.argmax([self.fishes[i].size,self.fishes[j].size])
                 min_idx = 1-max_idx
                 max_size = self.fishes[max_idx].size
                 min_size = self.fishes[min_idx].size
-                if 
-                likelihood_dict[min_size,max_size] = self.fishes[0]._likelihood_function_size(min_size,max_size)
+## Frustratingly, we have to queue up a little dummy fight here
+                fight=Fight(self.fishes[i],self.fishes[j],outcome=0,outcome_params=self.f_params)
+                fight.winner,fight.loser = self.fishes[i],self.fishes[j]
+                likelihood_dict[i,j] = self.fishes[i]._define_likelihood_mutual(fight)
         for f in self.fishes:
             f.likelihood_dict = likelihood_dict
 
