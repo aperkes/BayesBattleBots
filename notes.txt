@@ -1,5 +1,11 @@
 ### Add from top:
 
+22 June 6:
+I updated fish so that they could start with a correct prior. 
+This is sort of the default assumption, so let's see how the winner effect plays
+when their estimate is fixed, correct, and gets boosted by win/lose.
+
+
 22 June 3b:
 Spent a long time working on my likelihood function for naive stuff. But things are working again. 
 I think the big insight here is that without an accurate self assessment, you're going to be 

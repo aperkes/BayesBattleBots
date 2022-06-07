@@ -43,10 +43,13 @@ class Fish:
             mean = self._growth_func(self.age)
             sd = mean/5
             self.size = np.random.normal(mean,sd)
-        if prior is not None:
+        if prior == True:
+            self.prior = norm.pdf(self.xs,self.size,self.size/5)
+        elif prior is not None:
             self.prior = pior
         else:
-            self.prior = self._prior_size(self.age,xs=self.xs)
+            prior = self._prior_size(self.age,xs=self.xs)
+            self.prior = prior / np.sum(prior)
         ## Define the rules one when to escalate, based on confidence
         self.escalation_thresholds = escalation
         self.cdf_prior = self._get_cdf_prior(self.prior)
