@@ -59,7 +59,6 @@ elif True:
     tank = Tank(fishes,n_fights = params.n_fights,f_params=params.outcome_params,f_outcome=params.f_outcome,f_method=params.f_method,u_method=params.u_method)
     tank._initialize_likelihood()
 
-    fig,ax = plt.subplots()
     #ax.plot(fishes[0].xs,fishes[0].prior * 10,color='green')
     tank.run_all()
     #for f in fishes:
