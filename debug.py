@@ -48,11 +48,15 @@ elif False:
     plt.show()
 
 elif True:
-    fishes = [Fish(f,effort_method=params.effort_method,update_method=params.u_method) for f in range(params.n_fish)]
+    if True:
+        pilot_fish = Fish(0,effort_method=params.effort_method,fight_params=params.outcome_params)
+        fishes = [Fish(f,prior=True,likelihood = pilot_fish.naive_likelihood,fight_params=params.outcome_params,effort_method=params.effort_method,update_method=params.u_method) for f in range(params.n_fish)]
+    else:
+        fishes = [Fish(f,prior=True,effort_method=params.effort_method,update_method=params.u_method) for f in range(params.n_fish)]
     tank = Tank(fishes,n_fights = params.n_fights,f_params=params.outcome_params,f_outcome=params.f_outcome,f_method=params.f_method,u_method=params.u_method)
     fig,ax = plt.subplots()
     #ax.plot(fishes[0].xs,fishes[0].prior * 10,color='green')
-    tank.run_all(False)
+    tank.run_all()
     #for f in fishes:
     #    ax.plot(f.xs,f.prior * 10)
     #ax.plot(f.xs,f.naive_likelihood,color='black')

@@ -20,7 +20,8 @@ from fight import Fight
 
 class Tank():
     def __init__(self,fishes,fight_list = None,n_fights = None,
-                 f_method='balanced',f_outcome='math',f_params=[.3,.3,.3],u_method='bayes',scale=.1):
+                 f_method='balanced',f_outcome='math',f_params=[.3,.3,.3],
+                 effort_method=[1,1],u_method='bayes',scale=.1):
         self.fishes = fishes
         self.n_fish = len(fishes)
         self.sizes = [f.size for f in fishes]
@@ -97,6 +98,43 @@ class Tank():
         fight.loser.update_hock(False,fight,fight.level)
         self.win_record[fight.winner.idx,fight.loser.idx] += 1
         self.history[fight.idx,fight.winner.idx,fight.loser.idx] = 1 ## Note, this works a bit different for 'random' and 'balanced'
+
+## This is very slow, slow enough that for simulations, I should do it only once
+    def _define_naive_likelihood(self,fight=None):
+        #print('initializing likelihood')
+        if fight is None:
+            s,e,l = self.naive_params
+        else:
+            s,e,l = fight.params
+        likelihood = np.zeros(len(self.xs))
+## This assumes that all fish are the same age as you
+        for i_ in range(len(self.xs)):
+            i = self.xs[i_]
+            prob_ij = 0
+            for j_ in range(len(self.xs)):
+                j = self.xs[j_]
+                prob_j = self.naive_prior[j_]
+                if prob_j != 0:
+                    if i > j:
+                        i_wager = (i/100)**e
+                        j_wager = (j / i)**s * (j/100)**e
+                        rel_wager = j_wager / i_wager
+                        likelihood_j = 1 - self._wager_curve(rel_wager,l)
+                    elif i <= j:
+                        i_wager = (i/j)**s * (i/100)**e
+                        j_wager = (j/100)**e
+                        rel_wager = i_wager / j_wager
+                        likelihood_j = self._wager_curve(rel_wager,l)
+                    #print(rel_wager)
+                    #print(j,likelihood_j,prob_j)
+                    prob_ij += likelihood_j * prob_j
+                    #print(i,j,rel_wager)
+                else:
+                    continue
+            #print(prob_ij)
+            likelihood[i_] = prob_ij
+        return likelihood
+
 
     def print_status(self):
         for f in self.fishes:

@@ -29,7 +29,7 @@ naive_escalation = {
 class Fish:
     def __init__(self,idx=0,age=50,size=None,
                  prior=None,likelihood=None,hock_estimate=.5,update_method='bayes',decay=2,
-                 effort_method=[1,1],escalation=naive_escalation,xs=np.linspace(5,150,500)):
+                 effort_method=[1,1],fight_params=[.3,.3,.1],escalation=naive_escalation,xs=np.linspace(5,150,500)):
         self.idx = idx
         self.name = idx
         self.age = age
@@ -86,9 +86,16 @@ class Fish:
         self.wager = 0
         self.boost = 0 ## Initial boost, needs to be 0, will change with winner/loser effect
         ## Define naive prior/likelihood for 'SA'
-        self.naive_params = [.3,.3,.1]
-        self.naive_prior = self.prior
-        self.naive_likelihood = self._define_naive_likelihood()
+        self.naive_params = fight_params
+## This should be an average fish.
+        naive_prior = self._prior_size(self.age,xs=self.xs)
+        self.naive_prior = naive_prior / np.sum(naive_prior)
+
+        if likelihood is not None:
+            print('using existing likelihood')
+            self.naive_likelihood = likelihood
+        else:
+            self.naive_likelihood = self._define_naive_likelihood()
 
 ## Apply winner/loser effect. This could be more nuanced, eventually should be parameterized.
     def _set_boost(self,win,fight):
@@ -178,6 +185,7 @@ class Fish:
 
     def _use_simple_likelihood(self,fight,win):
         if fight.params != self.naive_params:
+            print('rebuilding likelihood')
             self.naive_likelihood = self._define_naive_likelihood(fight)
             self.naive_params = fight.params
         if win:
@@ -188,7 +196,7 @@ class Fish:
 
 ## This is very slow, slow enough that for simulations, I should do it only once
     def _define_naive_likelihood(self,fight=None):
-        #print('initializing likelihood')
+        print('initializing likelihood')
         if fight is None:
             s,e,l = self.naive_params
         else:
