@@ -28,7 +28,7 @@ if HOCK:
     params.f_outcome = 'hock'
     params.outcome_params = [0.6,0.3,.05]
 else:
-    params.u_method = 'bayes'
+    params.u_method = 'size_boost'
     params.f_outcome = 'math'
     params.outcome_params = [0.6,0.3,.05]
 s = Simulation(params)
@@ -50,7 +50,7 @@ elif False:
 elif True:
     if True:
         pilot_fish = Fish(0,effort_method=params.effort_method,fight_params=params.outcome_params)
-        fishes = [Fish(f,prior=True,likelihood = pilot_fish.naive_likelihood,fight_params=params.outcome_params,effort_method=params.effort_method,update_method=params.u_method) for f in range(params.n_fish)]
+        fishes = [Fish(f,prior=None,likelihood = pilot_fish.naive_likelihood,fight_params=params.outcome_params,effort_method=params.effort_method,update_method=params.u_method) for f in range(params.n_fish)]
 
     else:
         fishes = [Fish(f,prior=True,effort_method=params.effort_method,update_method=params.u_method) for f in range(params.n_fish)]

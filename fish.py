@@ -78,6 +78,8 @@ class Fish:
         elif update_method == 'decay':
             self.update = self._set_boost
             self.decay = decay 
+        elif update_method == 'size_boost':
+            self.update = self._size_boost
         else:
             #print('setting no update')
             self.update = self.no_update
@@ -107,6 +109,21 @@ class Fish:
             self.boost = np.clip(self.boost - .1,-.5,.5)
         self.win_record.append([other_fish.size,win,self.effort])
         
+    def _size_boost(self,win,fight,shift=5):
+        print('before',self.estimate)
+        if win:
+            other_fish = fight.loser
+            self.estimate += shift
+            self.estimate_ += shift
+        else:
+            other_fish = fight.winner
+            self.estimate -= shift
+            self.estimate_ -= shift
+        self.estimate = np.clip(self.estimate,7,100)
+        self.win_record.append([other_fish.size,win,self.effort])
+        self.est_record.append(self.estimate)
+        print('after',self.estimate)
+
     def _get_cdf_prior(self,prior):
         normed_prior = self.prior / np.sum(self.prior)
         cdf_prior = np.cumsum(normed_prior)

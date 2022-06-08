@@ -162,8 +162,9 @@ class Tank():
                 f = fish_list[i]
                 ax.plot(f.est_record, color=cm.tab10(i),label=str(i))
                 ax.axhline(f.size,color=cm.tab10(i))
-                ax.fill_between(np.arange(len(f.est_record)),np.array(f.est_record_) + np.array(f.sdest_record),
-                    np.array(f.est_record_) - np.array(f.sdest_record),color=cm.tab10(i),alpha=.3)
+                if self.u_method == 'bayes':
+                    ax.fill_between(np.arange(len(f.est_record)),np.array(f.est_record_) + np.array(f.sdest_record),
+                        np.array(f.est_record_) - np.array(f.sdest_record),color=cm.tab10(i),alpha=.3)
             ax.set_ylabel('Estimate')
         ax.set_xlabel('contest number')
         ax.legend()

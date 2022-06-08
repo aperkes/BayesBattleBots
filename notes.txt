@@ -13,6 +13,12 @@ The initialized likelihood is 25x faster, so that's not too shabby.
 
 Ok, no more optimization, time to do science.
 
+I started in on some big comparisons between a bayes framework and a fixed shift to your estimate. 
+I'll need to do the same thing with a decayed shift, and all the other ones, and then parameterize that so that I can run simulations across the entire parameter space for both self assessment and mutual assessment (and maybe opponent assessment?)
+see google doc for next tests to do
+
+By the way, it wouldn't actually be that hard to shift the prior (for growth, for example). It's just multiplying by a different likelihood function, basically a monotonic increasing function: As you get older, being bigger becomes more likely. Similarly, decaying a prior would just be a flat likelihood function. This, and fish personality, and probably the most interesting next steps, imo
+
 22 June 6:
 I updated fish so that they could start with a correct prior. 
 This is sort of the default assumption, so let's see how the winner effect plays
