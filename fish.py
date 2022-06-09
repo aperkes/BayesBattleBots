@@ -94,9 +94,9 @@ class Fish:
         self.naive_prior = naive_prior / np.sum(naive_prior)
 
         if likelihood is not None:
-            print('using existing likelihood')
+            #print('using existing likelihood')
             self.naive_likelihood = likelihood
-        else:
+        elif self.effort_method[1] == 0:
             self.naive_likelihood = self._define_naive_likelihood()
         self.likelihood_dict = likelihood_dict
 ## Apply winner/loser effect. This could be more nuanced, eventually should be parameterized.
@@ -110,7 +110,7 @@ class Fish:
         self.win_record.append([other_fish.size,win,self.effort])
         
     def _size_boost(self,win,fight,shift=5):
-        print('before',self.estimate)
+        #print('before',self.estimate)
         if win:
             other_fish = fight.loser
             self.estimate += shift
@@ -122,7 +122,7 @@ class Fish:
         self.estimate = np.clip(self.estimate,7,100)
         self.win_record.append([other_fish.size,win,self.effort])
         self.est_record.append(self.estimate)
-        print('after',self.estimate)
+        #print('after',self.estimate)
 
     def _get_cdf_prior(self,prior):
         normed_prior = self.prior / np.sum(self.prior)
@@ -213,7 +213,7 @@ class Fish:
 
 ## This is very slow, slow enough that for simulations, I should do it only once
     def _define_naive_likelihood(self,fight=None):
-        print('initializing likelihood')
+        #print('initializing likelihood')
         if fight is None:
             s,e,l = self.naive_params
         else:
@@ -297,6 +297,7 @@ class Fish:
 
     def _use_mutual_likelihood(self,fight,win=True):
         if self.likelihood_dict is None:
+            print('could not find likelihood')
             likelihood = self._define_likelihood_mutual(fight,win) 
         else:
             if win:

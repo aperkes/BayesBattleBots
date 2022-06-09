@@ -93,13 +93,21 @@ class Simulation():
             }
             }
 
-    def run_simulation(self):
+    def run_simulation(self,progress=True):
         all_stats = []
         if self.params.verbose:
             print('Running simulation, n_iterations:',self.params.n_iterations)
+        if progress:
+            iterator = tqdm(range(self.params.n_iterations))
+        else:
+            iterator = range(self.params.n_iterations)
+
         #for i in range(self.params.n_iterations):
-        for i in tqdm(range(self.params.n_iterations)):
+        for i in iterator:
             tank = self._build_tank(i)
+            if self.params.effort_method[1]==0:
+                #print('initializing likelihood')
+                tank._initialize_likelihood()
             tank.run_all(False)
             t_stats = self._get_tank_stats(tank)
             all_stats.append(t_stats)
@@ -107,14 +115,19 @@ class Simulation():
          
     def _build_tank(self,i): ## I Might want the iteration info available
         p = self.params
-        fishes = [Fish(f,effort_method=p.effort_method,update_method=p.u_method) for f in range(p.n_fish)]
+        if p.effort_method[1] == 0:
+            pilot_fish = Fish(0,effort_method=p.effort_method,update_method=p.u_method,fight_params=p.outcome_params)
+            naive_likelihood = pilot_fish.naive_likelihood
+        else:
+            naive_likelihood = None
+        fishes = [Fish(f,likelihood=naive_likelihood,effort_method=p.effort_method,update_method=p.u_method,fight_params=p.outcome_params) for f in range(p.n_fish)]
         n_fights = p.n_rounds
         
         return Tank(fishes,n_fights=p.n_rounds,f_method=p.f_method,f_outcome=p.f_outcome,f_params=p.outcome_params,u_method=p.u_method,scale=p.scale)
     
     def _get_tank_stats(self,tank):
         linearity,(d,p) = self._calc_linearity(tank)
-        return p,self._calc_stability(tank),self._calc_accuracy(tank)
+        return p,self._calc_stability(tank),self._calc_accuracy(tank),self._calc_effort(tank)
     
     def _calc_linearity(self,tank):
         n_fish = len(tank.fishes)
@@ -198,6 +211,10 @@ class Simulation():
         tank.estimates = [f.estimate for f in tank.fishes]
         accuracy,_ = spearmanr(tank.sizes,tank.estimates)
         return accuracy
+
+    def _calc_effort(self,tank):
+        effort_record = [f.level for f in tank.fight_list]
+        return np.mean(effort_record)
 
     def get_timed_means(self):
         ## Maybe this is a bad idea actually...It's really just binned history.

@@ -51,7 +51,7 @@ class Tank():
 ## Define a likelihood dict
 ## Input is focal fish vs other fish, output is likelihood of focal fish *win*
     def _initialize_likelihood(self):
-        print('initializing likelihood for all possible match-ups ')
+        #print('initializing likelihood for all possible match-ups ')
         likelihood_dict = {}
         for i in range(len(self.fishes)):
             for j in range(len(self.fishes)):

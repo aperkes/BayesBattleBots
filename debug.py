@@ -16,9 +16,9 @@ e_space = [0.0,0.2,0.4,0.6,0.8,1.0]
 l_space = [0.0,.05,0.1,0.2,0.3,0.5]
 results_array = np.full([6,6,6,3],np.nan)
 params = SimParams()
-params.effort_method = [1,1]
+params.effort_method = [1,0]
 params.n_fights = 500
-params.n_iterations = 15 
+params.n_iterations = 1000 
 params.n_fish = 7
 params.f_method = 'random'
 HOCK = False
@@ -28,16 +28,20 @@ if HOCK:
     params.f_outcome = 'hock'
     params.outcome_params = [0.6,0.3,.05]
 else:
-    params.u_method = 'size_boost'
+    params.u_method = 'bayes'
     params.f_outcome = 'math'
     params.outcome_params = [0.6,0.3,.05]
+
 s = Simulation(params)
 ## Check whether simulation is working and print stats
-if False:
-    all_stats = s.run_simulation()
-    print(all_stats)
+if True:
+    print(params.u_method,params.f_outcome,params.outcome_params)
+    all_stats = s.run_simulation(True)
+    #print(all_stats)
     all_stats = np.array(all_stats)
+    print('p-linearity | stability | accuracy | fight intensity')
     print(np.mean(all_stats,axis=0))
+    print(np.std(all_stats,axis=0))
 
 ## Check whether the tank is working and plot this history
 elif False:
