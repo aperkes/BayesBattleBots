@@ -1,5 +1,13 @@
 ### Add from top:
 
+22 June 13:
+On reflection, Bayesian Updating is still a single step process, there's no real history. It's just the dimensionality of the state that changes. 
+So in the game theoretic approach, where there are 6 variables, those 6 variables are the memory, and it's hard to say whether that is 
+more or less history dependent than bayesian updating or a markov process. What is unique about bayesian updating is that we get a distribution, 
+rather than a single point, and so we have some predictions where behavior might be the same, but the reaction to a fight might be different, 
+(for example if two fish have the same estimate, but different confidences, the one with lower confidence will shift his estimate more strongly). 
+
+
 22 June 7:
 Running with prior=True causes their estimates to increase constantly. Not sure why. 
 Also, it's going really slow at first, because of how intensive it is to generate the likelihood function for each fish. Let's fix that too. 
