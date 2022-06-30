@@ -1,5 +1,27 @@
 ### Add from top:
 
+22 June 29:
+I started with the winner vs loser effect. 
+Interestingly, bayes predicts that the loser effect will be stronger than the winner effect, by virtue of the likelihood func. 
+Conceptually, fighting is probalby determined by % difference, not absolute difference, 
+but it's obvious that there are going to be more people 50% your size than 200% your size. Because of this, 
+the likelihood function (which is calculated in % space but plotted in absolute space) flattens out as you get bigger
+
+Mathematically, we can describe this as the mean of the likelihood functions for winning and losing. 
+22 June 28:
+Took a little reading break, and then went on vacation. Now I have a pretty clear goal: 
+1. Does babyesian updating describe the winner effect in a way that is consistent with what is known? 
+2. How does Bayesian update contrast with alternative models? 
+
+So next steps are to compile a list of things I know about the winner effect, and see if/when my model replicates that, 
+and then identify places where it's going to break with non-bayesian updating. 
+
+The latter point, is pretty straightforward. The defining feature of bayesian updating, in comparison to a point model, 
+is that your estimate can be the same, yet your response to the behavior will be very different, because of the relative confidence. 
+How could we tell the difference between this and something else? What would something else even be? 
+
+For now, I can just focus on existing models I guess. 
+
 22 June 13:
 On reflection, Bayesian Updating is still a single step process, there's no real history. It's just the dimensionality of the state that changes. 
 So in the game theoretic approach, where there are 6 variables, those 6 variables are the memory, and it's hard to say whether that is 

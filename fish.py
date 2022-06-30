@@ -29,7 +29,7 @@ naive_escalation = {
 class Fish:
     def __init__(self,idx=0,age=50,size=None,
                  prior=None,likelihood=None,likelihood_dict=None,hock_estimate=.5,update_method='bayes',decay=2,
-                 effort_method=[1,1],fight_params=[.3,.3,.1],escalation=naive_escalation,xs=np.linspace(5,150,500)):
+                 effort_method=[1,1],fight_params=[.3,.3,.1],escalation=naive_escalation,xs=np.linspace(7,100,500)):
         self.idx = idx
         self.name = idx
         self.age = age
@@ -92,14 +92,17 @@ class Fish:
 ## This should be an average fish.
         naive_prior = self._prior_size(self.age,xs=self.xs)
         self.naive_prior = naive_prior / np.sum(naive_prior)
-
+        self.naive_estimate = np.sum(self.prior * self.xs / np.sum(self.prior))
         if likelihood is not None:
             #print('using existing likelihood')
             self.naive_likelihood = likelihood
         elif self.effort_method[1] == 0:
             self.naive_likelihood = self._define_naive_likelihood()
+        else:
+            self.naive_likelihood = None
         self.likelihood_dict = likelihood_dict
 ## Apply winner/loser effect. This could be more nuanced, eventually should be parameterized.
+        
     def _set_boost(self,win,fight):
         if win:
             other_fish = fight.loser
@@ -202,7 +205,7 @@ class Fish:
 
     def _use_simple_likelihood(self,fight,win):
         if fight.params != self.naive_params:
-            print('rebuilding likelihood')
+            #print('rebuilding likelihood')
             self.naive_likelihood = self._define_naive_likelihood(fight)
             self.naive_params = fight.params
         if win:
@@ -297,7 +300,7 @@ class Fish:
 
     def _use_mutual_likelihood(self,fight,win=True):
         if self.likelihood_dict is None:
-            print('could not find likelihood')
+            #print('could not find likelihood')
             likelihood = self._define_likelihood_mutual(fight,win) 
         else:
             if win:
@@ -423,8 +426,10 @@ class Fish:
     def choose_effort(self,f_opp,strategy=None):
         if strategy is None:
             strategy = self.effort_method
+## The latter strategy here is more in keeping with the probabilistic mutual assessment, just against an average fish
         if strategy == [1,0]:
-            effort = self.estimate / 100
+            #effort = self.estimate / 100
+            effort = 1 - self.cdf_prior[np.argmax(self.xs > self.naive_estimate)]
         elif strategy == [0,1]:
             effort = 1 - f_opp.size / 100
         elif strategy == [1,1]:
