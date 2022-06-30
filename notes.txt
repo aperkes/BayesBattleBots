@@ -1,5 +1,28 @@
 ### Add from top:
 
+22 June 30:
+Ok, after a lot of thought and exploration, I think I've figured it out. 
+There are lots of things happening here, 
+-the winner effect is more informative, i.e. it produces a more confident, narrower peak
+-The loser effect, as an abolute shift, is slightly larger, meaning their esetimate is slightly lower, 
+this might be related to the above narrowness, in that losers have more weight in the low distribution. 
+-There's also this idea I thought about yesterday, 
+where the likelihood function is skewed towards lower values, because it's proportional. 
+
+However, the biggest thing has to do with how effort translates to success, and it's pretty straight forward:
+Ignore all the above intricacies, and assume that it's an equal shift, up and down. 
+Now the winner has 75% confidence that they're bigger, and the loser only has 25% confidence. 
+An accurate, size matched fish is going to have 50% confidence. 
+
+So loser invests 25% vs 50% = 1:2
+Winner invests 75% vs 50% = 2:3
+
+So the relative difference is larger for the loser. 
+
+The math of relative differences strikes again. Note that this isn't exactly unique to bayesian updating, this could happen 
+with the static shifts too. 
+
+
 22 June 29:
 I started with the winner vs loser effect. 
 Interestingly, bayes predicts that the loser effect will be stronger than the winner effect, by virtue of the likelihood func. 
