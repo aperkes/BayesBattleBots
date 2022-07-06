@@ -45,13 +45,29 @@ win_count1,win_count2 = 0,0
 win_shifts,loss_shifts = [],[]
 ## Lets assume their estimate is correct.
 
+## Build copies of f0 with naive priors
+def build_fish(idx,f0):
+        return Fish(idx,size=f0.size,prior=True,effort_method=params.effort_method,fight_params=params.outcome_params,update_method=params.u_method,likelihood=f0.naive_likelihood)
+
+def check_success(f,f_match):
+    fight = Fight(f,f_match,outcome_params=params.outcome_params)
+    fight.run_outcome()
+    return fight1.outcome
+
 CALC = True
 age = 50
+match1_results = []
+
+
 if CALC:
     f0 = Fish(1,age=age,prior=True,effort_method=params.effort_method,fight_params=params.outcome_params,update_method=params.u_method)
     for i in range(iterations):
 #for i in tqdm(range(iterations)):
-        f1 = Fish(1,size=f0.size,prior=True,effort_method=params.effort_method,fight_params=params.outcome_params,update_method=params.u_method,likelihood=f0.naive_likelihood)
+        f = build_fish(1,f0)
+        f_match = build_fish(0,f0)
+        match1_results.append(check_success(f,f_match))
+        f_w = copy.deepcopy(f) 
+        f_l = copy.deepcopy(f)
         f2 = Fish(2,size=f1.size,prior=True,effort_method=params.effort_method,update_method=params.u_method,fight_params=params.outcome_params,likelihood=f0.naive_likelihood)
 
         #print(f1.size,f1.estimate)
