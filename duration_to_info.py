@@ -27,10 +27,12 @@ params.outcome_params = [s,e,l]
 s = Simulation(params)
 
 winners,losers = [],[]
+biggers,smallers = [],[]
+final_win,final_loss = [],[]
 
 ## Let fish duke it out, then pull a fish out, let it win, and put it back in with the rest.
 iterations = 100
-scale = 2
+scale = 1
 for i in tqdm(range(iterations)):
     fishes = [Fish(f,effort_method=params.effort_method,update_method=params.u_method) for f in range(params.n_fish)]
     tank = Tank(fishes,n_fights = params.n_fights,f_params=params.outcome_params,f_method=params.f_method,f_outcome=params.f_outcome,u_method=params.u_method)
@@ -38,11 +40,11 @@ for i in tqdm(range(iterations)):
 
 #for f in tank.fishes:
     f = tank.fishes[0]
-    f2 = tank.fishes[1]
+    f2 = copy.deepcopy(tank.fishes[1])
     opp = Fish(size = f.size*scale)
     opp2 = Fish(size = f2.size/scale)
     f_win = Fight(f,opp,outcome=0)
-    f_loss = Fight(f,opp2,outcome=1) 
+    f_loss = Fight(f2,opp2,outcome=1) 
     f_win.winner = f
     f_win.loser = opp
     f_loss.winner = opp2
@@ -52,25 +54,116 @@ for i in tqdm(range(iterations)):
     f2.update(False,f_loss)
     #print(f.estimate)
     tank2 = Tank(fishes,n_fights = params.n_fights,f_params=params.outcome_params,f_method=params.f_method,f_outcome=params.f_outcome,u_method=params.u_method)
-    tank3 = copy.deepcopy(tank2)
+    fishes3 = copy.deepcopy(fishes)
+    fishes3[1] = f2
+    tank3 = Tank(fishes3,n_fights = params.n_fights,f_params=params.outcome_params,f_method=params.f_method,f_outcome=params.f_outcome,u_method=params.u_method)
+    #tank3 = copy.deepcopy(tank2)
     tank2.run_all(False)
     tank3.run_all(False)
     winners.append(f)
+    rank_order= np.argsort(np.array(tank2.sizes))
+    ranks = np.empty_like(rank_order)
+    ranks[rank_order] = np.arange(tank2.n_fish) ## This took me an embarrasingly long time to get right. 
+    f_rank = ranks[f.idx]
+    l_rank = ranks[f2.idx]
+    if np.max(tank2.sizes) != f.size:
+        idx_bigger = np.arange(tank.n_fish)[ranks == (f_rank + 1)][0]
+    else:
+        idx_bigger = f.idx 
+    biggers.append(tank.fishes[idx_bigger])
+    if np.min(tank3.sizes) != f2.size:
+        idx_smaller = np.arange(tank.n_fish)[ranks == (l_rank - 1)][0]
+    else:
+        idx_smaller = f2.idx
+    smallers.append(tank2.fishes[idx_smaller])
     losers.append(f2)
+
+    match1 = Fish(size = f.size,effort_method=params.effort_method)
+    match2 = Fish(size = f2.size,effort_method=params.effort_method)
+    fight1 = Fight(f,match1,outcome_params=params.outcome_params)
+    fight2 = Fight(f2,match2,outcome_params=params.outcome_params)
+    fight1.run_outcome()
+    fight2.run_outcome()
+    final_win.append(1-fight1.outcome)
+    final_loss.append(1-fight2.outcome)
+    
+print('win success:',np.mean(final_win))
+print('loser success:',np.mean(final_loss))
+
 fig,ax = plt.subplots()
+#fig2,ax2 = plt.subplots()
 #for f in fishes:
 n_rounds = params.n_fights * (params.n_fish-1)+1
 xs = np.arange(n_rounds-1,n_rounds*2)
-for f in winners:
+win_pre, win_post = [],[]
+loser_pre,loser_post = [],[]
+est_pre,est_post = [],[]
+
+est_bigs,est_smalls = [],[]
+for f_i in range(len(winners)):
+    f = winners[f_i]
+    pre_success = np.mean(np.array(f.win_record)[:n_rounds-1,1])
+    post_success = np.mean(np.array(f.win_record)[n_rounds:,1])
+    pre_estimate = np.mean(np.array(f.est_record)[:n_rounds-1])
+    post_estimate = np.mean(np.array(f.est_record)[n_rounds:])
+    win_pre.append(pre_success)
+    win_post.append(post_success)
+    est_pre.append(pre_estimate)
+    est_post.append(post_estimate)
     #f = tank.fishes[0]
     ax.plot(np.array(f.est_record)-f.est_record[n_rounds-1],color='green',alpha=.1)
-for f in losers:
+    jitter = (np.random.rand() - .5) * .01
+    #ax.plot(np.array(f.win_record)[:,1] + jitter,color='green',alpha=.01)
+    if biggers[f_i].idx != f.idx:
+        est_diff = biggers[f_i].size-f.est_record[n_rounds-1]
+        est_bigs.append(est_diff) ## Careful...
+        #ax.axhline(biggers[f_i].size-f.est_record[n_rounds-1],color='red',alpha=.1)
+        #ax.axhline(biggers[f_i].est_record[n_rounds + 1]-f.est_record[n_rounds-1],color='blue',alpha=.1)
+for f_i in range(len(losers)):
+    f = losers[f_i]
+    pre_success = np.mean(np.array(f.win_record)[:n_rounds-1,1])
+    post_success = np.mean(np.array(f.win_record)[n_rounds:,1])
+    loser_pre.append(pre_success)
+    loser_post.append(post_success)
     ys = np.array(f.est_record) - f.est_record[n_rounds-1]
     ax.plot(ys,color='purple',alpha=.1)
-ax.axvline(params.n_fights * (params.n_fish-1),color='red',label='forced win/loss')
+    if smallers[f_i].idx != f.idx:
+        est_diff = smallers[f_i].size-f.est_record[n_rounds-1]
+        est_smalls.append(est_diff) ## Careful...
+
+    #print(f.est_record)
+
+ax.axhline(np.mean(est_bigs),color='blue',alpha=.5,label='mean difference to bigger fish')
+ax.axhline(np.mean(est_smalls),color='red',alpha=.5,label='mean difference to smaller fish')
+## Calculate probability as a function of steps: 
+win_array = np.array([f.win_record for f in winners])[:,:,1]
+loser_array =np.array([f.win_record for f in losers])[:,:,1]
+
+avg_winners = np.mean(win_array,axis=0)
+avg_losers = np.mean(loser_array,axis=0)
+
+print('before after win:')
+print(np.mean(win_pre),np.mean(win_post))
+print(np.mean(est_pre),np.mean(est_post))
+print('before after loss:')
+print(np.mean(loser_pre),np.mean(loser_post))
+
+fig1,ax1 = plt.subplots()
+
+ax1.plot(avg_winners)
+ax1.plot(avg_losers)
+ax1.axhline(.5,color='black',linestyle=':')
+fig1.show()
+
+#print('pre post win rate:')
+#print(win_pre,win_post)
+#print(loser_pre,loser_post)
+
+
+ax.axvline(params.n_fights * (params.n_fish-1),color='black',linestyle=':',label='forced win/loss')
 ax.axhline(0,color='black',label='estimate prior to staged fight')
-ax.set_xlim([n_rounds-5,n_rounds+5])
-ax.set_ylim([-7.1,7.1])
+ax.set_xlim([n_rounds-5,n_rounds+15])
+#ax.set_ylim([-7.1,7.1])
 ax.legend()
 fig.savefig('test_staged.jpg',dpi=300)
 fig.show()

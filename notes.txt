@@ -1,5 +1,13 @@
 ### Add from top:
 
+22 July 5:
+Next stop, the duration of the effect. 
+I can't actually do duration per se, but I can do how long it lasts given more fights. 
+
+Initially, it seems like the estimate boost lasts essentially forever, but there's relatively little effect on success
+Presumably, this is because the increase in their estimate isn't enough to win against a larger fish. 
+I could test this as a direct assay against a fish their size after increasingly long time. 
+
 22 June 30:
 Ok, after a lot of thought and exploration, I think I've figured it out. 
 There are lots of things happening here, 
