@@ -66,6 +66,8 @@ if CALC:
         f = build_fish(1,f0)
         f_match = build_fish(0,f0)
         match1_results.append(check_success(f,f_match))
+
+## NOTE: YOU ARE HERE!!!
         f_w = copy.deepcopy(f) 
         f_l = copy.deepcopy(f)
         f2 = Fish(2,size=f1.size,prior=True,effort_method=params.effort_method,update_method=params.u_method,fight_params=params.outcome_params,likelihood=f0.naive_likelihood)
