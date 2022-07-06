@@ -9,6 +9,8 @@ from simulation import Simulation,SimParams
 
 import numpy as np
 from matplotlib import pyplot as plt
+import matplotlib
+
 from tqdm import tqdm
 
 import copy
@@ -31,8 +33,17 @@ biggers,smallers = [],[]
 final_win,final_loss = [],[]
 
 ## Let fish duke it out, then pull a fish out, let it win, and put it back in with the rest.
-iterations = 100
+iterations = 200
 scale = 1
+
+
+plt.rcParams.update({'font.size': 18})
+plt.rcParams.update({'lines.linewidth':5})
+plt.rcParams.update({'axes.linewidth':2})
+
+fig,ax = plt.subplots()
+fig.set_size_inches(17,11.5)
+
 for i in tqdm(range(iterations)):
     fishes = [Fish(f,effort_method=params.effort_method,update_method=params.u_method) for f in range(params.n_fish)]
     tank = Tank(fishes,n_fights = params.n_fights,f_params=params.outcome_params,f_method=params.f_method,f_outcome=params.f_outcome,u_method=params.u_method)
@@ -87,10 +98,9 @@ for i in tqdm(range(iterations)):
     final_win.append(1-fight1.outcome)
     final_loss.append(1-fight2.outcome)
     
-print('win success:',np.mean(final_win))
-print('loser success:',np.mean(final_loss))
+print('win success:',np.mean(final_win),'sem:',np.std(final_win) / np.sqrt(len(final_win)))
+print('loser success:',np.mean(final_loss),'sem:',np.std(final_loss)/np.sqrt(len(final_loss)))
 
-fig,ax = plt.subplots()
 #fig2,ax2 = plt.subplots()
 #for f in fishes:
 n_rounds = params.n_fights * (params.n_fish-1)+1
@@ -100,6 +110,9 @@ loser_pre,loser_post = [],[]
 est_pre,est_post = [],[]
 
 est_bigs,est_smalls = [],[]
+
+ax.plot([0,0],[0,1],color='gold',label='winners')
+ax.plot([0,0],[0,1],color='darkblue',label='losers')
 for f_i in range(len(winners)):
     f = winners[f_i]
     pre_success = np.mean(np.array(f.win_record)[:n_rounds-1,1])
@@ -111,7 +124,7 @@ for f_i in range(len(winners)):
     est_pre.append(pre_estimate)
     est_post.append(post_estimate)
     #f = tank.fishes[0]
-    ax.plot(np.array(f.est_record)-f.est_record[n_rounds-1],color='green',alpha=.1)
+    ax.plot(np.array(f.est_record)-f.est_record[n_rounds-1],color='gold',alpha=.1)
     jitter = (np.random.rand() - .5) * .01
     #ax.plot(np.array(f.win_record)[:,1] + jitter,color='green',alpha=.01)
     if biggers[f_i].idx != f.idx:
@@ -126,15 +139,15 @@ for f_i in range(len(losers)):
     loser_pre.append(pre_success)
     loser_post.append(post_success)
     ys = np.array(f.est_record) - f.est_record[n_rounds-1]
-    ax.plot(ys,color='purple',alpha=.1)
+    ax.plot(ys,color='darkblue',alpha=.1)
     if smallers[f_i].idx != f.idx:
         est_diff = smallers[f_i].size-f.est_record[n_rounds-1]
         est_smalls.append(est_diff) ## Careful...
 
     #print(f.est_record)
 
-ax.axhline(np.mean(est_bigs),color='blue',alpha=.5,label='mean difference to bigger fish')
-ax.axhline(np.mean(est_smalls),color='red',alpha=.5,label='mean difference to smaller fish')
+ax.axhline(np.mean(est_bigs),color='gray')
+ax.axhline(np.mean(est_smalls),color='gray')
 ## Calculate probability as a function of steps: 
 win_array = np.array([f.win_record for f in winners])[:,:,1]
 loser_array =np.array([f.win_record for f in losers])[:,:,1]
@@ -162,9 +175,15 @@ fig1.show()
 
 ax.axvline(params.n_fights * (params.n_fish-1),color='black',linestyle=':',label='forced win/loss')
 ax.axhline(0,color='black',label='estimate prior to staged fight')
-ax.set_xlim([n_rounds-5,n_rounds+15])
-#ax.set_ylim([-7.1,7.1])
-ax.legend()
-fig.savefig('test_staged.jpg',dpi=300)
-fig.show()
-plt.show()
+ax.set_xlim([n_rounds-6.5,n_rounds+14.5])
+ax.set_xticks(np.arange(15,37,5))
+ax.set_ylim([-10.5,10.5])
+ax.legend(loc='upper right')
+ax.set_ylabel('Normalized size estimate')
+ax.set_xlabel('Contest number')
+
+fig.tight_layout()
+fig.savefig('./imgs/win_loss.png',dpi=300)
+fig.savefig('./imgs/win_loss.svg')
+
+print('Done!')
