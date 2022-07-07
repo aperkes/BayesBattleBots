@@ -133,13 +133,21 @@ class Fish:
         return cdf_prior
 
     def _update(self,prior,likelihood,xs = None):
-        if xs is None:
-            xs = self.xs
         post = prior * likelihood
         #post = post / auc(xs,post)
         post = post / np.sum(post)
         return post
     
+    def _decay_flat(self,prior,xs = None,decay=.001):
+        post = prior + np.ones_like(prior) * decay
+        post = post / np.sum(post)
+        return post
+
+    def _decay_norm(self,prior,xs = None,decay = 2):
+        post = prior + (self.naive_prior ** decay)
+        post = post / np.sum(post)
+        return post
+
     def _prior_size(self,t,xs = None):
         if xs is None:
             xs = self.xs
@@ -381,6 +389,8 @@ class Fish:
         self.win_record.append([other_fish.size,win,self.effort])
         pre_prior = self.prior
         self.prior = self._update(self.prior,likelihood,self.xs)
+        if False:
+            self.prior = self._decay_flat(self.prior)
         self.cdf_prior = self._get_cdf_prior(self.prior)
         estimate = self.xs[np.argmax(self.prior)]
 
@@ -394,6 +404,23 @@ class Fish:
         self.est_record.append(estimate)
         
         return self.prior,self.estimate
+
+    def decay_prior(self,store=False):
+        pre_prior = self.prior
+        self.prior = self._decay_flat(self.prior)
+        self.cdf_prior = self._get_cdf_prior(self.prior)
+        estimate = self.xs[np.argmax(self.prior)]
+
+        self.estimate_ = np.sum(self.prior * self.xs / np.sum(self.prior))
+        if store:
+            prior_mean,prior_std = self.get_stats()
+            self.est_record_.append(prior_mean)
+
+            self.sdest_record.append(prior_std)
+            
+            self.estimate = estimate
+            self.est_record.append(estimate)
+        return self.prior,self.estimate 
 
     def update_hock(self,win,fight,scale=.1):
         if win:
