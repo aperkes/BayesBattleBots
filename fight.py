@@ -54,6 +54,7 @@ class Fight():
       
         self.winner = self.fishes[self.outcome]
         self.loser = self.fishes[1-self.outcome]
+        return self.outcome
         
     def chance_outcome(self): ## This just pulls from the fish.fight, basically a dice roll vs the likelihood
         prob_win = likelihood_function_size(self.fish1.size,self.fish2.size)

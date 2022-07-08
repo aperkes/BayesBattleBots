@@ -28,7 +28,7 @@ naive_escalation = {
 ## Fish object with internal rules and estimates
 class Fish:
     def __init__(self,idx=0,age=50,size=None,
-                 prior=None,likelihood=None,likelihood_dict=None,hock_estimate=.5,update_method='bayes',decay=2,
+                 prior=None,likelihood=None,likelihood_dict=None,hock_estimate=.5,update_method='bayes',decay=False,
                  effort_method=[1,1],fight_params=[.3,.3,.1],escalation=naive_escalation,xs=np.linspace(7,100,500)):
         self.idx = idx
         self.name = idx
@@ -66,8 +66,7 @@ class Fish:
         self.est_record_ = [self.estimate_]
         self.sdest_record = [prior_std]
         self.effort_method = effort_method
-        self.decay = 1
-
+        self.decay = decay 
         if update_method == 'bayes':
             #print('using bayes')
             self.update = self.update_prior
@@ -389,7 +388,8 @@ class Fish:
         self.win_record.append([other_fish.size,win,self.effort])
         pre_prior = self.prior
         self.prior = self._update(self.prior,likelihood,self.xs)
-        if False:
+        if self.decay:
+            print('decaying...')
             self.prior = self._decay_flat(self.prior)
         self.cdf_prior = self._get_cdf_prior(self.prior)
         estimate = self.xs[np.argmax(self.prior)]
@@ -406,6 +406,7 @@ class Fish:
         return self.prior,self.estimate
 
     def decay_prior(self,store=False):
+        print('decaying..')
         pre_prior = self.prior
         self.prior = self._decay_flat(self.prior)
         self.cdf_prior = self._get_cdf_prior(self.prior)
@@ -467,8 +468,11 @@ class Fish:
             #print('opp estimate/100:',f_opp.size/100)
             #print('opp assessment/100:',1 - f_opp.size /100)
             
+            print(f_opp.size)
+            print(self.cdf_prior[np.argmax(self.xs > f_opp.size)])
             effort = 1 - self.cdf_prior[np.argmax(self.xs > f_opp.size)]
             effort = np.round(effort,4)
+            print('effort:',effort)
             """
             if effort > .5 and self.estimate < f_opp.size:
                 import pdb
@@ -485,7 +489,9 @@ class Fish:
             effort =  total_prob
         else:
             effort = 1
-        effort = self._boost_effort(effort)
+        if self.decay is not False:
+            effort = self._boost_effort(effort)
+        print('effort post boost:',effort)
         return effort
 
 ## Proc effort and decay when you check it

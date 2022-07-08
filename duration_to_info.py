@@ -33,7 +33,7 @@ biggers,smallers = [],[]
 final_win,final_loss = [],[]
 
 ## Let fish duke it out, then pull a fish out, let it win, and put it back in with the rest.
-iterations = 200
+iterations = 50
 scale = 1
 
 
@@ -44,12 +44,15 @@ plt.rcParams.update({'axes.linewidth':2})
 fig,ax = plt.subplots()
 fig.set_size_inches(17,11.5)
 
+INIT = True
+
 for i in tqdm(range(iterations)):
     fishes = [Fish(f,effort_method=params.effort_method,update_method=params.u_method) for f in range(params.n_fish)]
     tank = Tank(fishes,n_fights = params.n_fights,f_params=params.outcome_params,f_method=params.f_method,f_outcome=params.f_outcome,u_method=params.u_method)
+    if INIT:
+        tank._initialize_likelihood()
     tank.run_all(False)
 
-#for f in tank.fishes:
     f = tank.fishes[0]
     f2 = copy.deepcopy(tank.fishes[1])
     opp = Fish(size = f.size*scale)
@@ -65,9 +68,13 @@ for i in tqdm(range(iterations)):
     f2.update(False,f_loss)
     #print(f.estimate)
     tank2 = Tank(fishes,n_fights = params.n_fights,f_params=params.outcome_params,f_method=params.f_method,f_outcome=params.f_outcome,u_method=params.u_method)
+    if INIT:
+        tank2._initialize_likelihood()
     fishes3 = copy.deepcopy(fishes)
     fishes3[1] = f2
     tank3 = Tank(fishes3,n_fights = params.n_fights,f_params=params.outcome_params,f_method=params.f_method,f_outcome=params.f_outcome,u_method=params.u_method)
+    if INIT:
+        tank3._initialize_likelihood()
     #tank3 = copy.deepcopy(tank2)
     tank2.run_all(False)
     tank3.run_all(False)
@@ -91,16 +98,20 @@ for i in tqdm(range(iterations)):
 
     match1 = Fish(size = f.size,effort_method=params.effort_method)
     match2 = Fish(size = f2.size,effort_method=params.effort_method)
+    #print(f.estimate,f2.estimate,match1.estimate,match2.estimate)
     fight1 = Fight(f,match1,outcome_params=params.outcome_params)
     fight2 = Fight(f2,match2,outcome_params=params.outcome_params)
     fight1.run_outcome()
     fight2.run_outcome()
+    print(f2.effort,match2.effort,f.effort)
     final_win.append(1-fight1.outcome)
     final_loss.append(1-fight2.outcome)
     
 print('win success:',np.mean(final_win),'sem:',np.std(final_win) / np.sqrt(len(final_win)))
 print('loser success:',np.mean(final_loss),'sem:',np.std(final_loss)/np.sqrt(len(final_loss)))
-
+print('winner estimate',np.mean([f.estimate for f in winners]))
+print('loser estimate',np.mean([f.estimate for f in losers]))
+print('match estimate:',match1.estimate)
 #fig2,ax2 = plt.subplots()
 #for f in fishes:
 n_rounds = params.n_fights * (params.n_fish-1)+1
@@ -146,8 +157,9 @@ for f_i in range(len(losers)):
 
     #print(f.est_record)
 
-ax.axhline(np.mean(est_bigs),color='gray')
-ax.axhline(np.mean(est_smalls),color='gray')
+if False: ## Show the size to next biggest and next smallest
+    ax.axhline(np.mean(est_bigs),color='gray')
+    ax.axhline(np.mean(est_smalls),color='gray')
 ## Calculate probability as a function of steps: 
 win_array = np.array([f.win_record for f in winners])[:,:,1]
 loser_array =np.array([f.win_record for f in losers])[:,:,1]
@@ -177,7 +189,7 @@ ax.axvline(params.n_fights * (params.n_fish-1),color='black',linestyle=':',label
 ax.axhline(0,color='black',label='estimate prior to staged fight')
 ax.set_xlim([n_rounds-6.5,n_rounds+14.5])
 ax.set_xticks(np.arange(15,37,5))
-ax.set_ylim([-10.5,10.5])
+#ax.set_ylim([-10.5,10.5])
 ax.legend(loc='upper right')
 ax.set_ylabel('Normalized size estimate')
 ax.set_xlabel('Contest number')
