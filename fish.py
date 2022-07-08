@@ -468,11 +468,8 @@ class Fish:
             #print('opp estimate/100:',f_opp.size/100)
             #print('opp assessment/100:',1 - f_opp.size /100)
             
-            print(f_opp.size)
-            print(self.cdf_prior[np.argmax(self.xs > f_opp.size)])
             effort = 1 - self.cdf_prior[np.argmax(self.xs > f_opp.size)]
             effort = np.round(effort,4)
-            print('effort:',effort)
             """
             if effort > .5 and self.estimate < f_opp.size:
                 import pdb
@@ -491,7 +488,7 @@ class Fish:
             effort = 1
         if self.decay is not False:
             effort = self._boost_effort(effort)
-        print('effort post boost:',effort)
+        #print('effort post boost:',effort)
         return effort
 
 ## Proc effort and decay when you check it

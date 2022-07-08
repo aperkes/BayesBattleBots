@@ -103,7 +103,7 @@ for i in tqdm(range(iterations)):
     fight2 = Fight(f2,match2,outcome_params=params.outcome_params)
     fight1.run_outcome()
     fight2.run_outcome()
-    print(f2.effort,match2.effort,f.effort)
+    #print(f2.effort,match2.effort,f.effort)
     final_win.append(1-fight1.outcome)
     final_loss.append(1-fight2.outcome)
     
