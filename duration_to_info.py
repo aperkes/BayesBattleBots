@@ -33,7 +33,7 @@ biggers,smallers = [],[]
 final_win,final_loss = [],[]
 
 ## Let fish duke it out, then pull a fish out, let it win, and put it back in with the rest.
-iterations = 50
+iterations = 1000
 scale = 1
 
 
@@ -189,7 +189,7 @@ ax.axvline(params.n_fights * (params.n_fish-1),color='black',linestyle=':',label
 ax.axhline(0,color='black',label='estimate prior to staged fight')
 ax.set_xlim([n_rounds-6.5,n_rounds+14.5])
 ax.set_xticks(np.arange(15,37,5))
-#ax.set_ylim([-10.5,10.5])
+ax.set_ylim([-10.5,10.5])
 ax.legend(loc='upper right')
 ax.set_ylabel('Normalized size estimate')
 ax.set_xlabel('Contest number')

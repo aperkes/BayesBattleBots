@@ -28,13 +28,13 @@ if HOCK:
     params.f_outcome = 'hock'
     params.outcome_params = [0.6,0.3,.05]
 else:
-    params.u_method = 'bayes'
+    params.u_method = 'size_boost'
     params.f_outcome = 'math'
     params.outcome_params = [0.6,0.3,.05]
 
 s = Simulation(params)
 ## Check whether simulation is working and print stats
-if True:
+if False:
     print(params.u_method,params.f_outcome,params.outcome_params)
     all_stats = s.run_simulation(True)
     #print(all_stats)

@@ -28,7 +28,7 @@ naive_escalation = {
 ## Fish object with internal rules and estimates
 class Fish:
     def __init__(self,idx=0,age=50,size=None,
-                 prior=None,likelihood=None,likelihood_dict=None,hock_estimate=.5,update_method='bayes',decay=False,
+                 prior=None,likelihood=None,likelihood_dict=None,hock_estimate=.5,update_method='bayes',decay=2,decay_all=False,
                  effort_method=[1,1],fight_params=[.3,.3,.1],escalation=naive_escalation,xs=np.linspace(7,100,500)):
         self.idx = idx
         self.name = idx
@@ -66,7 +66,8 @@ class Fish:
         self.est_record_ = [self.estimate_]
         self.sdest_record = [prior_std]
         self.effort_method = effort_method
-        self.decay = decay 
+        self.decay_all = decay_all
+        self.decay = decay
         if update_method == 'bayes':
             #print('using bayes')
             self.update = self.update_prior
@@ -76,7 +77,6 @@ class Fish:
             self.update = self._set_boost
         elif update_method == 'decay':
             self.update = self._set_boost
-            self.decay = decay 
         elif update_method == 'size_boost':
             self.update = self._size_boost
         else:
@@ -111,7 +111,7 @@ class Fish:
             self.boost = np.clip(self.boost - .1,-.5,.5)
         self.win_record.append([other_fish.size,win,self.effort])
         
-    def _size_boost(self,win,fight,shift=5):
+    def _size_boost(self,win,fight,shift=2):
         #print('before',self.estimate)
         if win:
             other_fish = fight.loser
@@ -388,7 +388,7 @@ class Fish:
         self.win_record.append([other_fish.size,win,self.effort])
         pre_prior = self.prior
         self.prior = self._update(self.prior,likelihood,self.xs)
-        if self.decay:
+        if self.decay_all:
             print('decaying...')
             self.prior = self._decay_flat(self.prior)
         self.cdf_prior = self._get_cdf_prior(self.prior)
@@ -486,8 +486,7 @@ class Fish:
             effort =  total_prob
         else:
             effort = 1
-        if self.decay is not False:
-            effort = self._boost_effort(effort)
+        effort = self._boost_effort(effort)
         #print('effort post boost:',effort)
         return effort
 
