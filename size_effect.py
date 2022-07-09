@@ -44,7 +44,7 @@ def run_tanks(naive=False,params=SimParams()):
     results = [[],[]]
 
 ## Let fish duke it out, then pull a fish out, check it's success against a size matched fish, and put it back in
-    iterations = 100
+    iterations = 500
     f0 = Fish(0,effort_method=params.effort_method,update_method=params.u_method)
     if naive:
         pre_rounds = 0
@@ -52,7 +52,7 @@ def run_tanks(naive=False,params=SimParams()):
         print('doing pre rounds this time')
         pre_rounds = 10
     for i in tqdm(range(iterations)):
-#for i in range(iterations):
+    #for i in range(iterations):
         fishes = [Fish(f,likelihood=f0.naive_likelihood,effort_method=params.effort_method,update_method=params.u_method) for f in range(params.n_fish)]
         tank = Tank(fishes,n_fights = pre_rounds,f_params=params.outcome_params,f_method=params.f_method,f_outcome=params.f_outcome,u_method=params.u_method)
         tank._initialize_likelihood() ## This is super important, without intiializing it, it takes ages. 
@@ -71,6 +71,7 @@ def run_tanks(naive=False,params=SimParams()):
 
         if True: #Sanity check....The IDX MATTERS!!!!
             matched_fish = copy.deepcopy(focal_fish) 
+            matched_fish2 = copy.deepcopy(focal_fish) 
             loser_match =  Fish(10,size=focal_fish.size,prior=True,effort_method=params.effort_method,update_method=params.u_method)
             loser_small =  Fish(10,size=20,prior=True,effort_method=params.effort_method,update_method=params.u_method)
 
@@ -84,13 +85,22 @@ def run_tanks(naive=False,params=SimParams()):
 
             #print('results so far:',focal_fish.win_record[-1],focal_fish2.win_record[-1])
             #print(focal_fish.est_record[-2:],focal_fish2.est_record[-2:])
-            assay_fight = Fight(focal_fish,matched_fish,outcome_params=params.outcome_params)
-            assay_fight2 = Fight(focal_fish2,matched_fish,outcome_params=params.outcome_params)
+            if True:
+                assay_fight = Fight(focal_fish,matched_fish,outcome_params=params.outcome_params)
+                assay_fight2 = Fight(focal_fish2,matched_fish2,outcome_params=params.outcome_params)
+            else:
+                assay_fight = Fight(matched_fish,focal_fish,outcome_params=params.outcome_params)
+                assay_fight2 = Fight(matched_fish2,focal_fish2,outcome_params=params.outcome_params)
+            #print(focal_fish.estimate,focal_fish2.estimate,matched_fish.estimate)
             assay_outcome = assay_fight.run_outcome()
+            #print(matched_fish.effort)
 
             assay_outcome2 = assay_fight2.run_outcome()
+            #print(matched_fish.effort)
+
             littles.append(focal_fish2)
             equals.append(focal_fish)
+            #print('effort:',focal_fish.effort,focal_fish2.effort,matched_fish.effort)
 
             results[1].append(1-assay_outcome2)
             results[0].append(1-assay_outcome)
@@ -135,6 +145,8 @@ equals_bayes,littles_bayes,results_bayes = run_tanks(naive=False,params=params_b
 #ax = plot_tanks(winners_bayes,naive=False,ax=ax)
 
 print('#### Bayes updating: ####')
+print('equal win-rate:',np.mean([f.win_record[-1][1] for f in equals_bayes]))
+print('little win-rate:',np.mean([f.win_record[-1][1] for f in littles_bayes]))
 print('equal win-rate:',np.mean(results_bayes[0]),np.std(results_bayes[0] / np.sqrt(len(results_bayes[0]))))
 print('little win-rate:',np.mean(results_bayes[1]),np.std(results_bayes[1] / np.sqrt(len(results_bayes[1]))))
 
@@ -144,10 +156,14 @@ print('little win-rate:',np.mean(results_bayes[1]),np.std(results_bayes[1] / np.
 if True:
     equal_shift = [f.est_record[f.i_shift+1] - f.est_record[f.i_shift] for f in equals_bayes]
     little_shift = [f.est_record[f.i_shift+1] - f.est_record[f.i_shift] for f in littles_bayes]
+    equal_shift_ = [f.est_record_[f.i_shift+1] - f.est_record_[f.i_shift] for f in equals_bayes]
+    little_shift_ = [f.est_record_[f.i_shift+1] - f.est_record_[f.i_shift] for f in littles_bayes]
 
     print(np.mean(equal_shift),np.mean(little_shift))
     print(np.std(equal_shift),np.std(little_shift))
 
+    print(np.mean(equal_shift_),np.mean(little_shift_))
+    print(np.std(equal_shift_),np.std(little_shift_))
 
 
 ## I don't need this, but it's here if I change my mind:
