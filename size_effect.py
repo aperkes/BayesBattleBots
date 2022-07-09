@@ -92,8 +92,8 @@ def run_tanks(naive=False,params=SimParams()):
             littles.append(focal_fish2)
             equals.append(focal_fish)
 
-            results[0].append(1-assay_outcome2)
-            results[1].append(1-assay_outcome)
+            results[1].append(1-assay_outcome2)
+            results[0].append(1-assay_outcome)
 
         else:
             if np.random.rand() > .5:
@@ -129,7 +129,28 @@ def run_tanks(naive=False,params=SimParams()):
     print('dropped n crappy fish:',drop_count)
     return equals,littles,results
 
+#fig2,ax2 = plt.subplots()
 
+equals_bayes,littles_bayes,results_bayes = run_tanks(naive=False,params=params_bayes)
+#ax = plot_tanks(winners_bayes,naive=False,ax=ax)
+
+print('#### Bayes updating: ####')
+print('equal win-rate:',np.mean(results_bayes[0]),np.std(results_bayes[0] / np.sqrt(len(results_bayes[0]))))
+print('little win-rate:',np.mean(results_bayes[1]),np.std(results_bayes[1] / np.sqrt(len(results_bayes[1]))))
+
+## Look at size diff vs winer effect
+
+
+if True:
+    equal_shift = [f.est_record[f.i_shift+1] - f.est_record[f.i_shift] for f in equals_bayes]
+    little_shift = [f.est_record[f.i_shift+1] - f.est_record[f.i_shift] for f in littles_bayes]
+
+    print(np.mean(equal_shift),np.mean(little_shift))
+    print(np.std(equal_shift),np.std(little_shift))
+
+
+
+## I don't need this, but it's here if I change my mind:
 def plot_tanks(winners,naive=True,ax=None,shift=0):
     if ax is None:
         fig,ax = plt.subplots()
@@ -170,22 +191,4 @@ def plot_tanks(winners,naive=True,ax=None,shift=0):
     ax.set_ylabel('Difference in estimate')
     return ax
 
-#fig2,ax2 = plt.subplots()
-
-equals_bayes,littles_bayes,results_bayes = run_tanks(naive=False,params=params_bayes)
-#ax = plot_tanks(winners_bayes,naive=False,ax=ax)
-
-print('#### Bayes updating: ####')
-print('equal win-rate:',np.mean(results_bayes[0]),np.std(results_bayes[0] / np.sqrt(len(results_bayes[0]))))
-print('little win-rate:',np.mean(results_bayes[1]),np.std(results_bayes[1] / np.sqrt(len(results_bayes[1]))))
-
-## Look at size diff vs winer effect
-
-
-if True:
-    equal_shift = [f.est_record[f.i_shift+1] - f.est_record[f.i_shift] for f in equals_bayes]
-    little_shift = [f.est_record[f.i_shift+1] - f.est_record[f.i_shift] for f in littles_bayes]
-
-    print(np.mean(equal_shift),np.mean(little_shift))
-    print(np.std(equal_shift),np.std(little_shift))
 
