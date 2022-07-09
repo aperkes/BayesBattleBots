@@ -307,6 +307,10 @@ class Fish:
         if self.likelihood_dict is None:
             #print('could not find likelihood')
             likelihood = self._define_likelihood_mutual(fight,win) 
+        elif fight.winner.idx not in self.likelihood_dict.keys() or fight.loser.idx not in self.likelihood_dict.keys():
+            #print('building custom likelihood')
+            likelihood = self._define_likelihood_mutual(fight,win) 
+
         else:
             if win:
                 likelihood = self.likelihood_dict[fight.winner.idx,fight.loser.idx]
@@ -374,15 +378,18 @@ class Fish:
             other_fish = fight.loser
         else:
             other_fish = fight.winner
+        #print('other fish size:',other_fish.size)
         if self.effort_method[1] == 0:
 
+            #print('using simple likes')
             likelihood = self._use_simple_likelihood(fight,win)
             i_estimate = np.argmax(self.xs > self.estimate)
         else:
+            #print('using mutual')
             likelihood = self._use_mutual_likelihood(fight,win)
 
             #likelihood = self._define_likelihood_mutual(fight,win)
-
+        #print('likelihood at own size estimate:',likelihood[np.argmax(self.xs >= self.estimate)])
         self.win_record.append([other_fish.size,win,self.effort])
         pre_prior = self.prior
         self.prior = self._update(self.prior,likelihood,self.xs)

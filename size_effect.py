@@ -32,6 +32,8 @@ params_bayes.u_method = 'bayes'
 
 params_boost = copy.deepcopy(params_bayes)
 params_boost.u_method = 'size_boost'
+print('u_method',params_bayes.u_method)
+
 #s = Simulation(params)
 
 NAIVE = True
@@ -42,7 +44,7 @@ def run_tanks(naive=False,params=SimParams()):
     results = [[],[]]
 
 ## Let fish duke it out, then pull a fish out, check it's success against a size matched fish, and put it back in
-    iterations = 1000
+    iterations = 100
     f0 = Fish(0,effort_method=params.effort_method,update_method=params.u_method)
     if naive:
         pre_rounds = 0
@@ -59,34 +61,70 @@ def run_tanks(naive=False,params=SimParams()):
         focal_fish = fishes[0]
         focal_fish.i_shift = len(focal_fish.est_record) - 1 ## This index of the estimate just before the forced fight
 
+        focal_fish2 = copy.deepcopy(fishes[0])
+
         if focal_fish.size < 8 or focal_fish.size > 99:
             drop_count += 1
             continue
 
-        if np.random.rand() > .5:
-            fish_size = focal_fish.size
-            little = False
+        pre_est = focal_fish.estimate
+
+        if True: #Sanity check....The IDX MATTERS!!!!
+            matched_fish = copy.deepcopy(focal_fish) 
+            loser_match =  Fish(10,size=focal_fish.size,prior=True,effort_method=params.effort_method,update_method=params.u_method)
+            loser_small =  Fish(10,size=20,prior=True,effort_method=params.effort_method,update_method=params.u_method)
+
+            match_win =  Fight(focal_fish,loser_match,outcome_params=params.outcome_params,outcome=0)
+            small_win =  Fight(focal_fish2,loser_small,outcome_params=params.outcome_params,outcome=0)
+            match_win.run_outcome()
+            small_win.run_outcome()
+
+            focal_fish.update(True,match_win)
+            focal_fish2.update(True,small_win)
+
+            #print('results so far:',focal_fish.win_record[-1],focal_fish2.win_record[-1])
+            #print(focal_fish.est_record[-2:],focal_fish2.est_record[-2:])
+            assay_fight = Fight(focal_fish,matched_fish,outcome_params=params.outcome_params)
+            assay_fight2 = Fight(focal_fish2,matched_fish,outcome_params=params.outcome_params)
+            assay_outcome = assay_fight.run_outcome()
+
+            assay_outcome2 = assay_fight2.run_outcome()
+            littles.append(focal_fish2)
+            equals.append(focal_fish)
+
+            results[0].append(1-assay_outcome2)
+            results[1].append(1-assay_outcome)
+
         else:
-            fish_size = 20
-            little = True
-        loser_fish = Fish(0,size=fish_size,prior=True,effort_method=params.effort_method,update_method=params.u_method)
+            if np.random.rand() > .5:
+                fish_size = focal_fish.size
+                little = False
+            else:
+                fish_size = 20
+                little = True
+            loser_fish = Fish(0,size=fish_size,prior=True,effort_method=params.effort_method,update_method=params.u_method)
 
-        matched_fish = Fish(0,size=focal_fish.size,prior=True,effort_method=params.effort_method,update_method=params.u_method)
+            #matched_fish = Fish(0,size=focal_fish.size,prior=True,effort_method=params.effort_method,update_method=params.u_method)
+            matched_fish = copy.deepcopy(focal_fish)
+            matched_fish.idx = 1
 
-        winning_fight = Fight(focal_fish,loser_fish,outcome_params=params.outcome_params,outcome=0)
-        outcome = winning_fight.run_outcome()
-        #print(focal_fish.estimate)
-        focal_fish.update(1-outcome,winning_fight)
-        #print(focal_fish.estimate)
+            winning_fight = Fight(focal_fish,loser_fish,outcome_params=params.outcome_params,outcome=0)
+            outcome = winning_fight.run_outcome()
+            #print(winning_fight.winner.idx,outcome)
+            #print(focal_fish.estimate)
+            focal_fish.update(1-outcome,winning_fight)
+            #print(focal_fish.win_record[-1])
+            #print(pre_est,focal_fish.estimate)
+            #print(focal_fish.estimate)
 
-        match_fight = Fight(focal_fish,matched_fish,outcome_params=params.outcome_params)
-        test_outcome = match_fight.run_outcome()
-        if little:
-            littles.append(focal_fish)
-            results[0].append(1-test_outcome)
-        else:
-            equals.append(focal_fish) 
-            results[1].append(1-test_outcome)
+            match_fight = Fight(focal_fish,matched_fish,outcome_params=params.outcome_params)
+            test_outcome = match_fight.run_outcome()
+            if little:
+                littles.append(focal_fish)
+                results[1].append(1-test_outcome)
+            else:
+                equals.append(focal_fish) 
+                results[0].append(1-test_outcome)
 
     print('dropped n crappy fish:',drop_count)
     return equals,littles,results
