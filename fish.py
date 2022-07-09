@@ -112,7 +112,6 @@ class Fish:
         self.win_record.append([other_fish.size,win,self.effort])
         
     def _size_boost(self,win,fight,shift=2):
-        #print('before',self.estimate)
         if win:
             other_fish = fight.loser
             self.estimate += shift
@@ -124,7 +123,6 @@ class Fish:
         self.estimate = np.clip(self.estimate,7,100)
         self.win_record.append([other_fish.size,win,self.effort])
         self.est_record.append(self.estimate)
-        #print('after',self.estimate)
 
     def _get_cdf_prior(self,prior):
         normed_prior = self.prior / np.sum(self.prior)

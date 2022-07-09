@@ -20,7 +20,7 @@ s,e,l = .6,.3,.01
 
 params_bayes = SimParams()
 params_bayes.effort_method = [1,1]
-params_bayes.n_fights = 10 
+params_bayes.n_fights = 5
 params_bayes.n_iterations = 15
 params_bayes.n_fish = 5
 params_bayes.f_method = 'balanced'
@@ -110,6 +110,8 @@ def plot_tanks(winners,losers,naive=True,ax=None,shift=0):
     if naive:
         alph = .4
         ls = 'solid'
+        win_color = 'lemonchiffon'
+        lose_color = 'royalblue'
         if shift != 0:
             label = 'naive'
         else:
@@ -117,16 +119,18 @@ def plot_tanks(winners,losers,naive=True,ax=None,shift=0):
     else:
         alph = .8
         ls = 'dashed'
+        win_color = 'gold'
+        lose_color = 'darkblue'
         if shift != 0:
             label = 'experienced'
         else:
             label = None
     ax.plot(xs,mean_win,color='black',linestyle=ls,label=label)
-    ax.fill_between(xs,mean_win+sem_win,mean_win-sem_win,color='gold',alpha=alph)
+    ax.fill_between(xs,mean_win+sem_win,mean_win-sem_win,color=win_color,alpha=alph)
 
 #ax.plot(np.mean(loser_array,0),color='darkblue',linewidth=5)
     ax.plot(xs,mean_lose,color='lightgray',linestyle=ls)
-    ax.fill_between(xs,mean_lose+sem_lose,mean_lose-sem_lose,color='darkblue',alpha=alph)
+    ax.fill_between(xs,mean_lose+sem_lose,mean_lose-sem_lose,color=lose_color,alpha=alph)
 
     ax.set_xlabel('Fights since size-matched challenge')
     ax.set_ylabel('Difference in estimate')
@@ -145,6 +149,23 @@ print('naive loser win-rate:',np.mean(results_naive[0]),np.std(results_naive[0] 
 
 print('exp winner win-rate:',np.mean(results_exp[1]),np.std(results_exp[1] / np.sqrt(len(results_exp[1]))))
 print('exp loser win-rate:',np.mean(results_exp[0]),np.std(results_exp[0] / np.sqrt(len(results_exp[0]))))
+
+print('exp winner estimate:',np.mean([f.estimate for f in winners_exp]))
+print('exp winner size:',np.mean([f.size for f in winners_exp]))
+
+fig2,ax2 = plt.subplots()
+## Bars are Winners (naive vs exp) and Losers (naive vs exp)
+
+bars = [np.mean(results_naive[1]),np.mean(results_exp[1]),np.mean(results_naive[0]),np.mean(results_exp[0])]
+err = np.array([np.std(results_naive[1])/ np.sqrt(len(results_naive[1])),
+                np.std(results_exp[1])/ np.sqrt(len(results_exp[1])),
+                np.std(results_naive[0])/ np.sqrt(len(results_naive[0])),
+                np.std(results_exp[0])/ np.sqrt(len(results_exp[0]))])
+ax2.bar([0,1,3,4],bars,yerr=err,color=['lemonchiffon','gold','royalblue','darkblue'])
+ax2.axhline(.5,linestyle=':')
+
+#fig2.show()
+#plt.show()
 
 b_shift = -15
 winners_naive,losers_naive,results_naive = run_tanks(naive=True,params=params_boost)
@@ -170,6 +191,7 @@ ax.set_yticklabels([-5,0,5,-5,0,5])
 #ax.set_xticklabels([-2,0,2,4,6,8,10])
 
 fig.legend(loc='upper left')
+#fig.show()
 
 plt.show()
 

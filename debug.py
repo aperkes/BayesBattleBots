@@ -16,7 +16,7 @@ e_space = [0.0,0.2,0.4,0.6,0.8,1.0]
 l_space = [0.0,.05,0.1,0.2,0.3,0.5]
 results_array = np.full([6,6,6,3],np.nan)
 params = SimParams()
-params.effort_method = [1,0]
+params.effort_method = [1,1]
 params.n_fights = 500
 params.n_iterations = 1000 
 params.n_fish = 7
@@ -28,7 +28,7 @@ if HOCK:
     params.f_outcome = 'hock'
     params.outcome_params = [0.6,0.3,.05]
 else:
-    params.u_method = 'size_boost'
+    params.u_method = 'bayes'
     params.f_outcome = 'math'
     params.outcome_params = [0.6,0.3,.05]
 
