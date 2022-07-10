@@ -109,6 +109,7 @@ class Fight():
         max_size = max([f1_size,f2_size])
         f1_rel_size = f1_size / max_size
         f2_rel_size = f2_size / max_size
+
         f1_effort = self.fish1.choose_effort(self.fish2)
         f2_effort = self.fish2.choose_effort(self.fish1)
         self.fish1.effort = f1_effort
@@ -122,7 +123,11 @@ class Fight():
         min_normed = min_wager / max([f1_wager,f2_wager,.0001])
 ## Alternatively:
         ##min_wager = min([f1_wager,f2_wager]) / (f1_wager + f2_wager)
-        f_min = np.argmin([f1_wager,f2_wager]) 
+        #f_min = np.argmin([f1_wager,f2_wager]) ## For some reason, this biases it.
+        if f1_wager == f2_wager:
+            f_min = np.random.randint(2)
+        else:
+            f_min = 1 - np.argmax([f1_wager,f2_wager])
         p_win = self._wager_curve(min_normed,l)
         if random.random() < p_win: ## probability that the "lower invested" fish wins
             winner = f_min

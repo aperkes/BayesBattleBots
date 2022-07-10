@@ -23,7 +23,6 @@ s,e,l = .6,.3,.01
 params_bayes = SimParams()
 params_bayes.effort_method = [1,1]
 params_bayes.n_fights = 5
-params_bayes.n_iterations = 15
 params_bayes.n_fish = 6
 params_bayes.f_method = 'balanced'
 params_bayes.f_outcome = 'math'
@@ -32,7 +31,6 @@ params_bayes.u_method = 'bayes'
 
 params_boost = copy.deepcopy(params_bayes)
 params_boost.u_method = 'size_boost'
-print('u_method',params_bayes.u_method)
 
 #s = Simulation(params)
 
@@ -46,6 +44,7 @@ def run_tanks(naive=False,params=SimParams()):
 ## Let fish duke it out, then pull a fish out, check it's success against a size matched fish, and put it back in
     iterations = 500
     f0 = Fish(0,effort_method=params.effort_method,update_method=params.u_method)
+    print('u_method',params.u_method)
     if naive:
         pre_rounds = 0
     else:
@@ -63,7 +62,7 @@ def run_tanks(naive=False,params=SimParams()):
 
         focal_fish2 = copy.deepcopy(fishes[0])
 
-        if focal_fish.size < 8 or focal_fish.size > 99:
+        if focal_fish.estimate < 8 or focal_fish.estimate > 99:
             drop_count += 1
             continue
 
@@ -85,15 +84,18 @@ def run_tanks(naive=False,params=SimParams()):
 
             #print('results so far:',focal_fish.win_record[-1],focal_fish2.win_record[-1])
             #print(focal_fish.est_record[-2:],focal_fish2.est_record[-2:])
-            if True:
+            if False:
                 assay_fight = Fight(focal_fish,matched_fish,outcome_params=params.outcome_params)
                 assay_fight2 = Fight(focal_fish2,matched_fish2,outcome_params=params.outcome_params)
             else:
                 assay_fight = Fight(matched_fish,focal_fish,outcome_params=params.outcome_params)
                 assay_fight2 = Fight(matched_fish2,focal_fish2,outcome_params=params.outcome_params)
             #print(focal_fish.estimate,focal_fish2.estimate,matched_fish.estimate)
+            #print(focal_fish.estimate,matched_fish.estimate)
             assay_outcome = assay_fight.run_outcome()
-            #print(matched_fish.effort)
+            if params.u_method == 'size_boost':
+                print(focal_fish.effort,matched_fish.effort)
+                print(matched_fish.effort)
 
             assay_outcome2 = assay_fight2.run_outcome()
             #print(matched_fish.effort)
@@ -102,8 +104,8 @@ def run_tanks(naive=False,params=SimParams()):
             equals.append(focal_fish)
             #print('effort:',focal_fish.effort,focal_fish2.effort,matched_fish.effort)
 
-            results[1].append(1-assay_outcome2)
-            results[0].append(1-assay_outcome)
+            results[1].append(assay_outcome2)
+            results[0].append(assay_outcome)
 
         else:
             if np.random.rand() > .5:
@@ -142,29 +144,62 @@ def run_tanks(naive=False,params=SimParams()):
 #fig2,ax2 = plt.subplots()
 
 equals_bayes,littles_bayes,results_bayes = run_tanks(naive=False,params=params_bayes)
+equals_boost,littles_boost,results_boost = run_tanks(naive=False,params=params_boost)
 #ax = plot_tanks(winners_bayes,naive=False,ax=ax)
 
 print('#### Bayes updating: ####')
-print('equal win-rate:',np.mean([f.win_record[-1][1] for f in equals_bayes]))
-print('little win-rate:',np.mean([f.win_record[-1][1] for f in littles_bayes]))
-print('equal win-rate:',np.mean(results_bayes[0]),np.std(results_bayes[0] / np.sqrt(len(results_bayes[0]))))
-print('little win-rate:',np.mean(results_bayes[1]),np.std(results_bayes[1] / np.sqrt(len(results_bayes[1]))))
+bayes_mean_equal = np.mean(results_bayes[0])
+bayes_sem_equal = np.std(results_bayes[0]) / np.sqrt(len(results_bayes[0]))
 
+bayes_mean_little = np.mean(results_bayes[1])
+bayes_sem_little = np.std(results_bayes[1]) / np.sqrt(len(results_bayes[1]))
+
+print('equal win-rate:',bayes_mean_equal,bayes_sem_equal)
+print('little win-rate:',bayes_mean_little,bayes_sem_little)
+#print('equal win-rate:',np.mean(results_bayes[0]),np.std(results_bayes[0] / np.sqrt(len(results_bayes[0]))))
+#print('little win-rate:',np.mean(results_bayes[1]),np.std(results_bayes[1] / np.sqrt(len(results_bayes[1]))))
+
+
+print('#### Boost updating: ####')
+boost_mean_equal = np.mean(results_boost[0])
+boost_sem_equal = np.std(results_boost[0]) / np.sqrt(len(results_boost[0]))
+
+boost_mean_little = np.mean(results_boost[1])
+boost_sem_little = np.std(results_boost[1]) / np.sqrt(len(results_boost[1]))
+
+print('equal win-rate:',boost_mean_equal,boost_sem_equal)
+print('little win-rate:',boost_mean_little,boost_sem_little)
+
+#print('equal win-rate:',np.mean(results_bayes[0]),np.std(results_bayes[0] / np.sqrt(len(results_bayes[0]))))
+#print('little win-rate:',np.mean(results_bayes[1]),np.std(results_bayes[1] / np.sqrt(len(results_bayes[1]))))
 ## Look at size diff vs winer effect
 
 
 if True:
     equal_shift = [f.est_record[f.i_shift+1] - f.est_record[f.i_shift] for f in equals_bayes]
     little_shift = [f.est_record[f.i_shift+1] - f.est_record[f.i_shift] for f in littles_bayes]
-    equal_shift_ = [f.est_record_[f.i_shift+1] - f.est_record_[f.i_shift] for f in equals_bayes]
-    little_shift_ = [f.est_record_[f.i_shift+1] - f.est_record_[f.i_shift] for f in littles_bayes]
+
+    equal_shift_boost = [f.est_record[f.i_shift+1] - f.est_record[f.i_shift] for f in equals_boost]
+    little_shift_boost = [f.est_record[f.i_shift+1] - f.est_record[f.i_shift] for f in littles_boost]
+    #equal_shift_ = [f.est_record_[f.i_shift+1] - f.est_record_[f.i_shift] for f in equals_bayes]
+    #little_shift_ = [f.est_record_[f.i_shift+1] - f.est_record_[f.i_shift] for f in littles_bayes]
 
     print(np.mean(equal_shift),np.mean(little_shift))
     print(np.std(equal_shift),np.std(little_shift))
 
-    print(np.mean(equal_shift_),np.mean(little_shift_))
-    print(np.std(equal_shift_),np.std(little_shift_))
+    print(np.mean(equal_shift_boost),np.mean(little_shift_boost))
+    print(np.std(equal_shift_boost),np.std(little_shift_boost))
+    #print(np.mean(equal_shift_),np.mean(little_shift_))
+    #print(np.std(equal_shift_),np.std(little_shift_))
 
+bars = [bayes_mean_equal,bayes_mean_little,boost_mean_equal,boost_mean_little]
+errs = [bayes_sem_equal,bayes_sem_little,boost_sem_equal,boost_sem_little]
+
+fig,ax = plt.subplots()
+ax.bar([0,1,3,4],bars,yerr=errs,color='gray')
+ax.axhline(.5,color='black',linestyle=':')
+
+fig.savefig('./imgs/test.png',dpi=300)
 
 ## I don't need this, but it's here if I change my mind:
 def plot_tanks(winners,naive=True,ax=None,shift=0):

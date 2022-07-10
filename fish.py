@@ -68,6 +68,7 @@ class Fish:
         self.effort_method = effort_method
         self.decay_all = decay_all
         self.decay = decay
+        self.discrete = False
         if update_method == 'bayes':
             #print('using bayes')
             self.update = self.update_prior
@@ -75,10 +76,13 @@ class Fish:
             self.update = self.update_hock
         elif update_method == 'fixed':
             self.update = self._set_boost
+            self.discrete = True
         elif update_method == 'decay':
             self.update = self._set_boost
+            self.discrete = True
         elif update_method == 'size_boost':
             self.update = self._size_boost
+            self.discrete = True
         else:
             #print('setting no update')
             self.update = self.no_update
@@ -456,7 +460,23 @@ class Fish:
         return self.name,self.size,self.estimate,self.win_record
     
     ## This needs to be divied up by strategy somehow...
+    def choose_effort_discrete(self,f_opp,strategy=None):
+        if strategy is None:
+            strategy = self.effort_method
+        if strategy == [1,0]:
+            effort = self.estimate / 100
+        elif strategy == [1,1]:
+            effort = np.clip(self.estimate / (2 * f_opp.size),0,1)
+        elif strategy == [0,1]:
+            effort = 1 - f_opp.size / 100
+        else:
+            effort = 1
+        effort = self._boost_effort(effort)
+        return effort
+
     def choose_effort(self,f_opp,strategy=None):
+        if self.discrete:
+            return self.choose_effort_discrete(f_opp,strategy)
         if strategy is None:
             strategy = self.effort_method
 ## The latter strategy here is more in keeping with the probabilistic mutual assessment, just against an average fish
