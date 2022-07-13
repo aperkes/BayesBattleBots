@@ -17,7 +17,7 @@ from fish import Fish
 
 ## Simple-ish object to keep track of matchups (and decide outcome if necessary)
 class Fight():
-    def __init__(self,fish1,fish2,outcome="math",outcome_params=[.3,.3,.3],level=None,scale=.1,idx=0):
+    def __init__(self,fish1,fish2,outcome="math",outcome_params=[.5,.5,.1],level=None,scale=.1,idx=0):
         self.fish1 = fish1
         self.fish2 = fish2
         self.fishes = [fish1,fish2]
