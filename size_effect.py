@@ -39,10 +39,12 @@ NAIVE = True
 def run_tanks(naive=False,params=SimParams()):
     drop_count = 0
     equals,littles = [],[]
-    results = [[],[]]
+    equal_losers,little_losers = [],[]
 
+    results = [[],[]]
+    loss_results = [[],[]]
 ## Let fish duke it out, then pull a fish out, check it's success against a size matched fish, and put it back in
-    iterations = 500
+    iterations = 1000
     f0 = Fish(0,effort_method=params.effort_method,update_method=params.u_method)
     print('u_method',params.u_method)
     if naive:
@@ -76,11 +78,25 @@ def run_tanks(naive=False,params=SimParams()):
 
             match_win =  Fight(focal_fish,loser_match,outcome_params=params.outcome_params,outcome=0)
             small_win =  Fight(focal_fish2,loser_small,outcome_params=params.outcome_params,outcome=0)
+
+            focal_loser = copy.deepcopy(focal_fish)
+            focal_loser_small = copy.deepcopy(focal_fish)
+
+            match_loss =  Fight(focal_fish,loser_match,outcome_params=params.outcome_params,outcome=1)
+            small_loss =  Fight(focal_fish2,loser_small,outcome_params=params.outcome_params,outcome=1)
+
+
+            match_loss.run_outcome()
+            small_loss.run_outcome()
+
             match_win.run_outcome()
             small_win.run_outcome()
 
             focal_fish.update(True,match_win)
             focal_fish2.update(True,small_win)
+
+            focal_loser.update(False,match_loss)
+            focal_loser_small.update(False,small_loss)
 
             #print('results so far:',focal_fish.win_record[-1],focal_fish2.win_record[-1])
             #print(focal_fish.est_record[-2:],focal_fish2.est_record[-2:])
@@ -90,22 +106,34 @@ def run_tanks(naive=False,params=SimParams()):
             else:
                 assay_fight = Fight(matched_fish,focal_fish,outcome_params=params.outcome_params)
                 assay_fight2 = Fight(matched_fish2,focal_fish2,outcome_params=params.outcome_params)
+                assay_fight3 = Fight(matched_fish,focal_loser,outcome_params=params.outcome_params)
+                assay_fight4 = Fight(matched_fish,focal_loser_small,outcome_params=params.outcome_params)
             #print(focal_fish.estimate,focal_fish2.estimate,matched_fish.estimate)
             #print(focal_fish.estimate,matched_fish.estimate)
             assay_outcome = assay_fight.run_outcome()
             if params.u_method == 'size_boost':
-                print(focal_fish.effort,matched_fish.effort)
-                print(matched_fish.effort)
+                pass
+                #print(focal_fish.effort,matched_fish.effort)
+                #print(matched_fish.effort)
 
             assay_outcome2 = assay_fight2.run_outcome()
+            assay_outcome3 = assay_fight3.run_outcome()
+            assay_outcome4 = assay_fight4.run_outcome()
+
             #print(matched_fish.effort)
 
             littles.append(focal_fish2)
             equals.append(focal_fish)
+
+            equal_losers.append(focal_loser)
+            little_losers.append(focal_loser_small)
             #print('effort:',focal_fish.effort,focal_fish2.effort,matched_fish.effort)
 
             results[1].append(assay_outcome2)
             results[0].append(assay_outcome)
+
+            loss_results[1].append(assay_outcome4)
+            loss_results[0].append(assay_outcome3)
 
         else:
             if np.random.rand() > .5:
@@ -139,12 +167,12 @@ def run_tanks(naive=False,params=SimParams()):
                 results[0].append(1-test_outcome)
 
     print('dropped n crappy fish:',drop_count)
-    return equals,littles,results
+    return [equals,littles,results],[equal_losers,little_losers,loss_results]
 
 #fig2,ax2 = plt.subplots()
 
-equals_bayes,littles_bayes,results_bayes = run_tanks(naive=False,params=params_bayes)
-equals_boost,littles_boost,results_boost = run_tanks(naive=False,params=params_boost)
+[equals_bayes,littles_bayes,results_bayes],[equals_bayes_loss,littles_bayes_loss,results_bayes_loss] = run_tanks(naive=False,params=params_bayes)
+[equals_boost,littles_boost,results_boost],[equals_boost_loss,littles_boost_loss,results_boost_loss] = run_tanks(naive=False,params=params_boost)
 #ax = plot_tanks(winners_bayes,naive=False,ax=ax)
 
 print('#### Bayes updating: ####')
@@ -154,8 +182,15 @@ bayes_sem_equal = np.std(results_bayes[0]) / np.sqrt(len(results_bayes[0]))
 bayes_mean_little = np.mean(results_bayes[1])
 bayes_sem_little = np.std(results_bayes[1]) / np.sqrt(len(results_bayes[1]))
 
+bayes_mean_equal_loss = np.mean(results_bayes_loss[0])
+bayes_sem_equal_loss = np.std(results_bayes_loss[0]) / np.sqrt(len(results_bayes_loss[0]))
+
+bayes_mean_little_loss = np.mean(results_bayes_loss[1])
+bayes_sem_little_loss = np.std(results_bayes_loss[1]) / np.sqrt(len(results_bayes_loss[1]))
 print('equal win-rate:',bayes_mean_equal,bayes_sem_equal)
 print('little win-rate:',bayes_mean_little,bayes_sem_little)
+print('equal win-rate (after loss):',bayes_mean_equal_loss,bayes_sem_equal_loss)
+print('little win-rate (after loss):',bayes_mean_little_loss,bayes_sem_little_loss)
 #print('equal win-rate:',np.mean(results_bayes[0]),np.std(results_bayes[0] / np.sqrt(len(results_bayes[0]))))
 #print('little win-rate:',np.mean(results_bayes[1]),np.std(results_bayes[1] / np.sqrt(len(results_bayes[1]))))
 
@@ -167,9 +202,18 @@ boost_sem_equal = np.std(results_boost[0]) / np.sqrt(len(results_boost[0]))
 boost_mean_little = np.mean(results_boost[1])
 boost_sem_little = np.std(results_boost[1]) / np.sqrt(len(results_boost[1]))
 
+boost_mean_equal_loss = np.mean(results_boost_loss[0])
+boost_sem_equal_loss = np.std(results_boost_loss[0]) / np.sqrt(len(results_boost_loss[0]))
+
+boost_mean_little_loss = np.mean(results_boost_loss[1])
+boost_sem_little_loss = np.std(results_boost_loss[1]) / np.sqrt(len(results_boost_loss[1]))
+
+
 print('equal win-rate:',boost_mean_equal,boost_sem_equal)
 print('little win-rate:',boost_mean_little,boost_sem_little)
 
+print('equal win-rate (post loss):',boost_mean_equal_loss,boost_sem_equal_loss)
+print('little win-rate (post loss):',boost_mean_little_loss,boost_sem_little_loss)
 #print('equal win-rate:',np.mean(results_bayes[0]),np.std(results_bayes[0] / np.sqrt(len(results_bayes[0]))))
 #print('little win-rate:',np.mean(results_bayes[1]),np.std(results_bayes[1] / np.sqrt(len(results_bayes[1]))))
 ## Look at size diff vs winer effect
@@ -195,11 +239,22 @@ if True:
 bars = [bayes_mean_equal,bayes_mean_little,boost_mean_equal,boost_mean_little]
 errs = [bayes_sem_equal,bayes_sem_little,boost_sem_equal,boost_sem_little]
 
-fig,ax = plt.subplots()
-ax.bar([0,1,3,4],bars,yerr=errs,color='gray')
-ax.axhline(.5,color='black',linestyle=':')
+loser_bars = [bayes_mean_equal_loss,bayes_mean_little_loss,boost_mean_equal_loss,boost_mean_little_loss]
+loser_errs = [bayes_sem_equal_loss,bayes_sem_little_loss,boost_sem_equal_loss,boost_sem_little_loss]
 
-fig.savefig('./imgs/test.png',dpi=300)
+bars = np.array(bars) - .5
+loser_bars = np.array(loser_bars) - .5
+
+fig,ax = plt.subplots()
+
+ax.bar([0,1,3,4],bars,bottom=.5,yerr=errs,color=['gold','#FFD70040','gold','#FFD70040'])
+ax.bar([0,1,3,4],loser_bars,bottom=.5,yerr=errs,color=['darkblue','#00008B40','darkblue','#00008B40'])
+
+ax.axhline(.5,color='black',linestyle=':')
+ax.set_ylim([0.2,0.8])
+
+fig.savefig('./imgs/size_effect.svg',dpi=300)
+plt.show()
 
 ## I don't need this, but it's here if I change my mind:
 def plot_tanks(winners,naive=True,ax=None,shift=0):

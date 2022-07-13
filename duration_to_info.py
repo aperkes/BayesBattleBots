@@ -20,7 +20,6 @@ s,e,l = .6,.3,.01
 params = SimParams()
 params.effort_method = [1,1]
 params.n_fights = 5 
-params.n_iterations = 15
 params.n_fish = 5
 params.f_method = 'balanced'
 params.u_method = 'bayes'
@@ -33,7 +32,7 @@ biggers,smallers = [],[]
 final_win,final_loss = [],[]
 
 ## Let fish duke it out, then pull a fish out, let it win, and put it back in with the rest.
-iterations = 1000
+iterations = 100
 scale = 1
 
 
@@ -124,6 +123,10 @@ est_bigs,est_smalls = [],[]
 
 ax.plot([0,0],[0,1],color='gold',label='winners')
 ax.plot([0,0],[0,1],color='darkblue',label='losers')
+
+winner_array = np.empty([len(winners),len(winners[0].est_record)])
+loser_array = np.empty([len(losers),len(losers[0].est_record)])
+
 for f_i in range(len(winners)):
     f = winners[f_i]
     pre_success = np.mean(np.array(f.win_record)[:n_rounds-1,1])
@@ -135,7 +138,8 @@ for f_i in range(len(winners)):
     est_pre.append(pre_estimate)
     est_post.append(post_estimate)
     #f = tank.fishes[0]
-    ax.plot(np.array(f.est_record)-f.est_record[n_rounds-1],color='gold',alpha=.1)
+    winner_array[f_i] = f.est_record-f.est_record[n_rounds-1]
+    ax.plot(np.array(f.est_record)-f.est_record[n_rounds-1],color='gold',alpha=.01)
     jitter = (np.random.rand() - .5) * .01
     #ax.plot(np.array(f.win_record)[:,1] + jitter,color='green',alpha=.01)
     if biggers[f_i].idx != f.idx:
@@ -150,13 +154,26 @@ for f_i in range(len(losers)):
     loser_pre.append(pre_success)
     loser_post.append(post_success)
     ys = np.array(f.est_record) - f.est_record[n_rounds-1]
-    ax.plot(ys,color='darkblue',alpha=.1)
+    loser_array[f_i] = ys
+
+    ax.plot(ys,color='darkblue',alpha=.01)
     if smallers[f_i].idx != f.idx:
         est_diff = smallers[f_i].size-f.est_record[n_rounds-1]
         est_smalls.append(est_diff) ## Careful...
 
     #print(f.est_record)
 
+winner_mean = np.mean(winner_array,0)
+winner_sem = np.std(winner_array,0) / np.sqrt(len(winner_array))
+
+loser_mean = np.mean(loser_array,0)
+loser_sem = np.std(loser_array,0) / np.sqrt(len(loser_array))
+
+ax.plot(winner_mean,color='gold')
+ax.fill_between(np.arange(len(winner_mean)),winner_mean+winner_sem,winner_mean-winner_sem,alpha=.8,color='gold')
+
+ax.plot(loser_mean,color='darkblue')
+ax.fill_between(np.arange(len(loser_mean)),loser_mean+loser_sem,loser_mean-loser_sem,alpha=.8,color='darkblue')
 if False: ## Show the size to next biggest and next smallest
     ax.axhline(np.mean(est_bigs),color='gray')
     ax.axhline(np.mean(est_smalls),color='gray')
@@ -189,7 +206,7 @@ ax.axvline(params.n_fights * (params.n_fish-1),color='black',linestyle=':',label
 ax.axhline(0,color='black',label='estimate prior to staged fight')
 ax.set_xlim([n_rounds-6.5,n_rounds+14.5])
 ax.set_xticks(np.arange(15,37,5))
-ax.set_ylim([-10.5,10.5])
+ax.set_ylim([-5.5,5.5])
 ax.legend(loc='upper right')
 ax.set_ylabel('Normalized size estimate')
 ax.set_xlabel('Contest number')
@@ -197,5 +214,6 @@ ax.set_xlabel('Contest number')
 fig.tight_layout()
 fig.savefig('./imgs/win_loss.png',dpi=300)
 fig.savefig('./imgs/win_loss.svg')
+plt.show()
 
 print('Done!')

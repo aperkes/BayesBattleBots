@@ -7,6 +7,7 @@ from simulation import Simulation,SimParams
 from matplotlib import pyplot as plt
 
 import numpy as np
+import copy
 
 #s_space = [0.0,.25,.5,.75,1.0]
 #e_space = [0.0,.25,.5,.75,1.0]
@@ -17,9 +18,9 @@ l_space = [0.0,.05,0.1,0.2,0.3,0.5]
 results_array = np.full([6,6,6,3],np.nan)
 params = SimParams()
 params.effort_method = [1,1]
-params.n_fights = 500
+params.n_fights = 200
 params.n_iterations = 1000 
-params.n_fish = 7
+params.n_fish = 4
 params.f_method = 'random'
 HOCK = False
 
@@ -28,7 +29,7 @@ if HOCK:
     params.f_outcome = 'hock'
     params.outcome_params = [0.6,0.3,.05]
 else:
-    params.u_method = 'bayes'
+    params.u_method = 'size_boost'
     params.f_outcome = 'math'
     params.outcome_params = [0.6,0.3,.05]
 
@@ -44,12 +45,22 @@ if False:
     print(np.std(all_stats,axis=0))
 
 ## Check whether the tank is working and plot this history
-elif False:
-    f = Fish()
+elif True:
+    f = Fish(prior=True)
+    f2 = copy.deepcopy(f)
+    matched_fight = Fight(f,f2,outcome=0)
     fig,ax = plt.subplots()
-    ax.plot(f.xs,f.naive_likelihood)
-    fig.show()
-    plt.show()
+    matched_fight.run_outcome()
+    likelihood = f._use_mutual_likelihood(matched_fight)
+    ax.plot(f.xs,likelihood,color='tab:orange')
+    fig.savefig('./imgs/naive_likelihood.svg')
+    fig2,ax2 = plt.subplots()
+    ax2.plot(f.xs,f.prior,color='black')
+    f.update(True,matched_fight)
+    ax2.plot(f.xs,f.prior,color='gold')
+    fig2.savefig('./imgs/prior.svg')
+    #fig.show()
+    #plt.show()
 
 elif True:
     if True:
@@ -80,8 +91,14 @@ elif True:
     print(tank.sizes)
     print(np.arange(len(fishes))[np.argsort(tank.estimates)])
     print(np.arange(len(fishes))[np.argsort(tank.sizes)])
-    #fig.savefig('test.jpg',dpi=300)
-    fig.show()
+    ax.set_ylim([0,100])
+    if params.u_method == 'size_boost':
+        fig.savefig('./imgs/fixed_estimates.jpg',dpi=300)
+        fig.savefig('./imgs/fixed_estimates.svg')
+    else:
+        fig.savefig('./imgs/bayes_estimates.svg')
+    #fig.show()
+    #plt.show()
 
     fig2,ax2 = tank.plot_effort()
 
@@ -97,7 +114,6 @@ elif True:
     fig3,ax3 = plt.subplots()
     ax3.scatter(range(len(effort_record)),effort_record,alpha=.1) 
     fig3.show()
-    plt.show()
 ## Check whether the fights are working:
 elif True:
     params.update_method = 'bayes'
