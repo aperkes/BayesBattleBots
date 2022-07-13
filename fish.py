@@ -45,6 +45,7 @@ class Fish:
             self.size = np.random.normal(mean,sd)
         if prior == True:
             self.prior = norm.pdf(self.xs,self.size,self.size/5)
+            self.prior = prior / np.sum(prior)
         elif prior is not None:
             self.prior = pior
         else:
