@@ -29,11 +29,14 @@ naive_escalation = {
 class Fish:
     def __init__(self,idx=0,age=50,size=None,
                  prior=None,likelihood=None,likelihood_dict=None,hock_estimate=.5,update_method='bayes',decay=2,decay_all=False,
-                 effort_method=[1,1],fight_params=[.3,.3,.1],escalation=naive_escalation,xs=np.linspace(7,100,500)):
+                 effort_method=[1,1],fight_params=[.3,.3,.1],escalation=naive_escalation,xs=np.linspace(7,100,500),
+                 r_rhp=.01,a_growth=True):
         self.idx = idx
         self.name = idx
         self.age = age
         self.xs = xs
+        self.r_rhp = r_rhp
+        self.a_growth = a_growth
         if size is not None:
             if size == 0:   
                 self.size = self._growth_func(self.age)
@@ -91,6 +94,9 @@ class Fish:
         self.effort = 0
         self.wager = 0
         self.boost = 0 ## Initial boost, needs to be 0, will change with winner/loser effect
+        self.energy = 1 ## add some cost to competing
+        self.alive = True
+        self.s_max = 100
         ## Define naive prior/likelihood for 'SA'
         self.naive_params = fight_params
 ## This should be an average fish.
@@ -379,10 +385,18 @@ class Fish:
 ## A cleaner version so I'm not passing so many arguments
 ## What if I want the old way though...
     def update_prior(self,win,fight):
+## Establish fishes and impose costs and benefits
         if win:
             other_fish = fight.loser
+            self.energy = np.round(self.energy - fight.level + fight.food,2)
+            self.energy = np.clip(self.energy,0,1)
+            self.size = self.size + self.r_rhp * (self.s_max - self.size) ** self.a_growth
         else:
             other_fish = fight.winner
+            self.energy = np.round(self.energy - fight.level,2)
+        if self.energy <= 0:
+            self.energy = 0
+            self.alive = False
         #print('other fish size:',other_fish.size)
         if self.effort_method[1] == 0:
 
@@ -412,7 +426,6 @@ class Fish:
         
         self.estimate = estimate
         self.est_record.append(estimate)
-        
         return self.prior,self.estimate
 
     def decay_prior(self,store=False):
@@ -514,6 +527,11 @@ class Fish:
             effort = 1
         effort = self._boost_effort(effort)
         #print('effort post boost:',effort)
+        return effort
+
+    def choose_effort_energy(self,f_opp,strategy=None):
+        effort = self.choose_effort(f_opp,strategy)
+        effort = np.clip(effort,0,self.energy)
         return effort
 
 ## Proc effort and decay when you check it

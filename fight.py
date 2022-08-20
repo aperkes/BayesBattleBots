@@ -17,7 +17,7 @@ from fish import Fish
 
 ## Simple-ish object to keep track of matchups (and decide outcome if necessary)
 class Fight():
-    def __init__(self,fish1,fish2,outcome="math",outcome_params=[.5,.5,.1],level=None,scale=.1,idx=0):
+    def __init__(self,fish1,fish2,outcome="math",outcome_params=[.5,.5,.1],level=None,scale=.1,idx=0,food=True):
         self.fish1 = fish1
         self.fish2 = fish2
         self.fishes = [fish1,fish2]
@@ -27,6 +27,7 @@ class Fight():
         self.params = outcome_params
         self.scale=scale
         self.idx = idx
+        self.food = food
         
     def run_outcome(self):
         if self.mechanism == 'chance':
@@ -110,8 +111,8 @@ class Fight():
         f1_rel_size = f1_size / max_size
         f2_rel_size = f2_size / max_size
 
-        f1_effort = self.fish1.choose_effort(self.fish2)
-        f2_effort = self.fish2.choose_effort(self.fish1)
+        f1_effort = self.fish1.choose_effort_energy(self.fish2)
+        f2_effort = self.fish2.choose_effort_energy(self.fish1)
         self.fish1.effort = f1_effort
         self.fish2.effort = f2_effort
         f1_wager = (f1_rel_size ** s) * (f1_effort ** e)

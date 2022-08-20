@@ -29,7 +29,7 @@ if HOCK:
     params.f_outcome = 'hock'
     params.outcome_params = [0.6,0.3,.05]
 else:
-    params.u_method = 'size_boost'
+    params.u_method = 'bayes'
     params.f_outcome = 'math'
     params.outcome_params = [0.6,0.3,.05]
 
@@ -45,7 +45,7 @@ if False:
     print(np.std(all_stats,axis=0))
 
 ## Check whether the tank is working and plot this history
-elif True:
+elif False:
     f = Fish(prior=True)
     f2 = copy.deepcopy(f)
     matched_fight = Fight(f,f2,outcome=0)
@@ -92,28 +92,31 @@ elif True:
     print(np.arange(len(fishes))[np.argsort(tank.estimates)])
     print(np.arange(len(fishes))[np.argsort(tank.sizes)])
     ax.set_ylim([0,100])
-    if params.u_method == 'size_boost':
-        fig.savefig('./imgs/fixed_estimates.jpg',dpi=300)
-        fig.savefig('./imgs/fixed_estimates.svg')
-    else:
-        fig.savefig('./imgs/bayes_estimates.svg')
-    #fig.show()
-    #plt.show()
+    print([f.energy for f in fishes])
+    print([f.alive for f in fishes])
+    if False:
+        if params.u_method == 'size_boost':
+            fig.savefig('./imgs/fixed_estimates.jpg',dpi=300)
+            fig.savefig('./imgs/fixed_estimates.svg')
+        else:
+            fig.savefig('./imgs/bayes_estimates.svg')
+        #fig.show()
+        #plt.show()
 
-    fig2,ax2 = tank.plot_effort()
+        fig2,ax2 = tank.plot_effort()
 
-    effort_record = [f.level for f in tank.fight_list]
-    upset_count = 0
-    for f in tank.fight_list:
-        if f.winner.size < f.loser.size:
-            upset_count += 1
+        effort_record = [f.level for f in tank.fight_list]
+        upset_count = 0
+        for f in tank.fight_list:
+            if f.winner.size < f.loser.size:
+                upset_count += 1
 
-    print(upset_count / len(tank.fight_list))
+        print(upset_count / len(tank.fight_list))
 
-    #print(effort_record) 
-    fig3,ax3 = plt.subplots()
-    ax3.scatter(range(len(effort_record)),effort_record,alpha=.1) 
-    fig3.show()
+        #print(effort_record) 
+        fig3,ax3 = plt.subplots()
+        ax3.scatter(range(len(effort_record)),effort_record,alpha=.1) 
+        fig3.show()
 ## Check whether the fights are working:
 elif True:
     params.update_method = 'bayes'
