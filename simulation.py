@@ -5,7 +5,7 @@ import numpy as np
 import itertools,random
 
 from scipy.special import rel_entr
-from scipy.stats import mode,norm
+from scipy.stats import mode,norm,chi2
 from scipy.stats import spearmanr
 from scipy.ndimage import convolve
 from sklearn.metrics import auc
@@ -148,6 +148,10 @@ class Simulation():
                 p = min(self._applebys[N].values())
             else:
                 p = max(self._applebys[N].values())
+        else:
+            df = N*(N-1)*(N-2)/(N-4)**2
+            chi_stat = (8/(N-4)) * ((N*(N-1)*(N-2)/24) - d + 0.5) + df
+            p = 1 - chi2.cdf(chi_stat,df)
         linearity = 1 - (d / D) ## Percentage of non triadic interactions
         return linearity,[d,p]
         
@@ -194,7 +198,8 @@ class Simulation():
         for f in tank.fishes: # add all the fishes to the 'league'
             eloTank.addPlayer(f.idx) 
         for c in tank.fight_list: # work through all the fights (slow...)
-            eloTank.gameOver(winner = c.winner.idx,loser=c.loser.idx)
+            if c.outcome is not None:
+                eloTank.gameOver(winner = c.winner.idx,loser=c.loser.idx)
         dominance = [eloTank.ratingDict[f.idx] for f in tank.fishes]
         return dominance
 

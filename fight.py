@@ -115,8 +115,11 @@ class Fight():
         f2_effort = self.fish2.choose_effort_energy(self.fish1)
         self.fish1.effort = f1_effort
         self.fish2.effort = f2_effort
-        f1_wager = (f1_rel_size ** s) * (f1_effort ** e)
-        f2_wager = (f2_rel_size ** s) * (f2_effort ** e)
+## NOTE: Originally I did exponents, but it might make more sense to multiply this...
+        f1_wager = (f1_rel_size * s) * (f1_effort * e)
+        f2_wager = (f2_rel_size * s) * (f2_effort * e)
+        if f2_wager > f2_effort:
+            print('calculation:',f2_rel_size,s,f2_effort,e)
         self.fish1.wager = f1_wager
         self.fish2.wager = f2_wager
 

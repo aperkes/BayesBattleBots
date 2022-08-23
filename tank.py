@@ -21,7 +21,7 @@ from fight import Fight
 class Tank():
     def __init__(self,fishes,fight_list = None,n_fights = None,
                  f_method='balanced',f_outcome='math',f_params=[.3,.3,.3],
-                 effort_method=[1,1],u_method='bayes',scale=.1):
+                 effort_method=[1,1],u_method='bayes',scale=.1,fitness_ratio=None,death=False):
         self.fishes = fishes
         self.n_fish = len(fishes)
         self.sizes = [f.size for f in fishes]
@@ -31,6 +31,8 @@ class Tank():
         self.u_method = u_method
         self.scale = scale
         self.win_record = np.zeros([len(fishes),len(fishes)])
+        self.fitness_ratio=fitness_ratio
+        self.death = death
 
         if fight_list is not None:
             self.fight_list = fight_list
@@ -69,16 +71,22 @@ class Tank():
     def get_matchups(self,f_method='balanced',f_outcome='chance',n_fights=10,scale=.1):
         fight_list = []
 
-        if f_method == 'balanced':
+        if f_method == 'balanced' or f_method == 'shuffled':
             short_list = []
             for i in range(n_fights):
                 for f1,f2 in itertools.combinations(self.fishes, 2):
                     fight_list.append(Fight(f1,f2,outcome=f_outcome,outcome_params=self.f_params,scale=scale,idx=i)) ## So balanced is organized as rounds
+
+            if f_method == 'shuffled':
+                random.shuffle(fight_list)
         if f_method == 'random':
             combs = list(itertools.combinations(self.fishes,2))
             for i in range(n_fights):
                 f1,f2 = random.choice(combs)
                 fight_list.append(Fight(f1,f2,outcome=f_outcome,outcome_params=self.f_params,scale=scale,idx=i))
+        if self.fitness_ratio is not None:
+            for i in range(0,n_fights,int(1/self.fitness_ratio)):
+                fight_list[i].food = False
         #print('n_fights:',len(fight_list))
         return fight_list
 
@@ -135,6 +143,11 @@ class Tank():
             iterator = range(len(self.fight_list))
         for i in iterator:
             c = self.fight_list[i]
+            if self.death:
+                if not c.fish1.alive or not c.fish2.alive:
+                    c.outcome = None
+                    continue
+
             process(c)
             if plot_stuff:
                 if c.fish1.idx == 0:
@@ -147,7 +160,7 @@ class Tank():
         if plot_stuff:
             return fig,ax
 
-    def plot_estimates(self,fish_list=None):
+    def plot_estimates(self,fish_list=None,food=False):
         fig,ax = plt.subplots()
         if fish_list is None:
             fish_list = self.fishes
@@ -159,12 +172,19 @@ class Tank():
             ax.set_ylabel('Hock Estimate')
         else:
             for i in range(len(fish_list)):
+                if len(fish_list) > 10:
+                    color = cm.viridis(i/len(fish_list))
+                else:
+                    color = cm.tab10(i)
                 f = fish_list[i]
-                ax.plot(f.est_record, color=cm.tab10(i),label=str(i))
-                ax.axhline(f.size,color=cm.tab10(i))
+                ax.plot(f.est_record, color=color,label=str(i))
+                if food:
+                    ax.plot(f.size_record,color=color)
+                else:
+                    ax.axhline(f.size,color=color)
                 if self.u_method == 'bayes':
                     ax.fill_between(np.arange(len(f.est_record)),np.array(f.est_record_) + np.array(f.sdest_record),
-                        np.array(f.est_record_) - np.array(f.sdest_record),color=cm.tab10(i),alpha=.3)
+                        np.array(f.est_record_) - np.array(f.sdest_record),color=color,alpha=.3)
             ax.set_ylabel('Estimate')
         ax.set_xlabel('contest number')
         ax.legend()
@@ -177,10 +197,14 @@ class Tank():
         if fish_list is None:
             fish_list = self.fishes
         for i in range(len(fish_list)):
+            if len(fish_list) > 10:
+                color= cm.viridis(i/len(fish_list))
+            else:
+                color=cm.tab10(i)
             f = fish_list[i]
             effort_record = np.array(f.win_record)[:,2]
             smooth_effort = gaussian_filter1d(effort_record,5)
-            ax.plot(smooth_effort,color=cm.tab10(i),alpha=.5,label=str(i))
+            ax.plot(smooth_effort,color=color,alpha=.5,label=str(i))
         ax.legend()
         fig.show()
         return fig,ax

@@ -18,10 +18,10 @@ l_space = [0.0,.05,0.1,0.2,0.3,0.5]
 results_array = np.full([6,6,6,3],np.nan)
 params = SimParams()
 params.effort_method = [1,1]
-params.n_fights = 200
+params.n_fights = 10 
 params.n_iterations = 1000 
-params.n_fish = 4
-params.f_method = 'random'
+params.n_fish = 25
+params.f_method = 'shuffled'
 HOCK = False
 
 if HOCK:
@@ -65,13 +65,13 @@ elif False:
 elif True:
     if True:
         pilot_fish = Fish(0,effort_method=params.effort_method,fight_params=params.outcome_params)
-        fishes = [Fish(f,prior=None,likelihood = pilot_fish.naive_likelihood,fight_params=params.outcome_params,effort_method=params.effort_method,update_method=params.u_method) for f in range(params.n_fish)]
+        fishes = [Fish(f,prior=10,likelihood = pilot_fish.naive_likelihood,fight_params=params.outcome_params,effort_method=params.effort_method,update_method=params.u_method) for f in range(params.n_fish)]
 
     else:
         fishes = [Fish(f,prior=True,effort_method=params.effort_method,update_method=params.u_method) for f in range(params.n_fish)]
 
 
-    tank = Tank(fishes,n_fights = params.n_fights,f_params=params.outcome_params,f_outcome=params.f_outcome,f_method=params.f_method,u_method=params.u_method)
+    tank = Tank(fishes,n_fights = params.n_fights,f_params=params.outcome_params,f_outcome=params.f_outcome,f_method=params.f_method,u_method=params.u_method,fitness_ratio=0.1,death=True)
     tank._initialize_likelihood()
 
     #ax.plot(fishes[0].xs,fishes[0].prior * 10,color='green')
@@ -85,23 +85,30 @@ elif True:
     stab = s._calc_stability(tank)
     accu = s._calc_accuracy(tank)
     print(stab,lin,accu)
-    fig,ax = tank.plot_estimates()
+    fig,ax = tank.plot_estimates(food=True)
+    if False:
+        for f in fishes:
+            ax.plot(f.size_record)
     tank.estimates = s._calc_dominance(tank)
-    print(tank.estimates)
-    print(tank.sizes)
+    print('dominance estimates:',tank.estimates)
+    print('sizes:',tank.sizes)
     print(np.arange(len(fishes))[np.argsort(tank.estimates)])
     print(np.arange(len(fishes))[np.argsort(tank.sizes)])
     ax.set_ylim([0,100])
     print([f.energy for f in fishes])
     print([f.alive for f in fishes])
-    if False:
-        if params.u_method == 'size_boost':
-            fig.savefig('./imgs/fixed_estimates.jpg',dpi=300)
-            fig.savefig('./imgs/fixed_estimates.svg')
-        else:
-            fig.savefig('./imgs/bayes_estimates.svg')
-        #fig.show()
-        #plt.show()
+    print(fishes[0].size_record)
+    print('energy record:',fishes[0].energy_record)
+    print('effort record:',fishes[0].win_record)
+    print([sum(f.fitness_record) for f in fishes])
+    if True:
+        if False:
+            if params.u_method == 'size_boost':
+                fig.savefig('./imgs/fixed_estimates.jpg',dpi=300)
+                fig.savefig('./imgs/fixed_estimates.svg')
+            else:
+                fig.savefig('./imgs/bayes_estimates.svg')
+        fig.show()
 
         fig2,ax2 = tank.plot_effort()
 
@@ -117,6 +124,7 @@ elif True:
         fig3,ax3 = plt.subplots()
         ax3.scatter(range(len(effort_record)),effort_record,alpha=.1) 
         fig3.show()
+        plt.show()
 ## Check whether the fights are working:
 elif True:
     params.update_method = 'bayes'

@@ -26,17 +26,23 @@ naive_escalation = {
 }
 
 ## Fish object with internal rules and estimates
+# Reminder: r_rhp is the rate that rhp increases when they eat/win
+#           a_growth is whether the growth rate should be asymptotic 
+#           Prior is either None, in which case it uses the baseline, 
+#               True: in which is uses a true mean with mean/5 as the std
+#               an int: in which case it uses the int as the std (10 would be average)
 class Fish:
     def __init__(self,idx=0,age=50,size=None,
                  prior=None,likelihood=None,likelihood_dict=None,hock_estimate=.5,update_method='bayes',decay=2,decay_all=False,
                  effort_method=[1,1],fight_params=[.3,.3,.1],escalation=naive_escalation,xs=np.linspace(7,100,500),
-                 r_rhp=.01,a_growth=True):
+                 r_rhp=0,a_growth=True,c_aversion=1,max_energy=1):
         self.idx = idx
         self.name = idx
         self.age = age
         self.xs = xs
         self.r_rhp = r_rhp
         self.a_growth = a_growth
+        self.c_aversion = c_aversion
         if size is not None:
             if size == 0:   
                 self.size = self._growth_func(self.age)
@@ -49,6 +55,9 @@ class Fish:
         if prior == True:
             self.prior = norm.pdf(self.xs,self.size,self.size/5)
             self.prior = prior / np.sum(prior)
+        elif isinstance(prior,int):
+            guess = np.random.normal(self.size,prior)
+            self.prior = norm.pdf(self.xs,guess,prior)
         elif prior is not None:
             self.prior = pior
         else:
@@ -90,11 +99,24 @@ class Fish:
         else:
             #print('setting no update')
             self.update = self.no_update
+        if len(effort_method) == 2:
+            self._choose_effort = self.choose_effort_energy
+        elif effort_method == None:
+            self._choose_effort = self.leroy_jenkins
+        elif effort_method == .5:
+            self._choose_effort = self.half_jenkins
         self.update_method = update_method
         self.effort = 0
         self.wager = 0
         self.boost = 0 ## Initial boost, needs to be 0, will change with winner/loser effect
-        self.energy = 1 ## add some cost to competing
+        self.energy = max_energy ## add some cost to competing
+        self.max_energy = max_energy
+
+## Initialize size and energy records
+        self.size_record = [self.size]
+        self.energy_record = [self.energy]
+        self.fitness_record = [0]
+
         self.alive = True
         self.s_max = 100
         ## Define naive prior/likelihood for 'SA'
@@ -388,15 +410,21 @@ class Fish:
 ## Establish fishes and impose costs and benefits
         if win:
             other_fish = fight.loser
-            self.energy = np.round(self.energy - fight.level + fight.food,2)
-            self.energy = np.clip(self.energy,0,1)
-            self.size = self.size + self.r_rhp * (self.s_max - self.size) ** self.a_growth
+            if fight.food:
+                self.energy = np.round(self.energy - fight.level + fight.food,2)
+                self.energy = np.clip(self.energy,0,self.max_energy)
+                self.size = self.size + self.r_rhp * (self.s_max - self.size) ** self.a_growth
+            self.fitness_record.append(1 - fight.food)
         else:
             other_fish = fight.winner
-            self.energy = np.round(self.energy - fight.level,2)
+            if fight.food:
+                self.energy = np.round(self.energy - fight.level,2)
         if self.energy <= 0:
+            print('I am dying!',fight.level,self.effort)
             self.energy = 0
             self.alive = False
+        self.size_record.append(self.size)
+        self.energy_record.append(self.energy)
         #print('other fish size:',other_fish.size)
         if self.effort_method[1] == 0:
 
@@ -531,7 +559,17 @@ class Fish:
 
     def choose_effort_energy(self,f_opp,strategy=None):
         effort = self.choose_effort(f_opp,strategy)
+## A slightly more careful strategy, invests a proportion of available energy, should generally avoid death
+        effort = self.energy * (effort ** self.c_aversion)
         effort = np.clip(effort,0,self.energy)
+        return effort
+
+    def leroy_jenkins(self):
+        effort= self.energy
+        return effort
+
+    def half_jenkins(self):
+        effort = self.energy * .5
         return effort
 
 ## Proc effort and decay when you check it
