@@ -111,8 +111,8 @@ class Fight():
         f1_rel_size = f1_size / max_size
         f2_rel_size = f2_size / max_size
 
-        f1_effort = self.fish1.choose_effort_energy(self.fish2)
-        f2_effort = self.fish2.choose_effort_energy(self.fish1)
+        f1_effort = self.fish1._choose_effort(self.fish2)
+        f2_effort = self.fish2._choose_effort(self.fish1)
         self.fish1.effort = f1_effort
         self.fish2.effort = f2_effort
 ## NOTE: Originally I did exponents, but it might make more sense to multiply this...
@@ -135,10 +135,10 @@ class Fight():
         p_win = self._wager_curve(min_normed,l)
         if random.random() < p_win: ## probability that the "lower invested" fish wins
             winner = f_min
-            level = min_wager
         else:
             winner = 1-f_min
-            level = min_wager
+        loser = 1-winner
+        level = [f1_effort,f2_effort][loser]
         return winner,level
      
     def hock_huber(self,scale=.1,params=[.5,.5,.5]):

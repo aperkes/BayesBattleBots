@@ -21,7 +21,7 @@ from fight import Fight
 class Tank():
     def __init__(self,fishes,fight_list = None,n_fights = None,
                  f_method='balanced',f_outcome='math',f_params=[.3,.3,.3],
-                 effort_method=[1,1],u_method='bayes',scale=.1,fitness_ratio=None,death=False):
+                 effort_method=[1,1],u_method='bayes',scale=.1,fitness_ratio=None,death=False,food=1):
         self.fishes = fishes
         self.n_fish = len(fishes)
         self.sizes = [f.size for f in fishes]
@@ -33,7 +33,7 @@ class Tank():
         self.win_record = np.zeros([len(fishes),len(fishes)])
         self.fitness_ratio=fitness_ratio
         self.death = death
-
+        self.food = food
         if fight_list is not None:
             self.fight_list = fight_list
         else:
@@ -75,7 +75,7 @@ class Tank():
             short_list = []
             for i in range(n_fights):
                 for f1,f2 in itertools.combinations(self.fishes, 2):
-                    fight_list.append(Fight(f1,f2,outcome=f_outcome,outcome_params=self.f_params,scale=scale,idx=i)) ## So balanced is organized as rounds
+                    fight_list.append(Fight(f1,f2,outcome=f_outcome,outcome_params=self.f_params,scale=scale,idx=i,food=self.food)) ## So balanced is organized as rounds
 
             if f_method == 'shuffled':
                 random.shuffle(fight_list)
@@ -85,7 +85,7 @@ class Tank():
                 f1,f2 = random.choice(combs)
                 fight_list.append(Fight(f1,f2,outcome=f_outcome,outcome_params=self.f_params,scale=scale,idx=i))
         if self.fitness_ratio is not None:
-            for i in range(0,n_fights,int(1/self.fitness_ratio)):
+            for i in range(0,len(fight_list),int(1/self.fitness_ratio)):
                 fight_list[i].food = False
         #print('n_fights:',len(fight_list))
         return fight_list
@@ -145,9 +145,21 @@ class Tank():
             c = self.fight_list[i]
             if self.death:
                 if not c.fish1.alive or not c.fish2.alive:
-                    c.outcome = None
+                    if c.fish1.alive:
+                        c.outcome = 0 
+                        c.level = 0
+                        c.winner = c.fish1
+                        c.loser=c.fish2
+                        c.fish1.no_update(True,c)
+                    elif c.fish2.alive: 
+                        c.outcome = 1
+                        c.level = 0
+                        c.winner = c.fish2,
+                        c.loser=c.fish1
+                        c.fish2.no_update(True,c)
+                    else:
+                        c.outcome = None
                     continue
-
             process(c)
             if plot_stuff:
                 if c.fish1.idx == 0:

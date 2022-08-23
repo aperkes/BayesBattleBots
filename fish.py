@@ -99,12 +99,15 @@ class Fish:
         else:
             #print('setting no update')
             self.update = self.no_update
-        if len(effort_method) == 2:
+
+        if effort_method[0] is None:
+            if effort_method[1] is None:
+                self._choose_effort = self.leroy_jenkins
+            elif effort_method[1] == 0.5: 
+                self._choose_effort = self.half_jenkins
+        else:
             self._choose_effort = self.choose_effort_energy
-        elif effort_method == None:
-            self._choose_effort = self.leroy_jenkins
-        elif effort_method == .5:
-            self._choose_effort = self.half_jenkins
+
         self.update_method = update_method
         self.effort = 0
         self.wager = 0
@@ -128,7 +131,7 @@ class Fish:
         if likelihood is not None:
             #print('using existing likelihood')
             self.naive_likelihood = likelihood
-        elif self.effort_method[1] == 0:
+        if self.effort_method[1] == 0:
             self.naive_likelihood = self._define_naive_likelihood()
         else:
             self.naive_likelihood = None
@@ -398,8 +401,28 @@ class Fish:
     def no_update(self,win,fight):
         if win:
             other_fish = fight.loser
+            cost = fight.level * other_fish.size / self.size
+            if cost > self.effort:
+                cost = self.effort
+            if fight.food is not None:
+                if fight.food > 0:
+                    self.energy = np.round(self.energy - fight.level + fight.food,2)
+                    self.energy = np.clip(self.energy,0,self.max_energy)
+                    self.size = self.size + self.r_rhp * (self.s_max - self.size) ** self.a_growth
+                    self.fitness_record.append(0)
+                else:
+                    self.fitness_record.append(1)
         else:
             other_fish = fight.winner
+            if fight.food:
+                self.energy = np.round(self.energy - self.effort,2)
+        if self.energy <= 0:
+            #print('I am dying!',fight.level,self.effort)
+            self.energy = 0
+            self.alive = False
+        self.size_record.append(self.size)
+        self.energy_record.append(self.energy)
+
         self.win_record.append([other_fish.size,win,self.effort])
         self.est_record.append(self.estimate)
         return self.prior,self.estimate
@@ -410,17 +433,23 @@ class Fish:
 ## Establish fishes and impose costs and benefits
         if win:
             other_fish = fight.loser
-            if fight.food:
-                self.energy = np.round(self.energy - fight.level + fight.food,2)
-                self.energy = np.clip(self.energy,0,self.max_energy)
-                self.size = self.size + self.r_rhp * (self.s_max - self.size) ** self.a_growth
-            self.fitness_record.append(1 - fight.food)
+            cost = fight.level * (other_fish.size / self.size) ## scale cost by relative size, beating a small fish is extra cheap
+            if cost > self.effort:
+                cost = self.effort
+            if fight.food is not None:
+                if fight.food > 0:
+                    self.energy = np.round(self.energy - cost + fight.food,2)
+                    self.energy = np.clip(self.energy,0,self.max_energy)
+                    self.size = self.size + self.r_rhp * (self.s_max - self.size) ** self.a_growth
+                    self.fitness_record.append(0)
+                else:
+                    self.fitness_record.append(1)
         else:
             other_fish = fight.winner
+            cost = self.effort ## If you lost, the cost was, by definition, the amount of energy you put out
             if fight.food:
-                self.energy = np.round(self.energy - fight.level,2)
+                self.energy = np.round(self.energy - cost,2)
         if self.energy <= 0:
-            print('I am dying!',fight.level,self.effort)
             self.energy = 0
             self.alive = False
         self.size_record.append(self.size)
@@ -564,11 +593,11 @@ class Fish:
         effort = np.clip(effort,0,self.energy)
         return effort
 
-    def leroy_jenkins(self):
+    def leroy_jenkins(self,f_opp):
         effort= self.energy
         return effort
 
-    def half_jenkins(self):
+    def half_jenkins(self,f_opp):
         effort = self.energy * .5
         return effort
 
