@@ -145,6 +145,9 @@ class Tank():
             c = self.fight_list[i]
             if self.death:
                 if not c.fish1.alive or not c.fish2.alive:
+                    if c.fish1.effort_method == 'Perfect' or c.fish2.effort_method == 'Perfect':
+                        #print('we got a dead one.')
+                        pass
                     if c.fish1.alive:
                         c.outcome = 0 
                         c.level = 0

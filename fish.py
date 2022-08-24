@@ -399,6 +399,15 @@ class Fish:
     
 ## For testing what happens if you just don't update ever
     def no_update(self,win,fight):
+        if False and self.effort_method == 'Perfect':
+            if win:
+                print('I won!')
+            else:
+                print('I lost??')
+                print(fight.fish1.size,fight.fish2.size)
+                print(fight.fish1.effort,fight.fish2.effort)
+                print(fight.fish1.wager,fight.fish2.wager)
+                print('calculated p_win:',fight.p_win,'\n')
         if win:
             other_fish = fight.loser
             cost = fight.level * other_fish.size / self.size
@@ -452,6 +461,7 @@ class Fish:
         if self.energy <= 0:
             self.energy = 0
             self.alive = False
+            print('oops, I died')
         self.size_record.append(self.size)
         self.energy_record.append(self.energy)
         #print('other fish size:',other_fish.size)
@@ -551,7 +561,33 @@ class Fish:
         if strategy is None:
             strategy = self.effort_method
 ## The latter strategy here is more in keeping with the probabilistic mutual assessment, just against an average fish
-        if strategy == [1,0]:
+
+        if strategy == 'Perfect':
+            #print('Choosing effort:')
+            #print('my size:',self.size)
+            #print('opp size:',f_opp.size)
+            s,e,l = self.naive_params
+            bigger_size = max([self.size,f_opp.size])
+            my_rel_size = self.size/bigger_size
+            opp_rel_size = f_opp.size/bigger_size
+## Note that we're conservative on effort, to avoid death vs hawks
+            my_wager = (my_rel_size * s) * (0.5 * self.energy * e)
+            opp_wager = (opp_rel_size * s) * (0.5* e)
+            min_wager = min([my_wager,opp_wager])
+            min_normed = min_wager / max([my_wager,opp_wager,.00001])
+            if my_wager == opp_wager:
+                p_win = 0.5
+            else:
+                p_upset = self._wager_curve(min_normed,l)
+            if my_wager == min_wager:
+                p_win = p_upset
+            else:
+                p_win = 1 - p_upset 
+            #print('estimated wager:',my_wager)
+            #print('estimated opponenet wager:',opp_wager)
+            #print('p of win:',p_win,'\n')
+            effort = p_win
+        elif strategy == [1,0]:
             #effort = self.estimate / 100
             effort = 1 - self.cdf_prior[np.argmax(self.xs > self.naive_estimate)]
         elif strategy == [0,1]:

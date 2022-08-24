@@ -33,23 +33,38 @@ params.n_fights = 5
 params.n_fish = 20
 params.f_method = 'shuffled'
 
-params.effort_method = [None,0.5]
-params.mutant_effort = [1,0]
+## Perfect invasion
+if True:
+    params.effort_method = [None,0.5]
+    params.mutant_effort = 'Perfect'
 
-params.u_method = None
-params.mutant_update = 'bayes'
+    params.u_method = None
+    params.mutant_update = None
+## Bayes invation
+elif True:
+    params.effort_method = [None,0.5]
+    params.mutant_effort = [1,0]
+
+    params.u_method = None
+    params.mutant_update = 'bayes'
+else: ## .5 invasion of 100%
+    params.effort_method = [None,None]
+    params.mutant_effort = [None,0.5]
+
+    params.u_method = None
+    params.mutant_update = None
 
 params.f_outcome = 'math'
 params.outcome_params = [0.6,0.3,.05]
 params.generations = 50
-params.iterations = 5
+params.iterations = 10 
 
 
 mutation_cost = .1
 
 fig,ax = plt.subplots()
 
-for mutation_cost in [0.0,0.1,.3,.5]:
+for mutation_cost in [0.0,0.2]:
     ess_count = 0
     gen_count = []
     m_trajectories = np.empty([params.iterations,params.generations])
@@ -57,15 +72,17 @@ for mutation_cost in [0.0,0.1,.3,.5]:
 #for i in range(params.iterations):
     for i in tqdm(range(params.iterations)):
         count = 0
-        n_mutants = 1
+        n_mutants = 15
         m_trajectories[i,0] = n_mutants
         while n_mutants < params.n_fish and count < params.generations - 1:
+            if n_mutants == 0:
+                break
             pilot_fish = Fish(0,effort_method=params.effort_method,fight_params=params.outcome_params)
             fishes = [Fish(f,prior=10,likelihood = pilot_fish.naive_likelihood,fight_params=params.outcome_params,effort_method=params.effort_method,update_method=params.u_method) for f in range(params.n_fish)]
             for m in range(n_mutants):
-                fishes[m] = Fish(m,prior=10,likelihood = pilot_fish.naive_likelihood,fight_params=params.outcome_params,effort_method=params.mutant_effort,update_method=params.mutant_update,max_energy=1-mutation_cost,c_aversion=3)
+                fishes[m] = Fish(m,prior=20,likelihood = pilot_fish.naive_likelihood,fight_params=params.outcome_params,effort_method=params.mutant_effort,update_method=params.mutant_update,max_energy=1-mutation_cost,c_aversion=1)
 
-            tank = Tank(fishes,n_fights = params.n_fights,f_params=params.outcome_params,f_outcome=params.f_outcome,f_method=params.f_method,u_method=params.u_method,fitness_ratio=0.1,death=True,food=1)
+            tank = Tank(fishes,n_fights = params.n_fights,f_params=params.outcome_params,f_outcome=params.f_outcome,f_method=params.f_method,u_method=params.u_method,fitness_ratio=0.1,death=True,food=0.5)
             tank._initialize_likelihood()
 
             tank.run_all(progress=False)
@@ -74,16 +91,15 @@ for mutation_cost in [0.0,0.1,.3,.5]:
             alive = [f.alive for f in fishes]
 
             mutant_fitness = sum([fitness[m] for m in range(n_mutants)])
+            print('mutant fitness',mutant_fitness)
             other_fitness = sum(fitness[1:])
             mutant_ratio = mutant_fitness / sum(fitness)
             n_mutants = int(params.n_fish * mutant_ratio)
-            #print(fitness)
-            #print('n_mutants:',n_mutants, 'of',params.n_fish)
+            print('total fitness',sum(fitness),fitness)
+            print('n_mutant offspring:',n_mutants, 'of',params.n_fish)
             count += 1
             #print(n_mutants)
             m_trajectories[i,count] = n_mutants
-            if n_mutants == 0:
-                break
         m_trajectories[i,count:] = n_mutants 
         if n_mutants == params.n_fish:
             #print('ESS Acheived!')
