@@ -56,10 +56,14 @@ class Fish:
             self.size = np.random.normal(mean,sd)
         if prior == True:
             self.prior = norm.pdf(self.xs,self.size,self.size/5)
-            self.prior = prior / np.sum(prior)
+            self.prior = self.prior / np.sum(self.prior)
         elif isinstance(prior,int):
-            guess = np.random.normal(self.size,prior)
-            self.prior = norm.pdf(self.xs,guess,prior)
+            self.estimate = np.clip(np.random.normal(self.size,self.awareness),7,100)
+            if prior > 50:
+                self.prior = np.ones_like(self.xs) / len(self.xs)
+            else:
+                self.prior = norm.pdf(self.xs,self.estimate,prior)
+                self.prior = self.prior / np.sum(self.prior)
         elif prior is not None:
             self.prior = pior
         else:
@@ -588,16 +592,12 @@ class Fish:
             strategy = self.effort_method
 ## The latter strategy here is more in keeping with the probabilistic mutual assessment, just against an average fish
 
-        if self.awareness == 0:
-            my_size = self.size
-        else:
-            my_size = np.clip(np.random.normal(self.size,self.awareness),7,100)
+        my_size = self.estimate
         if self.acuity == 0:
             opp_size = f_opp.size
         else:
             opp_size = np.clip(np.random.normal(f_opp.size,self.acuity),7,100)
         self.opp_estimate = opp_size
-        self.last_estimate = my_size
         if strategy == 'Perfect' or strategy == 'Estimate':
             #print('Choosing effort:')
             #print('my size:',self.size)
@@ -606,9 +606,8 @@ class Fish:
             if strategy == 'Estimate':
                 ## Now you have to estimate with some error
 
-                my_size = np.random.normal(self.size,self.acuity)
+                my_size = self.estimate ## You only have to do this once
                 opp_size = np.random.normal(f_opp.size,self.awareness)
-                my_size = np.clip(my_size,7,99)
                 opp_size = np.clip(opp_size,7,99)
                 #print('guess vs self:',my_size,self.size)
                 #print('guess vs opp:',opp_size,f_opp.size)
@@ -637,11 +636,25 @@ class Fish:
 
         elif strategy == 'BayesMA':
 ## Here, we iterate over the possible conditions. I expect this to be slow...
+            #print('sum of prior:',np.sum(self.prior))
             p_win = 0
+            sum_of_sizes = 0
             for x in range(len(self.xs)):
-                #print(self.prior[x])
-                p_win += self.prior[x] * self.prob_win_wager(x,opp_size,self.naive_params)
+                #print(self.prior[x],self.prob_win_wager(x,opp_size,self.naive_params))
+                p_x = self.prior[x]
+                p_win_at_x = self.prob_win_wager(self.xs[x],opp_size,self.naive_params)
+
+                sum_of_sizes += p_win_at_x
+                p_win += p_x * p_win_at_x
+                #p_win += self.prior[x] * self.prob_win_wager(x,opp_size,self.naive_params)
+            #print('summed probability:',p_win)
+            #print('mean prob_win_wager:',sum_of_sizes / len(self.xs))
             effort = p_win
+            if False:
+                print('Bayes p_win for',self.idx,self.estimate_,opp_size,p_win)
+                fig,ax = plt.subplots()
+                ax.plot(self.xs,self.prior)
+                plt.show()
             #print('self_size,opp_size,opp_guess,effort (pre energy):',self.size,f_opp.size,opp_size,effort)
         elif strategy == 'ma_c': ## This is the continuous version where there is opponent uncertainty
             total_prob = 0

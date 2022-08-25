@@ -42,6 +42,7 @@ if True:
 
     params.u_method = None
     params.mutant_update = 'bayes'
+    params.mutant_prior = 51
 
 ## Estimate invasion
 elif True:
@@ -93,7 +94,7 @@ for mutation_cost in [0.0,0.2]:
             pilot_fish = Fish(0,effort_method=params.effort_method,fight_params=params.outcome_params)
             fishes = [Fish(f,prior=params.awareness,likelihood = pilot_fish.naive_likelihood,fight_params=params.outcome_params,effort_method=params.effort_method,update_method=params.u_method,acuity=params.acuity,awareness=params.awareness) for f in range(params.n_fish)]
             for m in range(n_mutants):
-                fishes[m] = Fish(m,prior=20,likelihood = pilot_fish.naive_likelihood,fight_params=params.outcome_params,effort_method=params.mutant_effort,update_method=params.mutant_update,max_energy=1-mutation_cost,c_aversion=1,acuity=params.acuity,awareness=params.awareness)
+                fishes[m] = Fish(m,prior=params.mutant_prior,likelihood = pilot_fish.naive_likelihood,fight_params=params.outcome_params,effort_method=params.mutant_effort,update_method=params.mutant_update,max_energy=1-mutation_cost,c_aversion=1,acuity=params.acuity,awareness=params.awareness)
 
             tank = Tank(fishes,n_fights = params.n_fights,f_params=params.outcome_params,f_outcome=params.f_outcome,f_method=params.f_method,u_method=params.u_method,fitness_ratio=0.1,death=True,food=0.1)
             tank._initialize_likelihood()
