@@ -33,10 +33,23 @@ params.n_fights = 5
 params.n_fish = 20
 params.f_method = 'shuffled'
 
-## Perfect invasion
+## Bayes invasion
 if True:
+    params.effort_method = 'Estimate'
+    params.acuity = 5
+    params.awareness = 20
+    params.mutant_effort = 'BayesMA'
+
+    params.u_method = None
+    params.mutant_update = 'bayes'
+
+## Estimate invasion
+elif True:
     params.effort_method = [None,0.5]
-    params.mutant_effort = 'Perfect'
+    #params.mutant_effort = 'Perfect' ## Obviously perfect is better. 
+    params.mutant_effort = 'Estimate'
+    params.acuity = 20
+    params.awareness = 20
 
     params.u_method = None
     params.mutant_update = None
@@ -78,11 +91,11 @@ for mutation_cost in [0.0,0.2]:
             if n_mutants == 0:
                 break
             pilot_fish = Fish(0,effort_method=params.effort_method,fight_params=params.outcome_params)
-            fishes = [Fish(f,prior=10,likelihood = pilot_fish.naive_likelihood,fight_params=params.outcome_params,effort_method=params.effort_method,update_method=params.u_method) for f in range(params.n_fish)]
+            fishes = [Fish(f,prior=params.awareness,likelihood = pilot_fish.naive_likelihood,fight_params=params.outcome_params,effort_method=params.effort_method,update_method=params.u_method,acuity=params.acuity,awareness=params.awareness) for f in range(params.n_fish)]
             for m in range(n_mutants):
-                fishes[m] = Fish(m,prior=20,likelihood = pilot_fish.naive_likelihood,fight_params=params.outcome_params,effort_method=params.mutant_effort,update_method=params.mutant_update,max_energy=1-mutation_cost,c_aversion=1)
+                fishes[m] = Fish(m,prior=20,likelihood = pilot_fish.naive_likelihood,fight_params=params.outcome_params,effort_method=params.mutant_effort,update_method=params.mutant_update,max_energy=1-mutation_cost,c_aversion=1,acuity=params.acuity,awareness=params.awareness)
 
-            tank = Tank(fishes,n_fights = params.n_fights,f_params=params.outcome_params,f_outcome=params.f_outcome,f_method=params.f_method,u_method=params.u_method,fitness_ratio=0.1,death=True,food=0.5)
+            tank = Tank(fishes,n_fights = params.n_fights,f_params=params.outcome_params,f_outcome=params.f_outcome,f_method=params.f_method,u_method=params.u_method,fitness_ratio=0.1,death=True,food=0.1)
             tank._initialize_likelihood()
 
             tank.run_all(progress=False)
@@ -115,6 +128,7 @@ for mutation_cost in [0.0,0.2]:
     for i in range(params.iterations):
         ax.plot(m_trajectories[i],color=cm.viridis(mutation_cost),alpha=.2)
 
+ax.set_ylim([-0.1,1.1])
 fig.legend()
 fig.show()
 plt.show()
