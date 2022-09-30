@@ -328,7 +328,7 @@ class Fish:
         return p_win
 
 ## This is closer to the true likelihood, although maybe it should infer relative effort
-    def _likelihood_function_se(self,x,x_opp,x_eff = .5,xo_eff = .5,fight_params=None):
+    def _likelihood_function_se(self,x,x_opp,x_eff = 1,xo_eff = 1,fight_params=None):
         if fight_params is None:
             s,e,l = self.naive_params
         else:
@@ -341,9 +341,10 @@ class Fish:
             wager = (r_diff ** s * x_eff ** e) / (x ** e)
             p_win = 1-self._wager_curve(wager,l)
         else:
-            r_diff = (x - x_opp)/x_opp # Will be negative
+            r_diff = (x_opp-x)/x_opp # Will be negative
             wager = r_diff ** s * x_eff ** e / (xo_eff ** e) 
             p_win = self._wager_curve(wager,l)
+        #print(x,x_opp,x_eff,wager,l,p_win)
         return p_win
 
     def _use_mutual_likelihood(self,fight,win=True):
@@ -369,12 +370,16 @@ class Fish:
         x_opp = other_fish.size
         if win:
             for s in range(len(xs)):
-                #likelihood[s] = self._likelihood_function_size(xs[s],x_opp)
-                likelihood[s] = self._likelihood_function_se(xs[s],x_opp,x_eff=self.effort,fight_params=fight.params)
+                if False:
+                    likelihood[s] = self._likelihood_function_size(xs[s],x_opp)
+                else:
+                    likelihood[s] = self._likelihood_function_se(xs[s],x_opp,fight_params=fight.params)
         elif not win:
             for s in range(len(xs)):
-                #likelihood[s] = 1-self._likelihood_function_size(xs[s],x_opp)
-                likelihood[s] = self._likelihood_function_se(xs[s],x_opp,x_eff=self.effort,fight_params=fight.params)
+                if False:
+                    likelihood[s] = 1-self._likelihood_function_size(xs[s],x_opp)
+                else:
+                    likelihood[s] = 1- self._likelihood_function_se(xs[s],x_opp,fight_params=fight.params)
         return likelihood
     
 ## This also includes opponent assesment...need to fix that

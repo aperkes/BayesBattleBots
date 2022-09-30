@@ -20,7 +20,7 @@ params = SimParams()
 params.effort_method = [1,1]
 params.n_fights = 10 
 params.n_iterations = 1000 
-params.n_fish = 25
+params.n_fish = 5
 params.f_method = 'shuffled'
 HOCK = False
 
@@ -65,13 +65,13 @@ elif False:
 elif True:
     if True:
         pilot_fish = Fish(0,effort_method=params.effort_method,fight_params=params.outcome_params)
-        fishes = [Fish(f,prior=10,likelihood = pilot_fish.naive_likelihood,fight_params=params.outcome_params,effort_method=params.effort_method,update_method=params.u_method) for f in range(params.n_fish)]
+        fishes = [Fish(f,prior=True,likelihood = pilot_fish.naive_likelihood,fight_params=params.outcome_params,effort_method=params.effort_method,update_method=params.u_method) for f in range(params.n_fish)]
 
     else:
         fishes = [Fish(f,prior=True,effort_method=params.effort_method,update_method=params.u_method) for f in range(params.n_fish)]
 
 
-    tank = Tank(fishes,n_fights = params.n_fights,f_params=params.outcome_params,f_outcome=params.f_outcome,f_method=params.f_method,u_method=params.u_method,fitness_ratio=0.1,death=True)
+    tank = Tank(fishes,n_fights = params.n_fights,f_params=params.outcome_params,f_outcome=params.f_outcome,f_method=params.f_method,u_method=params.u_method,fitness_ratio=0.1,death=False)
     tank._initialize_likelihood()
 
     #ax.plot(fishes[0].xs,fishes[0].prior * 10,color='green')
@@ -81,18 +81,18 @@ elif True:
     #ax.plot(f.xs,f.naive_likelihood,color='black')
     #fig.show()
     #plt.show()
-    lin,p = s._calc_linearity(tank)
-    stab = s._calc_stability(tank)
-    accu = s._calc_accuracy(tank)
-    print(stab,lin,accu)
-    fig,ax = tank.plot_estimates(food=True)
+    #lin,p = s._calc_linearity(tank)
+    #stab = s._calc_stability(tank)
+    #accu = s._calc_accuracy(tank)
+    #print(stab,lin,accu)
+    fig,ax = tank.plot_estimates(food=False)
     if False:
         for f in fishes:
             ax.plot(f.size_record)
-    tank.estimates = s._calc_dominance(tank)
-    print('dominance estimates:',tank.estimates)
+    #tank.estimates = s._calc_dominance(tank)
+    #print('dominance estimates:',tank.estimates)
     print('sizes:',tank.sizes)
-    print(np.arange(len(fishes))[np.argsort(tank.estimates)])
+    #print(np.arange(len(fishes))[np.argsort(tank.estimates)])
     print(np.arange(len(fishes))[np.argsort(tank.sizes)])
     ax.set_ylim([0,100])
     print([f.energy for f in fishes])
@@ -115,8 +115,11 @@ elif True:
         effort_record = [f.level for f in tank.fight_list]
         upset_count = 0
         for f in tank.fight_list:
-            if f.winner.size < f.loser.size:
-                upset_count += 1
+            try:
+                if f.winner.size < f.loser.size:
+                    upset_count += 1
+            except:
+                print('fight missing, come back to check this')
 
         print(upset_count / len(tank.fight_list))
 

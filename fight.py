@@ -212,7 +212,7 @@ class Fight():
    
     def summary(self):
         sum_str =  ' '.join([str(self.fish1.idx),'vs',str(self.fish2.idx),str(self.outcome),': So,',str(self.winner.idx),'won, prob of upset was:',str(self.p_win)])
-        strat_str = ' '.join(['Fish1:',self.fish1.effort_method,'Fish2:',self.fish2.effort_method])
+        strat_str = ' '.join(['Fish1:',str(self.fish1.effort_method),'Fish2:',str(self.fish2.effort_method)])
         header_str = 'Fish : Size Own_estimate Opp_estimate Effort'
         effort_str1 = ' '.join(['Fish1:',str(self.fish1.size),str(self.fish1.estimate),str(self.fish1.opp_estimate),str(self.fish1.effort)])
         effort_str2 = ' '.join(['Fish2:',str(self.fish2.size),str(self.fish2.estimate),str(self.fish2.opp_estimate),str(self.fish2.effort)])
