@@ -338,11 +338,11 @@ class Fish:
             xo_eff = x_opp/100
         if x >=x_opp:
             r_diff = (x-x_opp)/x
-            wager = (r_dff ** s * x_eff ** e) / (x ** e)
+            wager = (r_diff ** s * x_eff ** e) / (x ** e)
             p_win = 1-self._wager_curve(wager,l)
         else:
             r_diff = (x - x_opp)/x_opp # Will be negative
-            wager = r_dff ** s * x_eff ** e / (xo_eff ** e) 
+            wager = r_diff ** s * x_eff ** e / (xo_eff ** e) 
             p_win = self._wager_curve(wager,l)
         return p_win
 
@@ -370,11 +370,11 @@ class Fish:
         if win:
             for s in range(len(xs)):
                 #likelihood[s] = self._likelihood_function_size(xs[s],x_opp)
-                likelihood[s] = self._likelihood_function_se[xs[s],x_opp,x_eff = self.effort,fight_params=fight.outcome_params)
+                likelihood[s] = self._likelihood_function_se(xs[s],x_opp,x_eff=self.effort,fight_params=fight.params)
         elif not win:
             for s in range(len(xs)):
                 #likelihood[s] = 1-self._likelihood_function_size(xs[s],x_opp)
-                likelihood[s] = self._likelihood_function_se[xs[s],x_opp,x_eff = self.effort,fight_params=fight.outcome_params)
+                likelihood[s] = self._likelihood_function_se(xs[s],x_opp,x_eff=self.effort,fight_params=fight.params)
         return likelihood
     
 ## This also includes opponent assesment...need to fix that
