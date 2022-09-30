@@ -328,13 +328,14 @@ class Fish:
         return p_win
 
 ## This is closer to the true likelihood, although maybe it should infer relative effort
-    def _likelihood_function_se(self,x,x_opp,fight_params=None):
+    def _likelihood_function_se(self,x,x_opp,x_eff = .5,xo_eff = .5,fight_params=None):
         if fight_params is None:
             s,e,l = self.naive_params
         else:
             s,e,l = fight_params
-        x_eff = x/100
-        xo_eff = x_opp/100
+        if False:
+            x_eff = x/100
+            xo_eff = x_opp/100
         if x >=x_opp:
             r_diff = (x-x_opp)/x
             wager = (r_dff ** s * x_eff ** e) / (x ** e)
@@ -347,10 +348,8 @@ class Fish:
 
     def _use_mutual_likelihood(self,fight,win=True):
         if self.likelihood_dict is None:
-            #print('could not find likelihood')
             likelihood = self._define_likelihood_mutual(fight,win) 
         elif fight.winner.idx not in self.likelihood_dict.keys() or fight.loser.idx not in self.likelihood_dict.keys():
-            #print('building custom likelihood')
             likelihood = self._define_likelihood_mutual(fight,win) 
 
         else:
@@ -370,16 +369,20 @@ class Fish:
         x_opp = other_fish.size
         if win:
             for s in range(len(xs)):
-                likelihood[s] = self._likelihood_function_size(xs[s],x_opp)
+                #likelihood[s] = self._likelihood_function_size(xs[s],x_opp)
+                likelihood[s] = self._likelihood_function_se[xs[s],x_opp,x_eff = self.effort,fight_params=fight.outcome_params)
         elif not win:
             for s in range(len(xs)):
-                likelihood[s] = 1-self._likelihood_function_size(xs[s],x_opp)
+                #likelihood[s] = 1-self._likelihood_function_size(xs[s],x_opp)
+                likelihood[s] = self._likelihood_function_se[xs[s],x_opp,x_eff = self.effort,fight_params=fight.outcome_params)
         return likelihood
     
 ## This also includes opponent assesment...need to fix that
     def update_prior_old(self,win,x_opp=False,xs=None,w_opp=None,e_self=None,outcome_params=None):
         if xs is None:
             xs = self.xs
+
+## Get likelihood function (there are a couple possible methods)
         if x_opp == False:
             likelihood = self._define_likelihood_w(outcome_params,win)
         else:
@@ -388,6 +391,7 @@ class Fish:
         self.win_record.append([x_opp,win,self.effort])
         self.prior = self._update(self.prior,likelihood,xs)
         self.cdf_prior = self._get_cdf_prior(self.prior)
+
         if True: ## Need to decide which of these to use...
             estimate = self.xs[np.argmax(self.prior)] ## This is easy, but should it be the mean?
         else:
@@ -442,8 +446,7 @@ class Fish:
         self.est_record.append(self.estimate)
         return self.prior,self.estimate
 
-## A cleaner version so I'm not passing so many arguments
-## What if I want the old way though...
+# Updates the prior and handles food and cost. Should probably be rebuilt eventually
     def update_prior(self,win,fight):
 ## Establish fishes and impose costs and benefits
         if win:
@@ -471,18 +474,15 @@ class Fish:
             print(fight.summary())
         self.size_record.append(self.size)
         self.energy_record.append(self.energy)
-        #print('other fish size:',other_fish.size)
+## Get likelihood function
         if self.effort_method[1] == 0:
 
-            #print('using simple likes')
             likelihood = self._use_simple_likelihood(fight,win)
             i_estimate = np.argmax(self.xs > self.estimate)
         else:
-            #print('using mutual')
             likelihood = self._use_mutual_likelihood(fight,win)
 
             #likelihood = self._define_likelihood_mutual(fight,win)
-        #print('likelihood at own size estimate:',likelihood[np.argmax(self.xs >= self.estimate)])
         self.win_record.append([other_fish.size,win,self.effort])
         pre_prior = self.prior
         self.prior = self._update(self.prior,likelihood,self.xs)
