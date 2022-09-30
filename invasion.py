@@ -32,7 +32,8 @@ params = SimParams()
 params.n_fights = 5
 params.n_fish = 20
 params.f_method = 'shuffled'
-params.xs = None
+params.xs = np.linspace(7,100,100)
+
 ## Bayes invasion
 if True:
     params.effort_method = 'Estimate'
@@ -48,8 +49,9 @@ if True:
 ## Estimate invasion
 elif True:
     params.effort_method = [None,0.5]
-    #params.mutant_effort = 'Perfect' ## Obviously perfect is better. 
-    params.mutant_effort = 'Estimate'
+    params.mutant_effort = 'Perfect' ## Obviously perfect is better. 
+    params.mutant_prior = True
+    #params.mutant_effort = 'Estimate'
     params.acuity = 20
     params.awareness = 20
 
@@ -79,7 +81,7 @@ mutation_cost = .1
 
 fig,ax = plt.subplots()
 
-for mutation_cost in [0.0,0.2]:
+for mutation_cost in [0.0,0.2,0.5]:
     ess_count = 0
     gen_count = []
     m_trajectories = np.empty([params.iterations,params.generations])
@@ -87,7 +89,7 @@ for mutation_cost in [0.0,0.2]:
 #for i in range(params.iterations):
     for i in tqdm(range(params.iterations)):
         count = 0
-        n_mutants = 15
+        n_mutants = 2
         m_trajectories[i,0] = n_mutants
         while n_mutants < params.n_fish and count < params.generations - 1:
             if n_mutants == 0:

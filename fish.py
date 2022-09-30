@@ -370,13 +370,13 @@ class Fish:
         x_opp = other_fish.size
         if win:
             for s in range(len(xs)):
-                if False:
+                if True:
                     likelihood[s] = self._likelihood_function_size(xs[s],x_opp)
                 else:
                     likelihood[s] = self._likelihood_function_se(xs[s],x_opp,fight_params=fight.params)
         elif not win:
             for s in range(len(xs)):
-                if False:
+                if True:
                     likelihood[s] = 1-self._likelihood_function_size(xs[s],x_opp)
                 else:
                     likelihood[s] = 1- self._likelihood_function_se(xs[s],x_opp,fight_params=fight.params)
