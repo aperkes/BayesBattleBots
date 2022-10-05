@@ -111,7 +111,8 @@ elif True:
                 fig.savefig('./imgs/bayes_estimates.svg')
         fig.show()
 
-        fig2,ax2 = tank.plot_effort()
+        if False:
+            fig2,ax2 = tank.plot_effort()
 
         effort_record = [f.level for f in tank.fight_list]
         upset_count = 0
@@ -125,9 +126,13 @@ elif True:
         print(upset_count / len(tank.fight_list))
 
         #print(effort_record) 
-        fig3,ax3 = plt.subplots()
-        ax3.scatter(range(len(effort_record)),effort_record,alpha=.1) 
-        fig3.show()
+        if False:
+            fig3,ax3 = plt.subplots()
+            ax3.scatter(range(len(effort_record)),effort_record,alpha=.1) 
+            fig3.show()
+
+        fig4,ax4 = plt.subplots()
+        ax4.plot(fishes[0].xs,fishes[0].prior)
         plt.show()
 ## Check whether the fights are working:
 elif True:

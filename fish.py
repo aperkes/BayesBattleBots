@@ -85,6 +85,7 @@ class Fish:
         self.est_record_ = [self.estimate_]
         self.sdest_record = [prior_std]
         self.effort_method = effort_method
+        self.effort = None
         self.decay_all = decay_all
         self.decay = decay
         self.discrete = False
@@ -338,15 +339,19 @@ class Fish:
         return p_win
 
 ## This is closer to the true likelihood, although maybe it should infer relative effort
-    def _likelihood_function_se(self,x_size,o_size,x_eff = 1,o_eff = 1,fight_params=None):
+    def _likelihood_function_se(self,x_size,o_size,x_eff = None,o_eff = None,fight=None):
 ## Check fight params
-        if fight_params is None:
+        if fight is None:
             s,e,l = self.naive_params
         else:
-            s,e,l = fight_params
-        if False: ## optionally set effort based on size 
-            x_eff = x_size/100
-            o_eff = o_size/100
+            s,e,l = fight.params
+        if x_eff is None:
+            x_eff = 1
+        if o_eff is None:
+            if fight.level is not None:
+                o_eff = fight.level
+            else:
+                o_eff = 1
 ## Get relative sizes and wagers
         if x_size >= o_size:
             x_wag = x_eff**e
@@ -363,12 +368,37 @@ class Fish:
         else: ## x_wager is smaller, so they're the underdog
             rel_wag = x_wag / o_wag
             p_win = self._wager_curve(rel_wag,l)
+        if False and fight.p_win is not None:
+            if fight.fish1.size == o_size:
+                other_fish = fight.fish1
+                me = fight.fish2
+            elif fight.fish2.size == o_size:
+                other_fish = fight.fish2
+                me = fight.fish1
+            else:
+                print('\nummmm.....')
+            print('\nTESTING STUFF:')
+            import copy
+            fight_ = copy.deepcopy(fight)
+            if fight_.fish1.size == o_size:
+                fight_.fish2.size = x_size
+            else:
+                fight_.fish1.size = x_size
+            _ = fight_.mathy()
+
+
+            print('my size,opp size,my effo, opp effort, my wager, opp wager')
+            print(x_size,o_size,x_eff,o_eff,x_wag,o_wag)
+            print('perceived p_win',p_win)
+            print('actual p_win for smaller investor',fight_.p_win)
+            print('actual efforts:',me.effort,other_fish.effort)
         return p_win
 
     def _use_mutual_likelihood(self,fight,win=True):
         if self.likelihood_dict is None:
             likelihood = self._define_likelihood_mutual(fight,win) 
         elif fight.winner.idx not in self.likelihood_dict.keys() or fight.loser.idx not in self.likelihood_dict.keys():
+            print('do we even use this?')
             likelihood = self._define_likelihood_mutual(fight,win) 
 
         else:
@@ -386,18 +416,20 @@ class Fish:
         else:
             other_fish = fight.winner
         x_opp = other_fish.size
+        if self.effort == 0:
+            likelihood = np.ones(len(xs))
         if win:
             for s in range(len(xs)):
                 if False:
                     likelihood[s] = self._likelihood_function_size(xs[s],x_opp)
                 else:
-                    likelihood[s] = self._likelihood_function_se(xs[s],x_opp,fight_params=fight.params)
+                    likelihood[s] = self._likelihood_function_se(xs[s],x_opp,fight=fight)
         elif not win:
             for s in range(len(xs)):
                 if False:
                     likelihood[s] = 1-self._likelihood_function_size(xs[s],x_opp)
                 else:
-                    likelihood[s] = 1- self._likelihood_function_se(xs[s],x_opp,fight_params=fight.params)
+                    likelihood[s] = 1- self._likelihood_function_se(xs[s],x_opp,o_eff=1,x_eff=self.effort,fight=fight)
         return likelihood
     
 ## This also includes opponent assesment...need to fix that
@@ -437,8 +469,8 @@ class Fish:
                 #cost = min([fight.fish1.wager,fight.fish2.wager])
                 cost = min([self.effort,other_fish.wager])
             else: ## if a smaller fish wins, the bigger fish's effort is scaled up, but no more than effort spent
-                print('How did I lose???')
-                print(self.effort,other_fish.size,other_fish.effort,fight.params)
+                #print('How did I lose???')
+                #print(self.effort,other_fish.size,other_fish.effort,fight.params)
                 cost = min([self.effort,other_fish.wager * (other_fish.wager / self.wager)])
             if fight.food is not None:
                 if fight.food > 0:
@@ -480,7 +512,10 @@ class Fish:
 
 # Updates the prior and handles food and cost. Should probably be rebuilt eventually
     def update_prior(self,win,fight):
-
+        size_idx = np.argmax(self.xs >= self.size)
+        print(self.size,size_idx,self.xs[size_idx])
+        print(self.prior[size_idx])
+        size_possible_pre = self.prior[size_idx] > 0
 ## Establish fishes and impose costs and benefits
         other_fish = self.update_energy(win,fight)
 ## Get likelihood function
@@ -498,8 +533,9 @@ class Fish:
             print('decaying...')
             self.prior = self._decay_flat(self.prior)
         self.cdf_prior = self._get_cdf_prior(self.prior)
+        pre_estimate = self.estimate
         estimate = self.xs[np.argmax(self.prior)]
-
+        post_estimate = estimate
         self.estimate_ = np.sum(self.prior * self.xs / np.sum(self.prior))
         prior_mean,prior_std = self.get_stats()
         self.est_record_.append(prior_mean)
@@ -508,6 +544,13 @@ class Fish:
         
         self.estimate = estimate
         self.est_record.append(estimate)
+        size_possible_post = self.prior[size_idx] > 0
+        print('post_prior',self.prior[size_idx])
+        if np.abs(pre_estimate - post_estimate) > 5:
+            print('## Something very weird just happened ##')
+            import pdb
+            pdb.set_trace()
+            print(self.idx,np.std(self.prior))
         return self.prior,self.estimate
 
     def decay_prior(self,store=False):
@@ -675,9 +718,6 @@ class Fish:
             effort = 1
         effort = self._boost_effort(effort)
         #print('effort post boost:',effort)
-        if effort == 0:
-            print('boosting effort to .01')
-            effort = .01
         return effort
     
     def choose_effort_energy(self,f_opp,strategy=None):

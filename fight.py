@@ -28,6 +28,7 @@ class Fight():
         self.scale=scale
         self.idx = idx
         self.food = food
+        self.p_win = None
         
     def run_outcome(self):
         if self.mechanism == 'chance':
@@ -130,7 +131,8 @@ class Fight():
         f1_wager = (f1_rel_size ** s) * (f1_effort ** e)
         f2_wager = (f2_rel_size ** s) * (f2_effort ** e)
         if f2_wager > f2_effort:
-            print('calculation:',f2_rel_size,s,f2_effort,e)
+            pass
+            #print('calculation:',f2_rel_size,s,f2_effort,e)
         self.fish1.wager = f1_wager
         self.fish2.wager = f2_wager
 
