@@ -31,7 +31,7 @@ if HOCK:
 else:
     params.u_method = 'bayes'
     params.f_outcome = 'math'
-    params.outcome_params = [0.6,0.3,.05]
+    params.outcome_params = [1,0.3,.01]
 
 s = Simulation(params)
 ## Check whether simulation is working and print stats
@@ -46,10 +46,11 @@ if False:
 
 ## Check whether the tank is working and plot this history
 elif False:
-    f = Fish(prior=True)
+    f = Fish(prior=True,fight_params=params.outcome_params)
     f2 = copy.deepcopy(f)
-    matched_fight = Fight(f,f2,outcome=0)
+    matched_fight = Fight(f,f2,outcome=0,outcome_params=params.outcome_params)
     fig,ax = plt.subplots()
+    print(matched_fight.mechanism,matched_fight.params)
     matched_fight.run_outcome()
     likelihood = f._use_mutual_likelihood(matched_fight)
     ax.plot(f.xs,likelihood,color='tab:orange')
@@ -59,8 +60,8 @@ elif False:
     f.update(True,matched_fight)
     ax2.plot(f.xs,f.prior,color='gold')
     fig2.savefig('./imgs/prior.svg')
-    #fig.show()
-    #plt.show()
+    fig.show()
+    plt.show()
 
 elif True:
     if True:

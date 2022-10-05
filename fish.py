@@ -207,9 +207,17 @@ class Fish:
 
 ## This is a little clunky to have to define this here also, be sure to know if it matches the fight._wager_curve
 ## Technically, fight could inherit this from here, but this opens the possibility of having different fish with different LF's. 
-    def _wager_curve(self,w,l=.25):
+    def _wager_curve_old(self,w,l=.25):
         a = logit(1-l)
         prob_win = w ** (float(np.abs(a))**np.sign(a)) / 2
+        return prob_win
+
+    def _wager_curve(self,w,l=.05):
+        if l == 0:
+            prob_win = 0
+        else:
+            L = np.tan((np.pi - l)/2)
+            prob_win = (w**L) / 2
         return prob_win
 
 ## As below, but instead it's based on the wager (assuming opponent size and effort are unknown)
@@ -230,10 +238,12 @@ class Fish:
         rel_size = x / max([opp_size,x])
         my_wager = (rel_size ** s) * (self.effort ** e)
         if my_wager > opp_wager:
-            rel_wager = opp_wager / max([my_wager,opp_wager])
+            rel_wager = opp_wager / my_wager
             p_win = 1-self._wager_curve(rel_wager,l)
+        elif my_wager == opp_wager:
+            p_win = 0.5
         else:
-            rel_wager = my_wager / max([my_wager,opp_wager])
+            rel_wager = my_wager / opp_wager
             p_win = self._wager_curve(rel_wager,l)
         return p_win
 
@@ -328,23 +338,31 @@ class Fish:
         return p_win
 
 ## This is closer to the true likelihood, although maybe it should infer relative effort
-    def _likelihood_function_se(self,x,x_opp,x_eff = 1,xo_eff = 1,fight_params=None):
+    def _likelihood_function_se(self,x_size,o_size,x_eff = 1,o_eff = 1,fight_params=None):
+## Check fight params
         if fight_params is None:
             s,e,l = self.naive_params
         else:
             s,e,l = fight_params
-        if False:
-            x_eff = x/100
-            xo_eff = x_opp/100
-        if x >=x_opp:
-            r_diff = (x-x_opp)/x
-            wager = (r_diff ** s * x_eff ** e) / (x ** e)
-            p_win = 1-self._wager_curve(wager,l)
+        if False: ## optionally set effort based on size 
+            x_eff = x_size/100
+            o_eff = o_size/100
+## Get relative sizes and wagers
+        if x_size >= o_size:
+            x_wag = x_eff**e
+            o_wag = (o_size/x_size)**s * (o_eff**e)
         else:
-            r_diff = (x_opp-x)/x_opp # Will be negative
-            wager = r_diff ** s * x_eff ** e / (xo_eff ** e) 
-            p_win = self._wager_curve(wager,l)
-        #print(x,x_opp,x_eff,wager,l,p_win)
+            x_wag = (x_size/o_size)**s * (x_eff**e)
+            o_wag = o_eff ** e
+## Get relative wagers, and plug them into the wager_curve
+        if x_wag > o_wag:
+            rel_wag = o_wag / x_wag
+            p_win = 1-self._wager_curve(rel_wag,l) ## because opponent is the underdog, 1-upset is x's p(win)
+        elif x_wag == o_wag:
+            return 0.5
+        else: ## x_wager is smaller, so they're the underdog
+            rel_wag = x_wag / o_wag
+            p_win = self._wager_curve(rel_wag,l)
         return p_win
 
     def _use_mutual_likelihood(self,fight,win=True):
@@ -370,13 +388,13 @@ class Fish:
         x_opp = other_fish.size
         if win:
             for s in range(len(xs)):
-                if True:
+                if False:
                     likelihood[s] = self._likelihood_function_size(xs[s],x_opp)
                 else:
                     likelihood[s] = self._likelihood_function_se(xs[s],x_opp,fight_params=fight.params)
         elif not win:
             for s in range(len(xs)):
-                if True:
+                if False:
                     likelihood[s] = 1-self._likelihood_function_size(xs[s],x_opp)
                 else:
                     likelihood[s] = 1- self._likelihood_function_se(xs[s],x_opp,fight_params=fight.params)
@@ -411,54 +429,17 @@ class Fish:
         self.est_record.append(estimate)
         
         return self.prior,self.estimate
-    
-## For testing what happens if you just don't update ever
-    def no_update(self,win,fight):
-        if False and self.effort_method == 'Perfect':
-            if win:
-                print('I won!')
-            else:
-                print('I lost??')
-                print(fight.fish1.size,fight.fish2.size)
-                print(fight.fish1.effort,fight.fish2.effort)
-                print(fight.fish1.wager,fight.fish2.wager)
-                print('calculated p_win:',fight.p_win,'\n')
+   
+    def update_energy(self,win,fight):
         if win:
             other_fish = fight.loser
-            cost = fight.level * other_fish.size / self.size
-            if cost > self.effort:
-                cost = self.effort
-            if fight.food is not None:
-                if fight.food > 0:
-                    self.energy = np.round(self.energy - fight.level + fight.food,2)
-                    self.energy = np.clip(self.energy,0,self.max_energy)
-                    self.size = self.size + self.r_rhp * (self.s_max - self.size) ** self.a_growth
-                    self.fitness_record.append(0)
-                else:
-                    self.fitness_record.append(1)
-        else:
-            other_fish = fight.winner
-            if fight.food:
-                self.energy = np.round(self.energy - self.effort,2)
-        if self.energy <= 0:
-            #print('I am dying!',fight.level,self.effort)
-            self.energy = 0
-            self.alive = False
-        self.size_record.append(self.size)
-        self.energy_record.append(self.energy)
-
-        self.win_record.append([other_fish.size,win,self.effort])
-        self.est_record.append(self.estimate)
-        return self.prior,self.estimate
-
-# Updates the prior and handles food and cost. Should probably be rebuilt eventually
-    def update_prior(self,win,fight):
-## Establish fishes and impose costs and benefits
-        if win:
-            other_fish = fight.loser
-            cost = fight.level * (other_fish.size / self.size) ## scale cost by relative size, beating a small fish is extra cheap
-            if cost > self.effort:
-                cost = self.effort
+            if self.size >= other_fish.size: 
+                #cost = min([fight.fish1.wager,fight.fish2.wager])
+                cost = min([self.effort,other_fish.wager])
+            else: ## if a smaller fish wins, the bigger fish's effort is scaled up, but no more than effort spent
+                print('How did I lose???')
+                print(self.effort,other_fish.size,other_fish.effort,fight.params)
+                cost = min([self.effort,other_fish.wager * (other_fish.wager / self.wager)])
             if fight.food is not None:
                 if fight.food > 0:
                     self.energy = np.round(self.energy - cost + fight.food,2)
@@ -469,16 +450,39 @@ class Fish:
                     self.fitness_record.append(1)
         else:
             other_fish = fight.winner
-            cost = self.effort ## If you lost, the cost was, by definition, the amount of energy you put out
+            cost = self.effort
             if fight.food:
-                self.energy = np.round(self.energy - cost,2)
+                self.energy = np.round(self.energy - self.effort,2)
         if self.energy <= 0:
+            #print('I am dying!',fight.level,self.effort)
             self.energy = 0
             self.alive = False
-            print('oops, I died')
-            print(fight.summary())
         self.size_record.append(self.size)
         self.energy_record.append(self.energy)
+
+        self.win_record.append([other_fish.size,win,self.effort,cost])
+        return other_fish
+
+## For testing what happens if you just don't update ever
+    def no_update(self,win,fight):
+
+        if False and self.effort_method == 'Perfect':
+            if win:
+                print('I won!')
+            else:
+                print('I lost??')
+                print(fight.fish1.size,fight.fish2.size)
+                print(fight.fish1.effort,fight.fish2.effort)
+                print(fight.fish1.wager,fight.fish2.wager)
+                print('calculated p_win:',fight.p_win,'\n')
+        self.update_energy(win,fight)
+        return self.prior,self.estimate
+
+# Updates the prior and handles food and cost. Should probably be rebuilt eventually
+    def update_prior(self,win,fight):
+
+## Establish fishes and impose costs and benefits
+        other_fish = self.update_energy(win,fight)
 ## Get likelihood function
         if self.effort_method[1] == 0:
 
@@ -488,7 +492,6 @@ class Fish:
             likelihood = self._use_mutual_likelihood(fight,win)
 
             #likelihood = self._define_likelihood_mutual(fight,win)
-        self.win_record.append([other_fish.size,win,self.effort])
         pre_prior = self.prior
         self.prior = self._update(self.prior,likelihood,self.xs)
         if self.decay_all:
@@ -672,13 +675,17 @@ class Fish:
             effort = 1
         effort = self._boost_effort(effort)
         #print('effort post boost:',effort)
+        if effort == 0:
+            print('boosting effort to .01')
+            effort = .01
         return effort
     
     def choose_effort_energy(self,f_opp,strategy=None):
         effort = self.choose_effort(f_opp,strategy)
 ## A slightly more careful strategy, invests a proportion of available energy, should generally avoid death
-        effort = self.energy * (effort ** self.c_aversion)
-        effort = np.clip(effort,0,self.energy)
+        if False:
+            effort = self.energy * (effort ** self.c_aversion)
+            effort = np.clip(effort,0,self.energy)
         return effort
 
     def leroy_jenkins(self,f_opp):

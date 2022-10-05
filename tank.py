@@ -145,8 +145,8 @@ class Tank():
             c = self.fight_list[i]
             if self.death:
                 if not c.fish1.alive or not c.fish2.alive:
+                    print('we got a dead one.')
                     if c.fish1.effort_method == 'Perfect' or c.fish2.effort_method == 'Perfect':
-                        #print('we got a dead one.')
                         pass
                     if c.fish1.alive:
                         c.outcome = 0 
@@ -217,8 +217,8 @@ class Tank():
             else:
                 color=cm.tab10(i)
             f = fish_list[i]
-            effort_record = np.array(f.win_record)[:,2]
-            smooth_effort = gaussian_filter1d(effort_record,5)
+            effort_record = np.array(f.win_record)[:,-1] ## note that there are fish win records and tank win records. yikes.
+            smooth_effort = gaussian_filter1d(effort_record,3)
             ax.plot(smooth_effort,color=color,alpha=.5,label=str(i))
         ax.legend()
         fig.show()

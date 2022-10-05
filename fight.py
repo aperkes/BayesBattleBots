@@ -52,6 +52,7 @@ class Fight():
             
         else:
             self.outcome = self.mechanism
+            self.level = 0.5
       
         self.winner = self.fishes[self.outcome]
         self.loser = self.fishes[1-self.outcome]
@@ -97,13 +98,22 @@ class Fight():
         winner = self.chance_outcome()
         return winner,level
 
-    def _wager_curve(self,w,l=.25):
+    def _wager_curve_old(self,w,l=.25):
         a = logit(1-l)
         prob_win = w ** (float(np.abs(a))**np.sign(a)) / 2
         return prob_win
 
+    def _wager_curve(self,w,l=.05):
+        if l == 0:
+            prob_win = 0
+        else:
+            L = np.tan((np.pi - l)/2)
+            prob_win = (w**L) / 2
+        return prob_win
+
     ## This is useful because it paramaterizes the relative impact of size, effort, and luck
-    def mathy(self,params=[.5,.5,.5]):
+    def mathy(self,params=[1,.3,.05]):
+        #print(params)
         s,e,l = params
         f1_size = self.fish1.size
         f2_size = self.fish2.size
@@ -115,30 +125,39 @@ class Fight():
         f2_effort = self.fish2._choose_effort(self.fish1)
         self.fish1.effort = f1_effort
         self.fish2.effort = f2_effort
-## NOTE: Originally I did exponents, but it might make more sense to multiply this...
-        f1_wager = (f1_rel_size * s) * (f1_effort * e)
-        f2_wager = (f2_rel_size * s) * (f2_effort * e)
+        print('effort:',f1_effort,f2_effort)
+## It might make more sense to multiply this...but I don't think so
+        f1_wager = (f1_rel_size ** s) * (f1_effort ** e)
+        f2_wager = (f2_rel_size ** s) * (f2_effort ** e)
         if f2_wager > f2_effort:
             print('calculation:',f2_rel_size,s,f2_effort,e)
         self.fish1.wager = f1_wager
         self.fish2.wager = f2_wager
 
-        min_wager = min([f1_wager,f2_wager])
-        min_normed = min_wager / max([f1_wager,f2_wager,.0001])
 ## Alternatively:
         ##min_wager = min([f1_wager,f2_wager]) / (f1_wager + f2_wager)
         #f_min = np.argmin([f1_wager,f2_wager]) ## For some reason, this biases it.
         if f1_wager == f2_wager:
+            self.p_win = 0.5
             f_min = np.random.randint(2)
+            min_normed = 'even'
         else:
+            min_wager = min([f1_wager,f2_wager])
+            min_normed = min_wager / max([f1_wager,f2_wager])
             f_min = 1 - np.argmax([f1_wager,f2_wager])
-        self.p_win = self._wager_curve(min_normed,l)
-        if random.random() < self.p_win: ## probability that the "lower invested" fish wins
+            self.p_win = self._wager_curve(min_normed,l)
+        roll = random.random()
+        if roll < self.p_win: ## probability that the "lower invested" fish wins
             winner = f_min
         else:
             winner = 1-f_min
         loser = 1-winner
-        level = [f1_effort,f2_effort][loser]
+        level = min([f1_effort,f2_effort])
+        if False and self.fishes[loser].size > self.fishes[winner].size:
+            print('#### something is wrong...')
+            print(f1_size,f2_size,f1_rel_size,f2_rel_size)
+            print(self.p_win,min_normed,winner,f1_wager,f2_wager)
+            print('roll:',roll)
         return winner,level
      
     def hock_huber(self,scale=.1,params=[.5,.5,.5]):
