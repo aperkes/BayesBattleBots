@@ -536,8 +536,9 @@ class Fish:
         pre_estimate = self.estimate
         estimate = self.xs[np.argmax(self.prior)]
         post_estimate = estimate
-        self.estimate_ = np.sum(self.prior * self.xs / np.sum(self.prior))
+        #self.estimate_ = np.sum(self.prior * self.xs / np.sum(self.prior))
         prior_mean,prior_std = self.get_stats()
+        self.estimate_ =  prior_mean
         self.est_record_.append(prior_mean)
 
         self.sdest_record.append(prior_std)

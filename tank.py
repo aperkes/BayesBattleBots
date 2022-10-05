@@ -183,7 +183,7 @@ class Tank():
             for i in range(len(fish_list)):
                 f = fish_list[i]
                 ax.plot(f.hock_record,color=cm.tab10(i),label=str(i))
-                ax.axhline(f.size/100,color=cm.tab10(i))
+                ax.axhline(f.size/100,color=cm.tab10(i),linestyle=':')
             ax.set_ylabel('Hock Estimate')
         else:
             for i in range(len(fish_list)):
@@ -192,11 +192,11 @@ class Tank():
                 else:
                     color = cm.tab10(i)
                 f = fish_list[i]
-                ax.plot(f.est_record, color=color,label=str(i))
+                ax.plot(f.est_record_, color=color,label=str(i))
                 if food:
                     ax.plot(f.size_record,color=color)
                 else:
-                    ax.axhline(f.size,color=color)
+                    ax.axhline(f.size,color=color,linestyle=':')
                 if self.u_method == 'bayes':
                     ax.fill_between(np.arange(len(f.est_record_)),np.array(f.est_record_) + np.array(f.sdest_record),
                         np.array(f.est_record_) - np.array(f.sdest_record),color=color,alpha=.3)
