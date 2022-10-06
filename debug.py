@@ -31,7 +31,7 @@ if HOCK:
 else:
     params.u_method = 'bayes'
     params.f_outcome = 'math'
-    params.outcome_params = [1,0.3,.01]
+    params.outcome_params = [1,0.1,.1]
 
 s = Simulation(params)
 ## Check whether simulation is working and print stats
