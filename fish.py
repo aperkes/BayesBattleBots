@@ -397,11 +397,10 @@ class Fish:
     def _use_mutual_likelihood(self,fight,win=True):
         if self.likelihood_dict is None:
             likelihood = self._define_likelihood_mutual(fight,win) 
-        elif fight.winner.idx not in self.likelihood_dict.keys() or fight.loser.idx not in self.likelihood_dict.keys():
-            print('do we even use this?')
+        elif False and (fight.winner.idx,fight.loser.idx) not in self.likelihood_dict.keys():
             likelihood = self._define_likelihood_mutual(fight,win) 
 
-        else:
+        else: ## The dict is fast, but it doesn't work, I would need every possible effort in their too...
             if win:
                 likelihood = self.likelihood_dict[fight.winner.idx,fight.loser.idx]
             else:
@@ -513,8 +512,6 @@ class Fish:
 # Updates the prior and handles food and cost. Should probably be rebuilt eventually
     def update_prior(self,win,fight):
         size_idx = np.argmax(self.xs >= self.size)
-        print(self.size,size_idx,self.xs[size_idx])
-        print(self.prior[size_idx])
         size_possible_pre = self.prior[size_idx] > 0
 ## Establish fishes and impose costs and benefits
         other_fish = self.update_energy(win,fight)
@@ -546,12 +543,6 @@ class Fish:
         self.estimate = estimate
         self.est_record.append(estimate)
         size_possible_post = self.prior[size_idx] > 0
-        print('post_prior',self.prior[size_idx])
-        if np.abs(pre_estimate - post_estimate) > 5:
-            print('## Something very weird just happened ##')
-            import pdb
-            pdb.set_trace()
-            print(self.idx,np.std(self.prior))
         return self.prior,self.estimate
 
     def decay_prior(self,store=False):
