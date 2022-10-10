@@ -422,7 +422,7 @@ class Fish:
                 if False:
                     likelihood[s] = self._likelihood_function_size(xs[s],x_opp)
                 else:
-                    likelihood[s] = self._likelihood_function_se(xs[s],x_opp,fight=fight)
+                    likelihood[s] = self._likelihood_function_se(xs[s],x_opp,x_eff=self.effort,fight=fight)
         elif not win:
             for s in range(len(xs)):
                 if False:
@@ -430,7 +430,62 @@ class Fish:
                 else:
                     likelihood[s] = 1- self._likelihood_function_se(xs[s],x_opp,o_eff=1,x_eff=self.effort,fight=fight)
         return likelihood
-    
+   
+## Wager function optimized for array multiplication
+    def _wager_curve_smart(self,w,L=np.tan((np.pi - .25)/2):
+        return (w ** L) / 2
+
+## Updated likelihood function that *should* be faster
+    def _define_likelihood_mut_array(self,fight,win=True):
+        if fight is None:
+            s,e,l = self.naive_params
+        else:
+            s,e,l = fight.params
+        if l == 0:
+            print('#### l == 0, this is a little weird....')
+            return np.ones_like(self.xs)
+        if self.effort == 0:
+            return np.ones_like(self.xs)
+        if self.effort == None:
+            x_eff = 1
+        else:
+            x_eff = self.effort
+
+## Define other fish size and effort based on fight
+        if win:
+            other_fish = fight.loser
+            o_eff = fight.level 
+        else:
+            other_fish = fight.winner 
+            o_eff = 1 ## this is an assumption of how much the other fish would have faught.
+
+        xs = self.xs ## for simplicity, although sometimes I forget it exists
+        likelihood = np.empty_like(xs)
+
+## Build arrays of rel sizes of each fish as focal fish increases size
+        size_index = np.argmax(self.xs >= other_fish.size)
+        rel_xs = np.ones_like(xs)
+        rel_os = np.ones_like(xs)
+        rel_xs[:size_index] = self.xs[:size_index] / other_fish.size
+        rel_os[size_index:] = other_fish.size / self.xs[size_index:] 
+## Get wager arrays based on relative sizes
+        x_wager = rel_xs ** s * x_eff ** e ## Wager of focal fish
+        o_wager = rel_os ** s * o_eff ** e ## Wager of opponent
+
+## Build relative wager array
+        wager_array = np.empty_like(xs)
+        wager_index = np.argmax(x_wager > o_wager) ## the point x_wager becomes bigger
+        wager_array[:wager_index] = x_wager[:wager_index] / o_wager[:wager_index]
+        wager_array[wager_index:] = o_wager[wager_index:] / x_wager[wager_index:]
+
+        L = np.tan((np.pi - l)/2) ## calculate this once to speed things up
+        likelihood = self._wager_curve_smart(wager_array,L)
+        if win: ## since likelihood is the probability of what happened, and wager_array was p(upset)
+            likelihood[wager_index:] = 1 - likelihood[wager_index:]
+        else:
+            likelihood[:wager_index] = 1 - likelihood[:wager_index]
+        return likelihood
+
 ## This also includes opponent assesment...need to fix that
     def update_prior_old(self,win,x_opp=False,xs=None,w_opp=None,e_self=None,outcome_params=None):
         if xs is None:
