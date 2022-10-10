@@ -396,9 +396,11 @@ class Fish:
 
     def _use_mutual_likelihood(self,fight,win=True):
         if self.likelihood_dict is None:
-            likelihood = self._define_likelihood_mutual(fight,win) 
-        elif False and (fight.winner.idx,fight.loser.idx) not in self.likelihood_dict.keys():
-            likelihood = self._define_likelihood_mutual(fight,win) 
+            #likelihood = self._define_likelihood_mutual(fight,win) 
+            likelihood = self._define_likelihood_mut_array(fight,win)
+        elif True or (fight.winner.idx,fight.loser.idx) not in self.likelihood_dict.keys():
+            #likelihood = self._define_likelihood_mutual(fight,win) 
+            likelihood = self._define_likelihood_mut_array(fight,win)
 
         else: ## The dict is fast, but it doesn't work, I would need every possible effort in their too...
             if win:
@@ -432,7 +434,7 @@ class Fish:
         return likelihood
    
 ## Wager function optimized for array multiplication
-    def _wager_curve_smart(self,w,L=np.tan((np.pi - .25)/2):
+    def _wager_curve_smart(self,w,L=np.tan((np.pi - .25)/2)):
         return (w ** L) / 2
 
 ## Updated likelihood function that *should* be faster
