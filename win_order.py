@@ -84,11 +84,6 @@ for i in range(iterations):
     for m in range(n_matches):
         match,outcome =check_success(f,f_match)
         f.update(1-outcome,match)
-        if f.est_record_[1] < 10:
-            print('ITERATION ',i)
-            print('MATCH ',m)
-            print(f.est_record_)
-            print(f.effort)
         #f.decay_prior(store=False)
         match_results[results_str].append(1-outcome)
         results_str += conversion_dict[outcome]

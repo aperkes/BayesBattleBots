@@ -21,11 +21,11 @@ PLOT = 1
 SAVE = False
 
 params = SimParams()
-params.outcome_params = [1,0.1,.1]
+params.outcome_params = [1,0.1,.01]
 params.f_method = 'shuffled'
 ## Set up a tank
-fishes = [Fish(f,prior=True) for f in range(5)]
-tank = Tank(fishes,n_fights = 20,death=False,f_method=params.f_method)
+fishes = [Fish(f,prior=True) for f in range(9)]
+tank = Tank(fishes,n_fights = 50,death=False,f_method=params.f_method)
 tank.run_all()
 
 ## Figure 3a: Proportion of fights won over time to show emergence of hierarchy
@@ -39,14 +39,19 @@ for f in range(len(fishes)):
     ax1.set_ylabel('Proportion of fights won (sliding bin)')
 ## Figure 3b: Effort over time, to show that bayes becomes efficient
 fig2,ax2 = plt.subplots()
+effort_array = np.zeros([len(fishes),len(win_record)])
 for f in range(len(fishes)):
     cost_record = np.array(tank.fishes[f].win_record)[:,3]
     effort_record = np.array(tank.fishes[f].win_record)[:,2]
-    ax2.plot(cost_record,color=cm.tab10(f))
-    ax2.plot(effort_record,color=cm.tab10(f),alpha=0.4,linestyle=':')
+    effort_array[f] = effort_record
+    ax2.plot(cost_record,color=cm.tab10(f),alpha=.2)
+    #ax2.plot(effort_record,color=cm.tab10(f),alpha=0.4,linestyle=':')
     ax2.set_xlabel('time (n fights)')
-    ax2.set_ylabel('Proportion of fights won (sliding bin)')
+    ax2.set_ylabel('Effort')
+ax2.plot(np.mean(effort_array,0),color='black')
+
 ## Figure 3c: Estimate over time, to show that bayes is accurate
+
 fig3,ax3 = tank.plot_estimates(food=False)
 if PLOT:
     plt.show()
