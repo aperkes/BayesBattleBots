@@ -402,7 +402,7 @@ class Fish:
             #likelihood = self._define_likelihood_mutual(fight,win) 
             likelihood = self._define_likelihood_mut_array(fight,win)
 
-        else: ## The dict is fast, but it doesn't work, I would need every possible effort in their too...
+        else: ## The dict is fast, but it doesn't work, I would need every possible effort in there too...
             if win:
                 likelihood = self.likelihood_dict[fight.winner.idx,fight.loser.idx]
             else:
@@ -459,7 +459,7 @@ class Fish:
             o_eff = fight.level 
         else:
             other_fish = fight.winner 
-            o_eff = 1 ## this is an assumption of how much the other fish would have faught.
+            o_eff = 1 ## this is an assumption of how much the other fish would have fought.
 
         xs = self.xs ## for simplicity, although sometimes I forget it exists
         likelihood = np.empty_like(xs)
@@ -476,9 +476,13 @@ class Fish:
 
 ## Build relative wager array
         wager_array = np.empty_like(xs)
-        wager_index = np.argmax(x_wager > o_wager) ## the point x_wager becomes bigger
-        wager_array[:wager_index] = x_wager[:wager_index] / o_wager[:wager_index]
-        wager_array[wager_index:] = o_wager[wager_index:] / x_wager[wager_index:]
+        if x_wager[-1] < o_wager[-1]:
+            wager_index = len(o_wager) ## this deals with the case where x_wager is never bigger
+            wager_array = x_wager / o_wager
+        else:
+            wager_index = np.argmax(x_wager > o_wager) ## the point x_wager becomes bigger
+            wager_array[:wager_index] = x_wager[:wager_index] / o_wager[:wager_index]
+            wager_array[wager_index:] = o_wager[wager_index:] / x_wager[wager_index:]
 
         L = np.tan((np.pi - l)/2) ## calculate this once to speed things up
         likelihood = self._wager_curve_smart(wager_array,L)
@@ -571,7 +575,7 @@ class Fish:
         size_idx = np.argmax(self.xs >= self.size)
         size_possible_pre = self.prior[size_idx] > 0
 ## Establish fishes and impose costs and benefits
-        other_fish = self.update_energy(win,fight)
+        other_fish = self.update_energy(win,fight) # This is just for convenience
 ## Get likelihood function
         if self.effort_method[1] == 0:
 

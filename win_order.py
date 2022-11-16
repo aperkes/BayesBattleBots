@@ -71,7 +71,7 @@ def build_results(n_matches=1):
 conversion_dict = {0:'w',1:'l'}
 
 f0 = Fish(1,age=age,size=47,prior=True,effort_method=params.effort_method,fight_params=params.outcome_params,update_method=params.u_method)
-n_matches = 3
+n_matches = 1
 fishes = []
 match_results = build_results(n_matches)
 for i in range(iterations):
@@ -84,27 +84,42 @@ for i in range(iterations):
     for m in range(n_matches):
         match,outcome =check_success(f,f_match)
         f.update(1-outcome,match)
+        if f.est_record_[1] < 10:
+            print('ITERATION ',i)
+            print('MATCH ',m)
+            print(f.est_record_)
+            print(f.effort)
         #f.decay_prior(store=False)
         match_results[results_str].append(1-outcome)
         results_str += conversion_dict[outcome]
 
     fishes.append(f)
+#print('round0 results:',match_results[''])
+print('round one average:',np.mean(match_results['']))
+
 fig,ax = plt.subplots()
 
 loser_estimates, winner_estimates = [],[]
 
 for f in fishes:
-    jitter = np.random.randn()*.1
-    #jitter = 0
+    jitter = np.random.randn()*.01
+    jitter = 0
     ax.plot(np.array(f.est_record_)[:] + jitter,alpha=.01,color='black')
-    if f.win_record[0][1] == 1: ## If you won the first fight
-        if f.win_record[1][1] == 0: # but lost the second fight
-            winner_estimates.append(f.est_record[2])
-    elif f.win_record[1][1] == 1: # vs if you lost the first fight and won the second fight
-        loser_estimates.append(f.est_record[2])
-
-print(np.mean(match_results['wl']),np.mean(match_results['lw']))
+    if False:
+        if f.win_record[0][1] == 1: ## If you won the first fight
+            if f.win_record[1][1] == 0: # but lost the second fight
+                winner_estimates.append(f.est_record_[2])
+        elif f.win_record[1][1] == 1: # vs if you lost the first fight and won the second fight
+            loser_estimates.append(f.est_record_[2])
+    if True: ## Get estimates after the first fight
+        if f.win_record[0][1] == 1: ## if you won the first fight:
+            winner_estimates.append(f.est_record_[1])
+        else:
+            loser_estimates.append(f.est_record_[1])
+#print(np.mean(match_results['wl']),np.mean(match_results['lw']))
 print(np.mean(winner_estimates),np.mean(loser_estimates))
+print('winners:',max(winner_estimates),min(winner_estimates),np.std(winner_estimates))
+print('losers:',max(loser_estimates),min(loser_estimates),np.std(loser_estimates))
 
 [ax.axvline(f,color='black',linestyle=':') for f in [0,1,2,3]]
 
