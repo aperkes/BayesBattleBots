@@ -126,7 +126,6 @@ class Fight():
         f2_effort = self.fish2._choose_effort(self.fish1)
         self.fish1.effort = f1_effort
         self.fish2.effort = f2_effort
-        print('effort:',f1_effort,f2_effort)
 ## It might make more sense to multiply this...but I don't think so
         f1_wager = (f1_rel_size ** s) * (f1_effort ** e)
         f2_wager = (f2_rel_size ** s) * (f2_effort ** e)

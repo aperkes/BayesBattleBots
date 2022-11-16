@@ -34,7 +34,7 @@ naive_escalation = {
 class Fish:
     def __init__(self,idx=0,age=50,size=None,
                  prior=None,likelihood=None,likelihood_dict=None,hock_estimate=.5,update_method='bayes',decay=2,decay_all=False,
-                 effort_method=[1,1],fight_params=[.3,.3,.1],escalation=naive_escalation,xs=np.linspace(7,100,500),
+                 effort_method=[1,1],fight_params=[.6,.3,.01],escalation=naive_escalation,xs=np.linspace(7,100,500),
                  r_rhp=0,a_growth=True,c_aversion=1,max_energy=1,acuity=10,awareness=10):
         self.idx = idx
         self.name = idx
