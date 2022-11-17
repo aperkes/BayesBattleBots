@@ -35,7 +35,7 @@ class Fish:
     def __init__(self,idx=0,age=50,size=None,
                  prior=None,likelihood=None,likelihood_dict=None,hock_estimate=.5,update_method='bayes',decay=2,decay_all=False,
                  effort_method=[1,1],fight_params=[.6,.3,.01],escalation=naive_escalation,xs=np.linspace(7,100,500),
-                 r_rhp=0,a_growth=True,c_aversion=1,max_energy=1,acuity=10,awareness=10):
+                 r_rhp=0,a_growth=True,c_aversion=1,max_energy=1,acuity=10,awareness=10,insight=False):
         self.idx = idx
         self.name = idx
         self.age = age
@@ -45,6 +45,7 @@ class Fish:
         self.c_aversion = c_aversion
         self.acuity = acuity
         self.awareness = awareness
+        self.insight = insight
         if size is not None:
             if size == 0:   
                 self.size = self._growth_func(self.age)
@@ -460,7 +461,8 @@ class Fish:
         else:
             other_fish = fight.winner 
             o_eff = 1 ## this is an assumption of how much the other fish would have fought.
-
+        if self.insight == True:
+            o_eff = other_fish.effort
         xs = self.xs ## for simplicity, although sometimes I forget it exists
         likelihood = np.empty_like(xs)
 
