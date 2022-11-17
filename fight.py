@@ -153,7 +153,8 @@ class Fight():
         else:
             winner = 1-f_min
         loser = 1-winner
-        level = min([f1_effort,f2_effort])
+        #print(f1_effort,f2_effort)
+        level = min([f1_wager,f2_wager])
         if False and self.fishes[loser].size > self.fishes[winner].size:
             print('#### something is wrong...')
             print(f1_size,f2_size,f1_rel_size,f2_rel_size)

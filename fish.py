@@ -35,7 +35,7 @@ class Fish:
     def __init__(self,idx=0,age=50,size=None,
                  prior=None,likelihood=None,likelihood_dict=None,hock_estimate=.5,update_method='bayes',decay=2,decay_all=False,
                  effort_method=[1,1],fight_params=[.6,.3,.01],escalation=naive_escalation,xs=np.linspace(7,100,500),
-                 r_rhp=0,a_growth=True,c_aversion=1,max_energy=1,acuity=10,awareness=10,insight=False):
+                 r_rhp=0,a_growth=True,c_aversion=1,max_energy=1,acuity=10,awareness=10,insight=False,energy_cost=False):
         self.idx = idx
         self.name = idx
         self.age = age
@@ -73,6 +73,7 @@ class Fish:
         ## Define the rules one when to escalate, based on confidence
         self.escalation_thresholds = escalation
         self.cdf_prior = self._get_cdf_prior(self.prior)
+        est_5,est_25,est_75,est_95 = self._get_range_prior(self.cdf_prior)
         self.estimate = self.xs[np.argmax(self.prior)]
         prior_mean,prior_std = self.get_stats()
         self.estimate_ = prior_mean
@@ -85,6 +86,7 @@ class Fish:
         self.est_record = [self.estimate]
         self.est_record_ = [self.estimate_]
         self.sdest_record = [prior_std]
+        self.range_record = [[est_5,est_25,est_75,est_95]]
         self.effort_method = effort_method
         self.effort = None
         self.decay_all = decay_all
@@ -108,20 +110,33 @@ class Fish:
             #print('setting no update')
             self.update = self.no_update
 
+        #print('setting effort...',effort_method)
         if effort_method[0] is None:
             if effort_method[1] is None:
+                print('leroy!')
                 self._choose_effort = self.leroy_jenkins
             elif effort_method[1] == 0.5: 
+                print('half leroy!')
                 self._choose_effort = self.half_jenkins
+            elif effort_method[1] == '?':
+                self._choose_effort = self.random_effort
+            elif effort_method[1] == '!':
+                self._choose_effort = self.explore_effort
+                self.effort_method = [1,1]
+            else:
+                print('continuous leroy')
+                self.effort = max_energy * effort_method[1]
+                self._choose_effort = self.float_jenkins
         else:
             self._choose_effort = self.choose_effort_energy
 
         self.update_method = update_method
-        self.effort = 0
+        #self.effort = 0
         self.wager = 0
         self.boost = 0 ## Initial boost, needs to be 0, will change with winner/loser effect
         self.energy = max_energy ## add some cost to competing
         self.max_energy = max_energy
+        self.energy_cost = energy_cost
 
 ## Initialize size and energy records
         self.size_record = [self.size]
@@ -172,6 +187,13 @@ class Fish:
         normed_prior = self.prior / np.sum(self.prior)
         cdf_prior = np.cumsum(normed_prior)
         return cdf_prior
+    
+    def _get_range_prior(self,cdf_prior):
+        cdf_5 = np.argmax(cdf_prior > 0.05)
+        cdf_25 = np.argmax(cdf_prior > 0.25)
+        cdf_75 = np.argmax(cdf_prior > 0.75)
+        cdf_95 = np.argmax(cdf_prior >= 0.95)
+        return self.xs[cdf_5],self.xs[cdf_25],self.xs[cdf_75],self.xs[cdf_95]
 
     def _update(self,prior,likelihood,xs = None):
         post = prior * likelihood
@@ -529,7 +551,7 @@ class Fish:
             other_fish = fight.loser
             if self.size >= other_fish.size: 
                 #cost = min([fight.fish1.wager,fight.fish2.wager])
-                cost = min([self.effort,other_fish.wager])
+                cost = min([self.effort,other_fish.wager]) 
             else: ## if a smaller fish wins, the bigger fish's effort is scaled up, but no more than effort spent
                 #print('How did I lose???')
                 #print(self.effort,other_fish.size,other_fish.effort,fight.params)
@@ -547,6 +569,8 @@ class Fish:
             cost = self.effort
             if fight.food:
                 self.energy = np.round(self.energy - self.effort,2)
+        if self.energy_cost is False:
+            self.energy = self.max_energy 
         if self.energy <= 0:
             #print('I am dying!',fight.level,self.effort)
             self.energy = 0
@@ -577,7 +601,7 @@ class Fish:
         size_idx = np.argmax(self.xs >= self.size)
         size_possible_pre = self.prior[size_idx] > 0
 ## Establish fishes and impose costs and benefits
-        other_fish = self.update_energy(win,fight) # This is just for convenience
+        other_fish = self.update_energy(win,fight) # This currently updates win record, not ideal
 ## Get likelihood function
         if self.effort_method[1] == 0:
 
@@ -588,7 +612,7 @@ class Fish:
 
             #likelihood = self._define_likelihood_mutual(fight,win)
         pre_prior = self.prior
-        self.prior = self._update(self.prior,likelihood,self.xs)
+        self.prior = self._update(self.prior,likelihood,self.xs) ## this just multiplies prior*likelihood
         if self.decay_all:
             print('decaying...')
             self.prior = self._decay_flat(self.prior)
@@ -602,6 +626,9 @@ class Fish:
         self.est_record_.append(prior_mean)
 
         self.sdest_record.append(prior_std)
+
+        est_5,est_25,est_75,est_95 = self._get_range_prior(self.cdf_prior) 
+        self.range_record.append([est_5,est_25,est_75,est_95])
         
         self.estimate = estimate
         self.est_record.append(estimate)
@@ -775,6 +802,14 @@ class Fish:
         #print('effort post boost:',effort)
         return effort
     
+    def explore_effort(self,f_opp):
+        if np.random.random() > .9:
+            effort = np.random.random()
+        else:
+            effort = self.choose_effort(f_opp)
+
+        return effort
+
     def choose_effort_energy(self,f_opp,strategy=None):
         effort = self.choose_effort(f_opp,strategy)
 ## A slightly more careful strategy, invests a proportion of available energy, should generally avoid death
@@ -789,6 +824,14 @@ class Fish:
 
     def half_jenkins(self,f_opp):
         effort = self.energy * .5
+        return effort
+
+    def float_jenkins(self,f_opp):
+        effort = self.effort
+        return effort
+
+    def random_effort(self,f_opp):
+        effort = np.random.random() * self.energy
         return effort
 
 ## Proc effort and decay when you check it

@@ -22,7 +22,7 @@ import itertools
 s,e,l = .6,.3,.1
 
 params = SimParams()
-params.effort_method = [1,0.5]
+params.effort_method = [1,1]
 params.n_fights = 50 
 params.n_iterations = 15
 params.n_fish = 5
@@ -70,7 +70,7 @@ def build_results(n_matches=1):
 ## Dict to convert from outcome to letters
 conversion_dict = {0:'w',1:'l'}
 
-f0 = Fish(1,age=age,size=47,prior=True,effort_method=params.effort_method,fight_params=params.outcome_params,update_method=params.u_method,acuity=0,insight=True)
+f0 = Fish(1,age=age,size=47,prior=True,effort_method=params.effort_method,fight_params=params.outcome_params,update_method=params.u_method,acuity=0,insight=False)
 n_matches = 3
 fishes = []
 match_results = build_results(n_matches)

@@ -198,8 +198,11 @@ class Tank():
                 else:
                     ax.axhline(f.size,color=color,linestyle=':')
                 if self.u_method == 'bayes':
-                    ax.fill_between(np.arange(len(f.est_record_)),np.array(f.est_record_) + np.array(f.sdest_record),
-                        np.array(f.est_record_) - np.array(f.sdest_record),color=color,alpha=.3)
+                    #ax.fill_between(np.arange(len(f.est_record_)),np.array(f.est_record_) + np.array(f.sdest_record),
+                    #    np.array(f.est_record_) - np.array(f.sdest_record),color=color,alpha=.3)
+                    f.range_record = np.array(f.range_record)
+                    #ax.fill_between(np.arange(len(f.range_record)),f.range_record[:,0],f.range_record[:,3],color=color,alpha=0.1)
+                    ax.fill_between(np.arange(len(f.range_record)),f.range_record[:,1],f.range_record[:,2],color=color,alpha=0.2)
             ax.set_ylabel('Estimate')
         ax.set_xlabel('contest number')
         ax.legend()

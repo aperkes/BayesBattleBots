@@ -53,16 +53,24 @@ for i in tqdm(range(iterations)):
     tank.run_all(False)
 
     f = tank.fishes[0]
-    f2 = copy.deepcopy(tank.fishes[1])
+    f2 = tank.fishes[1]
+    #f2 = copy.deepcopy(tank.fishes[0])
     opp = Fish(size = f.size*scale)
     opp2 = Fish(size = f2.size/scale)
-    f_win = Fight(f,opp,outcome=0)
-    f_loss = Fight(f2,opp2,outcome=1) 
+    f_win = Fight(f,opp,outcome=0,level=0.5)
+    f_loss = Fight(f2,opp2,outcome=1,level=0.5) 
     f_win.winner = f
     f_win.loser = opp
     f_loss.winner = opp2
     f_loss.loser = f2
     #print(f.estimate,len(f.est_record))
+
+    ## Because this fight is stages, it never asks about effort, so you have to provide it
+    #f_win.winner.effort = 0.5
+    #f_win.loser.effort = 0.5
+    #f_loss.loser.effort = 0.5
+    #f_loss.winner.effort = 0.5
+
     f.update(True,f_win)    
     f2.update(False,f_loss)
     #print(f.estimate)
