@@ -1,6 +1,7 @@
 
 ## Load required packages
 import numpy as np
+import copy
 
 class Params():
     def __init__(self,n_iterations=1000,                    ## Sim Params
@@ -13,10 +14,14 @@ class Params():
                 xs=np.linspace(7,100,500),r_rhp=0,a_growth=True,c_aversion=1,
                 max_energy=1,start_energy=0.5,
                 acuity=10,pre_acuity=10,post_acuity=1,awareness=10,insight=True,
+                mutant_effort=[1,1],mutant_update='bayes',mutant_prior=None,
 
                 verbose=False):                             ## Other params
 ## Sim params
         self.n_iterations = n_iterations
+        self.mutant_effort = mutant_effort
+        self.mutant_update = mutant_update
+        self.mutant_prior = mutant_prior
 ## Tank Params
         self.n_fish = n_fish
         self.n_rounds = n_rounds
@@ -53,7 +58,17 @@ class Params():
         self.insight=insight
 ## General Params
         self.verbose=verbose
+        self.mutant=False
         
+    def copy(self):
+        return copy.deepcopy(self)
+
+    def _mutate(self):
+        self.effort_method = self.mutant_effort
+        self.update_method = self.mutant_update
+        self.prior = self.mutant_prior
+        self.mutant = True
+
     def summary(self):
         print('Number iterations:',self.n_iterations)
         print('Number of Fish:',self.n_fish)

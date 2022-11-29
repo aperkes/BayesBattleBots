@@ -44,6 +44,7 @@ class Fish:
 
         if params is None:
             params = Params()
+        self.params = params
 ## Over rule params if you want to do that.
         if prior is None:
             self.prior = prior
@@ -106,7 +107,6 @@ class Fish:
         self.est_record_ = [self.estimate_]
         self.sdest_record = [prior_std]
         self.range_record = [[est_5,est_25,est_75,est_95]]
-        self.effort_method = params.effort_method
         self.effort = None
         self.decay = 1 ## Deprecated decay
         self.decay_all = False
@@ -146,12 +146,15 @@ class Fish:
                 self.effort_method = [1,1]
             else:
                 #print('continuous leroy')
-                self.effort = max_energy * effort_method[1]
+                self.effort = params.max_energy * effort_method[1]
                 self._choose_effort = self.float_jenkins
+        elif effort_method == 'PerfectNudge':
+            self._choose_effort = self.nudge_effort
         else:
             self._choose_effort = self.choose_effort_energy
 
         self.update_method = update_method
+        self.effort_method = params.effort_method
         #self.effort = 0
         self.wager = 0
         self.boost = 0 ## Initial boost, needs to be 0, will change with winner/loser effect
@@ -568,9 +571,12 @@ class Fish:
         return self.prior,self.estimate
    
     def update_energy(self,win,fight):
+        #print('in update energy:',fight)
         if win:
             other_fish = fight.loser
-            if self.size >= other_fish.size: 
+            if not other_fish.alive:
+                cost = 0
+            elif self.size >= other_fish.size: 
                 #cost = min([fight.fish1.wager,fight.fish2.wager])
                 cost = min([self.effort,other_fish.wager]) 
             else: ## if a smaller fish wins, the bigger fish's effort is scaled up, but no more than effort spent
@@ -579,23 +585,33 @@ class Fish:
                 cost = min([self.effort,other_fish.wager * (other_fish.wager / self.wager)])
             if fight.food is not None:
                 if fight.food > 0:
-                    self.energy = np.round(self.energy - cost + fight.food,2)
+                    #print('pre energy:',self.energy,'cost:',cost)
+                    #print('food:',fight.food,'free food',self.params.free_food)
+                    self.energy = np.round(self.energy - cost + fight.food + self.params.free_food,2)
+                    #print('post energy:',self.energy)
                     self.energy = np.clip(self.energy,0,self.max_energy)
                     self.size = self.size + self.r_rhp * (self.s_max - self.size) ** self.a_growth
-                    self.fitness_record.append(0)
+                    #self.fitness_record.append(0)
                 else:
+                    self.energy = np.round(self.energy - cost + self.params.free_food,2)
+                    self.energy = np.clip(self.energy,0,self.max_energy)
                     self.fitness_record.append(1)
         else:
             other_fish = fight.winner
             cost = self.effort
-            if fight.food:
-                self.energy = np.round(self.energy - self.effort,2)
+            if fight.food is not None:
+                self.energy = np.round(self.energy - cost + self.params.free_food,2)
+                self.energy = np.clip(self.energy,0,self.max_energy)
+                if fight.food <= 0:
+                    self.fitness_record.append(0)
         if self.energy_cost is False:
+            print('#### RESTORING ENERGY #####')
             self.energy = self.max_energy 
         if self.energy <= 0:
-            #print('I am dying!',fight.level,self.effort)
+            print('I am dying!',fight.level,cost,self.energy,self.effort,self.params.mutant,self.idx)
             self.energy = 0
             self.alive = False
+            print(self.energy_record)
         self.size_record.append(self.size)
         self.energy_record.append(self.energy)
 
@@ -724,7 +740,7 @@ class Fish:
         my_rel_size = my_size/bigger_size
         opp_rel_size = opp_size/bigger_size
 ## Note that we're conservative on effort, to avoid death vs hawks
-        my_wager = (my_rel_size * s) * (own_effort * self.energy * e)
+        my_wager = (my_rel_size * s) * (own_effort * e)
         opp_wager = (opp_rel_size * s) * (opp_effort * e)
         min_wager = min([my_wager,opp_wager])
         min_normed = min_wager / max([my_wager,opp_wager,.00001])
@@ -737,6 +753,36 @@ class Fish:
         else:
             p_win = 1 - p_upset 
         return p_win
+
+## This function has parameters to allow to evolve optimal strategy
+    def nudge_effort(self,f_opp,strategy=None):
+        if strategy is None:
+            strategy = self.effort_method
+        baseline_effort = self.params.baseline_effort
+        alpha = self.params.assessment_weight
+        if strategy == 'Estimate':
+            ## Now you have to estimate with some error
+            print('ESTIMATING!!!')
+            #my_size = self.estimate ## You only have to do this once
+            #opp_size = np.random.normal(f_opp.size,self.awareness)
+            #opp_size = np.clip(opp_size,7,99)
+        elif strategy == 'PerfectNudge':
+            #print('Nudging perfect!!!')
+            my_size = self.size
+            opp_size = f_opp.size
+        else:
+            print('#### SOMETHING IS WRONG')
+        p_win = self.prob_win_wager(my_size,opp_size,self.naive_params,opp_effort = baseline_effort,own_effort = baseline_effort)
+        #print(my_size,opp_size,f_opp.size,'calculated p_win:',p_win)
+        if p_win >= 0.5:
+            assessment = (1-baseline_effort)*(p_win)
+        else:
+            assessment = -1 * baseline_effort * 2 * (0.5 - p_win)
+        effort = baseline_effort + assessment * alpha
+        effort = np.clip(effort,0,1)
+        #print(self.idx,f_opp.idx,'nudged effort:',effort,'p win',p_win,self.energy,assessment)
+        effort = effort * self.energy
+        return effort
 
 ## This function is a mess. Need to break it up for sure.
     def choose_effort(self,f_opp,strategy=None):
@@ -758,6 +804,7 @@ class Fish:
             #print('opp size:',f_opp.size)
             #s,e,l = self.naive_params
             if strategy == 'Estimate':
+                print('Using Estimte')
                 ## Now you have to estimate with some error
 
                 my_size = self.estimate ## You only have to do this once
@@ -834,7 +881,7 @@ class Fish:
     def choose_effort_energy(self,f_opp,strategy=None):
         effort = self.choose_effort(f_opp,strategy)
 ## A slightly more careful strategy, invests a proportion of available energy, should generally avoid death
-        if False:
+        if True:
             effort = self.energy * (effort ** self.c_aversion)
             effort = np.clip(effort,0,self.energy)
         return effort

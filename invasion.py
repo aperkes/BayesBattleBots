@@ -8,6 +8,7 @@ from fish import Fish
 from fight import Fight
 from tank import Tank
 from simulation import Simulation,SimParams
+from params import Params
 from matplotlib import pyplot as plt
 from matplotlib import cm
 from tqdm import tqdm
@@ -27,13 +28,12 @@ import numpy as np
     b) the cost at which it can no longer invade 
 """
 
-params = SimParams()
+params = Params()
 
-params.n_fights = 5
+params.n_fights = 10 
 params.n_fish = 20
 params.f_method = 'shuffled'
 params.xs = np.linspace(7,100,100)
-
 ## Bayes invasion
 if False:
     params.effort_method = 'Estimate'
@@ -41,47 +41,54 @@ if False:
     params.awareness = 20
     params.mutant_effort = 'BayesMA'
 
-    params.u_method = None
+    params.update_method = None
     params.mutant_update = 'bayes'
     params.mutant_prior = 51
     params.xs = np.linspace(7,100,100)
 
 ## Estimate invasion
 elif True:
-    params.effort_method = [None,0.5]
-    params.mutant_effort = 'Perfect' ## Obviously perfect should be better. 
+    params.effort_method = [None,0.1]
+    params.mutant_effort = 'PerfectNudge' ## Obviously perfect should be better. 
     params.mutant_prior = True
     #params.mutant_effort = 'Estimate'
     params.acuity = 20
     params.awareness = 20
 
-    params.u_method = None
+    params.update_method = None
     params.mutant_update = None
 ## Bayes invation
 elif True:
     params.effort_method = [None,0.5]
     params.mutant_effort = [1,0]
 
-    params.u_method = None
+    params.update_method = None
     params.mutant_update = 'bayes'
 else: ## .5 invasion of 100%
     params.effort_method = [None,None]
     params.mutant_effort = [None,0.5]
 
-    params.u_method = None
+    params.update_method = None
     params.mutant_update = None
 
 params.f_outcome = 'math'
 params.outcome_params = [0.6,0.3,.05]
-params.generations = 50
-params.iterations = 10 
-
+params.generations = 10
+params.iterations = 5 
+params.fitness_ratio = 0.1
+params.death=True
+params.food=1
+params.free_food = 0.0
+#params.baseline_effort = params.free_food
+params.baseline_effort = 0.1
+#params.baseline_weight,params.assessment_weight = [.9,.1]
+params.assessment_weight = 0.9
 
 mutation_cost = .1
 
 fig,ax = plt.subplots()
 
-for mutation_cost in [0.0,0.2,0.5]:
+for mutation_cost in [0.0]:
     ess_count = 0
     gen_count = []
     m_trajectories = np.empty([params.iterations,params.generations])
@@ -94,16 +101,21 @@ for mutation_cost in [0.0,0.2,0.5]:
         while n_mutants < params.n_fish and count < params.generations - 1:
             if n_mutants == 0:
                 break
-            pilot_fish = Fish(0,xs=params.xs,effort_method=params.effort_method,fight_params=params.outcome_params)
-            fishes = [Fish(f,xs=params.xs,prior=params.awareness,likelihood = pilot_fish.naive_likelihood,fight_params=params.outcome_params,effort_method=params.effort_method,update_method=params.u_method,acuity=params.acuity,awareness=params.awareness) for f in range(params.n_fish)]
+            pilot_fish = Fish(0,params)
+            params.naive_likelihood = pilot_fish.naive_likelihood
+            fishes = [Fish(f,params) for f in range(params.n_fish)]
+            mutant_params = params.copy()
+            mutant_params._mutate()
+            mutant_params.max_energy = 1-mutation_cost
             for m in range(n_mutants):
-                fishes[m] = Fish(m,xs=params.xs,prior=params.mutant_prior,likelihood = pilot_fish.naive_likelihood,fight_params=params.outcome_params,effort_method=params.mutant_effort,update_method=params.mutant_update,max_energy=1-mutation_cost,c_aversion=1,acuity=params.acuity,awareness=params.awareness)
+                fishes[m] = Fish(m,mutant_params)
 
-            tank = Tank(fishes,n_fights = params.n_fights,f_params=params.outcome_params,f_outcome=params.f_outcome,f_method=params.f_method,u_method=params.u_method,fitness_ratio=0.1,death=True,food=0.1)
+            tank = Tank(fishes,params)
             tank._initialize_likelihood()
 
             tank.run_all(progress=False)
 
+            #print(fishes[0].fitness_record)
             fitness = [sum(f.fitness_record) for f in fishes]
             alive = [f.alive for f in fishes]
 

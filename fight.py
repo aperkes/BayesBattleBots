@@ -37,7 +37,9 @@ class Fight():
         self.p_win = None
         
     def run_outcome(self):
-        if self.mechanism == 'chance':
+        if self.mechanism == 'math':
+            self.outcome,self.level = self.mathy(self.outcome_params)
+        elif self.mechanism == 'chance':
             self.outcome = self.chance_outcome()
         elif self.mechanism == 'escalate':
             self.outcome,self.level = self.escalating_outcome()
@@ -53,9 +55,6 @@ class Fight():
             scale = self.scale ## Could use this, but have to remember it...
             #scale = .1
             self.outcome,self.level = self.hock_huber(scale=scale,params = self.outcome_params)
-        elif self.mechanism == 'math':
-            #print('using mathy.',self.params)
-            self.outcome,self.level = self.mathy(self.outcome_params)
             
         else:
             self.outcome = self.mechanism
@@ -166,6 +165,12 @@ class Fight():
             print(f1_size,f2_size,f1_rel_size,f2_rel_size)
             print(self.p_win,min_normed,winner,f1_wager,f2_wager)
             print('roll:',roll)
+        #print('Actual p_win:',self.fish1.idx,self.fish2.idx,self.p_win)
+        #print(winner)
+        if self.fish1.effort_method == 'PerfectNudge':
+            if winner and self.fish1.effort > 0.1:
+                print('LOOK HERE!')
+                print(self.fish1.effort,self.fish2.effort) 
         return winner,level
      
     def hock_huber(self,scale=.1,params=[.5,.5,.5]):

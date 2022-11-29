@@ -100,29 +100,14 @@ class Tank():
 
     def process_fight(self,fight): ## This works without returning because of how objects work in python
         fight.run_outcome()
-        #print('before,after')
-        #print(fight.winner.estimate)
 
-## NOTE: Eventually should be able to delete all this, but for now let's jsut comment it
-        """
-        if False:
-            if fight.winner.effort_method[1] == 1:
-                fight.winner.update_prior(True,fight,fight.loser.size)
-                fight.loser.update_prior(False,fight,fight.winner.size)
-            #NOTE: uncomment these two lines to try the fancy prior.
-            else:
-                fight.winner.update_prior(True,fight)
-                fight.loser.update_prior(False,fight)
-        else:
-        """
         fight.winner.update(True,fight)
         fight.loser.update(False,fight)
-        #print(fight.winner.estimate)
-        #print()
 
         #return fight.winner,fight.loser
         self.win_record[fight.winner.idx,fight.loser.idx] += 1
         self.history[fight.idx,fight.winner.idx,fight.loser.idx] = 1 ## Note, this works a bit different for 'random' and 'balanced'
+        return 0
 
     def process_hock(self,fight):
         fight.run_outcome()
@@ -134,6 +119,7 @@ class Tank():
     def print_status(self):
         for f in self.fishes:
             print(f.name,':','size=',np.round(f.size,3),'estimate=',np.round(f.estimate,3))
+
     def run_all(self,progress=True,print_me=False,plot_stuff=False):
         if plot_stuff:
             fig,ax = plt.subplots()
@@ -153,9 +139,8 @@ class Tank():
             c = self.fight_list[i]
             if self.death:
                 if not c.fish1.alive or not c.fish2.alive:
-                    print('we got a dead one.')
-                    if c.fish1.effort_method == 'Perfect' or c.fish2.effort_method == 'Perfect':
-                        pass
+                    #if c.fish1.effort_method == 'Perfect' or c.fish2.effort_method == 'Perfect':
+                    #    pass
                     if c.fish1.alive:
                         c.outcome = 0 
                         c.level = 0
