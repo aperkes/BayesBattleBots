@@ -95,7 +95,7 @@ class Fish:
         self.effort_method = params.effort_method
         self.effort = None
         #self.decay_all = decay_all
-        #self.decay = decay
+        self.decay = 1 ## Deprecated decay
         self.discrete = False
         update_method = params.update_method
         effort_method = params.effort_method

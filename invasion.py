@@ -35,7 +35,7 @@ params.f_method = 'shuffled'
 params.xs = np.linspace(7,100,100)
 
 ## Bayes invasion
-if True:
+if False:
     params.effort_method = 'Estimate'
     params.acuity = 5
     params.awareness = 20
@@ -49,7 +49,7 @@ if True:
 ## Estimate invasion
 elif True:
     params.effort_method = [None,0.5]
-    params.mutant_effort = 'Perfect' ## Obviously perfect is better. 
+    params.mutant_effort = 'Perfect' ## Obviously perfect should be better. 
     params.mutant_prior = True
     #params.mutant_effort = 'Estimate'
     params.acuity = 20

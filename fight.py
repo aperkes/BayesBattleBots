@@ -27,7 +27,7 @@ class Fight():
             params=Params()
         self.params = params
         if outcome is None:
-            self.mechanism = params.outcome
+            self.mechanism = params.f_outcome
         self.level = level
         self.outcome = '?'
         self.outcome_params = params.outcome_params
@@ -250,3 +250,5 @@ if __name__ == "__main__":
     f1 = Fish()
     f2 = Fish()
     f = Fight(f1,f2)
+    f.run_outcome()
+    print(f.outcome,f.winner.idx,f.level)

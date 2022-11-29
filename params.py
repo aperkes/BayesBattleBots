@@ -31,7 +31,7 @@ class Params():
 ## Fight Params
         self.f_outcome = f_outcome ## This defines how fights are determined.
         self.outcome_params = outcome_params   ## This determines how fights are settled, skill,effort,luck
-
+        self.outcome = None
 ## Fish Params
         self.effort_method = effort_method     ## self-assessment vs opponent assessment, [1,1] is MA
         self.update_method = update_method     ## how individuals update their self assessment
