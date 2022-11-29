@@ -27,13 +27,14 @@ class Tank():
                  ):
         if params is None:
             params = Params()
+        self.params = params
         self.fishes = fishes
         self.n_fish = len(fishes)
         self.sizes = [f.size for f in fishes]
         self.f_method = params.f_method
         self.f_outcome = params.f_outcome
-        self.f_params = params.f_params
-        self.u_method = params.u_method
+        self.f_params = params.outcome_params
+        self.u_method = params.update_method
         #self.scale = params.scale
         self.win_record = np.zeros([len(fishes),len(fishes)])
         self.fitness_ratio=params.fitness_ratio
@@ -50,7 +51,7 @@ class Tank():
             #else:
             #    self.fight_list = self.get_matchups(f_method,f_outcome,n_fights)
             self.n_fights = len(self.fight_list)
-        if f_method == 'balanced':
+        if self.f_method == 'balanced':
             self.n_rounds = int(len(self.fight_list) / (self.n_fish * (self.n_fish-1) / 2))
         else:
             self.n_rounds = len(self.fight_list)
@@ -261,3 +262,5 @@ class Tank():
 if __name__ == '__main__':
     fishes = [Fish(),Fish()]
     t = Tank(fishes)
+    t.run_all()
+    print(np.shape(t.win_record))

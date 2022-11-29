@@ -94,8 +94,8 @@ class Fish:
         self.range_record = [[est_5,est_25,est_75,est_95]]
         self.effort_method = params.effort_method
         self.effort = None
-        #self.decay_all = decay_all
         self.decay = 1 ## Deprecated decay
+        self.decay_all = False
         self.discrete = False
         update_method = params.update_method
         effort_method = params.effort_method
@@ -292,10 +292,10 @@ class Fish:
         return likelihood
 
     def _use_simple_likelihood(self,fight,win):
-        if fight.params != self.naive_params:
+        if fight.outcome_params != self.naive_params:
             #print('rebuilding likelihood')
             self.naive_likelihood = self._define_naive_likelihood(fight)
-            self.naive_params = fight.params
+            self.naive_params = fight.outcome_params
         if win:
             likelihood = self.naive_likelihood
         else:
@@ -308,7 +308,7 @@ class Fish:
         if fight is None:
             s,e,l = self.naive_params
         else:
-            s,e,l = fight.params
+            s,e,l = fight.outcome_params
         likelihood = np.zeros(len(self.xs))
 ## This assumes that all fish are the same age as you
         for i_ in range(len(self.xs)):
@@ -341,7 +341,7 @@ class Fish:
 ## Uses fight as input, runs solo, should be one likelihood to rule them all
     def _define_likelihood_solo(self,fight,win):
         likelihood = np.zeros(len(self.xs))
-        s,e,l = fight.params
+        s,e,l = fight.outcome_params
         if win:
             e_self = fight.winner.effort
             w_opp = fight.loser.wager
@@ -349,14 +349,14 @@ class Fish:
 ## NOTE: Somehow you need to transform size to relative size, without knowing opponent size.
             xs_rel = self.xs / self.estimate 
             for s in range(len(self.xs)):
-                likelihood[s] = self._likelihood_function_wager(self.xs[s],outcome_params=fight.params)
+                likelihood[s] = self._likelihood_function_wager(self.xs[s],outcome_params=fight.outcome_params)
         elif not win:
             #print('they lost!')
             e_self = fight.loser.effort
             w_opp = fight.winner.wager
             xs_rel = self.xs / max([fight.loser.size,fight.winner.wager / (self.effort**e)])
             for s in range(len(self.xs)):
-                likelihood[s] = 1 - self._likelihood_function_wager(self.xs[s],outcome_params=fight.params)
+                likelihood[s] = 1 - self._likelihood_function_wager(self.xs[s],outcome_params=fight.outcome_params)
         return likelihood
 
 ## Assumes equal effort, which probably isn't quite right. I could assume accurate effort
@@ -374,7 +374,7 @@ class Fish:
         if fight is None:
             s,e,l = self.naive_params
         else:
-            s,e,l = fight.params
+            s,e,l = fight.outcome_params
         if x_eff is None:
             x_eff = 1
         if o_eff is None:
@@ -472,7 +472,7 @@ class Fish:
         if fight is None:
             s,e,l = self.naive_params
         else:
-            s,e,l = fight.params
+            s,e,l = fight.outcome_params
         if l == 0:
             print('#### l == 0, this is a little weird....')
             return np.ones_like(self.xs)
