@@ -13,7 +13,7 @@ from sklearn.metrics import auc
 import matplotlib.pyplot as plt
 from matplotlib import cm
 
-from params import Params()
+from params import Params
 
 ## Define a fish object
 
@@ -153,7 +153,7 @@ class Fish:
         self.alive = True
         self.s_max = 100
         ## Define naive prior/likelihood for 'SA'
-        self.naive_params = params.fight_params
+        self.naive_params = params.outcome_params
 ## This should be an average fish.
         naive_prior = self._prior_size(self.age,xs=self.xs)
         self.naive_prior = naive_prior / np.sum(naive_prior)
@@ -900,3 +900,4 @@ class Fish:
         
 if __name__ == '__main__':
     f1 = Fish() 
+    print(f1.idx,f1.size,len(f1.prior))
