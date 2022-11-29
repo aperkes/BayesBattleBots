@@ -45,12 +45,18 @@ class Fish:
         if params is None:
             params = Params()
 ## Over rule params if you want to do that.
-        if prior is not None:
-            params.prior = prior
-        if likelihood is not None:
-            params.likelihood = likelihood
-        if likelihood_dict is not None:
-            params.likelihood_dict = likelihood_dict
+        if prior is None:
+            self.prior = prior
+        else:
+            self.prior = params.prior
+        if likelihood is None:
+            self.likelihood = likelihood
+        else:
+            self.likelihood = params.likelihood
+        if likelihood_dict is None:
+            self.likelihood_dict = likelihood_dict
+        else:
+            self.likelihood_dict = params.likelihood_dict
         self.age = params.age
         self.xs = params.xs
         self.r_rhp = params.r_rhp
@@ -60,7 +66,7 @@ class Fish:
         self.awareness = params.awareness
         self.insight = params.insight
         if params.size is not None:
-            if size == 0:   
+            if params.size == 0:   
                 self.size = self._growth_func(self.age)
             else:
                 self.size = params.size
