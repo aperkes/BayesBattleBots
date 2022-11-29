@@ -17,31 +17,38 @@ from tqdm import tqdm
 
 from fish import Fish
 from fight import Fight
+from params import Params
 
 class Tank():
-    def __init__(self,fishes,fight_list = None,n_fights = None,
-                 f_method='balanced',f_outcome='math',f_params=[.3,.3,.3],
-                 effort_method=[1,1],u_method='bayes',scale=.1,fitness_ratio=None,death=False,food=1):
+    def __init__(self,fishes,fight_list = None,params=None,
+                 #n_fights = 10,
+                 #f_method='balanced',f_outcome='math',f_params=[.3,.3,.3],
+                 #effort_method=[1,1],u_method='bayes',scale=.1,fitness_ratio=None,death=False,food=1
+                 ):
+        if params is None:
+            params = Params()
         self.fishes = fishes
         self.n_fish = len(fishes)
         self.sizes = [f.size for f in fishes]
-        self.f_method = f_method
-        self.f_outcome = f_outcome
-        self.f_params = f_params
-        self.u_method = u_method
-        self.scale = scale
+        self.f_method = params.f_method
+        self.f_outcome = params.f_outcome
+        self.f_params = params.f_params
+        self.u_method = params.u_method
+        #self.scale = params.scale
         self.win_record = np.zeros([len(fishes),len(fishes)])
-        self.fitness_ratio=fitness_ratio
-        self.death = death
-        self.food = food
+        self.fitness_ratio=params.fitness_ratio
+        self.death = params.death
+        self.food = params.food
         if fight_list is not None:
             self.fight_list = fight_list
         else:
-            if n_fights is None:
+            self.fight_list = self.get_matchups(self.f_method,self.f_outcome,params.n_fights)
+
+            #if n_fights is None:
                 ## if n is not defined, just run each one once
-                self.fight_list = self.get_matchups(f_method,f_outcome,scale=scale)
-            else:
-                self.fight_list = self.get_matchups(f_method,f_outcome,n_fights)
+            #    self.fight_list = self.get_matchups(self.f_method,self.f_outcome,scale=self.scale)
+            #else:
+            #    self.fight_list = self.get_matchups(f_method,f_outcome,n_fights)
             self.n_fights = len(self.fight_list)
         if f_method == 'balanced':
             self.n_rounds = int(len(self.fight_list) / (self.n_fish * (self.n_fish-1) / 2))
@@ -68,14 +75,14 @@ class Tank():
         for f in self.fishes:
             f.likelihood_dict = likelihood_dict
 
-    def get_matchups(self,f_method='balanced',f_outcome='chance',n_fights=10,scale=.1):
+    def get_matchups(self,f_method='balanced',f_outcome='chance',n_fights=10):
         fight_list = []
 
         if f_method == 'balanced' or f_method == 'shuffled':
             short_list = []
             for i in range(n_fights):
                 for f1,f2 in itertools.combinations(self.fishes, 2):
-                    fight_list.append(Fight(f1,f2,outcome=f_outcome,outcome_params=self.f_params,scale=scale,idx=i,food=self.food)) ## So balanced is organized as rounds
+                    fight_list.append(Fight(f1,f2,self.params,idx=i)) ## So balanced is organized as rounds
 
             if f_method == 'shuffled':
                 random.shuffle(fight_list)
@@ -83,7 +90,7 @@ class Tank():
             combs = list(itertools.combinations(self.fishes,2))
             for i in range(n_fights):
                 f1,f2 = random.choice(combs)
-                fight_list.append(Fight(f1,f2,outcome=f_outcome,outcome_params=self.f_params,scale=scale,idx=i))
+                fight_list.append(Fight(f1,f2,self.params,idx=i))
         if self.fitness_ratio is not None:
             for i in range(0,len(fight_list),int(1/self.fitness_ratio)):
                 fight_list[i].food = False

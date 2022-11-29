@@ -13,7 +13,7 @@ from sklearn.metrics import auc
 import matplotlib.pyplot as plt
 from matplotlib import cm
 
-
+from params import Params()
 
 ## Define a fish object
 
@@ -32,71 +32,78 @@ naive_escalation = {
 #               True: in which is uses a true mean with mean/5 as the std
 #               an int: in which case it uses the int as the std (10 would be average)
 class Fish:
-    def __init__(self,idx=0,age=50,size=None,
-                 prior=None,likelihood=None,likelihood_dict=None,hock_estimate=.5,update_method='bayes',decay=2,decay_all=False,
-                 effort_method=[1,1],fight_params=[.6,.3,.01],escalation=naive_escalation,xs=np.linspace(7,100,500),
-                 r_rhp=0,a_growth=True,c_aversion=1,max_energy=1,acuity=10,awareness=10,insight=False,energy_cost=False):
+    def __init__(self,idx=0,params=None,
+                 #age=50,size=None,
+                 #prior=None,likelihood=None,likelihood_dict=None,hock_estimate=.5,update_method='bayes',decay=2,decay_all=False,
+                 #effort_method=[1,1],fight_params=[.6,.3,.01],escalation=naive_escalation,xs=np.linspace(7,100,500),
+                 #r_rhp=0,a_growth=True,c_aversion=1,max_energy=1,acuity=10,awareness=10,insight=False,energy_cost=False
+                 ):
         self.idx = idx
         self.name = idx
-        self.age = age
-        self.xs = xs
-        self.r_rhp = r_rhp
-        self.a_growth = a_growth
-        self.c_aversion = c_aversion
-        self.acuity = acuity
-        self.awareness = awareness
-        self.insight = insight
-        if size is not None:
+
+        if params is None:
+            params = Params()
+        self.age = params.age
+        self.xs = params.xs
+        self.r_rhp = params.r_rhp
+        self.a_growth = params.a_growth
+        self.c_aversion = params.c_aversion
+        self.acuity = params.acuity
+        self.awareness = params.awareness
+        self.insight = params.insight
+        if params.size is not None:
             if size == 0:   
                 self.size = self._growth_func(self.age)
             else:
-                self.size = size
+                self.size = params.size
         else:
             mean = self._growth_func(self.age)
             sd = mean/5
             self.size = np.random.normal(mean,sd)
-        if prior == True:
+        if params.prior == True:
             self.prior = norm.pdf(self.xs,self.size,self.size/5)
             self.prior = self.prior / np.sum(self.prior)
-        elif isinstance(prior,int):
+        elif isinstance(params.prior,int):
             self.estimate = np.clip(np.random.normal(self.size,self.awareness),7,100)
-            if prior > 50:
+            if params.prior == -1:
                 self.prior = np.ones_like(self.xs) / len(self.xs)
             else:
-                self.prior = norm.pdf(self.xs,self.estimate,prior)
+                self.prior = norm.pdf(self.xs,self.estimate,params.prior)
                 self.prior = self.prior / np.sum(self.prior)
-        elif prior is not None:
-            self.prior = pior
+        elif params.prior is not None:
+            self.prior = params.pior
         else:
             prior = self._prior_size(self.age,xs=self.xs)
             self.prior = prior / np.sum(prior)
         ## Define the rules one when to escalate, based on confidence
-        self.escalation_thresholds = escalation
+        #self.escalation_thresholds = escalation
         self.cdf_prior = self._get_cdf_prior(self.prior)
         est_5,est_25,est_75,est_95 = self._get_range_prior(self.cdf_prior)
         self.estimate = self.xs[np.argmax(self.prior)]
         prior_mean,prior_std = self.get_stats()
         self.estimate_ = prior_mean
-        if hock_estimate == 'estimate':
-            self.hock_estimate = self.estimate
-        else:
-            self.hock_estimate = hock_estimate
-        self.hock_record = [self.hock_estimate]
+        #if hock_estimate == 'estimate':
+        #    self.hock_estimate = self.estimate
+        #else:
+        #    self.hock_estimate = hock_estimate
+        #self.hock_record = [self.hock_estimate]
         self.win_record = []
         self.est_record = [self.estimate]
         self.est_record_ = [self.estimate_]
         self.sdest_record = [prior_std]
         self.range_record = [[est_5,est_25,est_75,est_95]]
-        self.effort_method = effort_method
+        self.effort_method = params.effort_method
         self.effort = None
-        self.decay_all = decay_all
-        self.decay = decay
+        #self.decay_all = decay_all
+        #self.decay = decay
         self.discrete = False
+        update_method = params.update_method
+        effort_method = params.effort_method
         if update_method == 'bayes':
             #print('using bayes')
             self.update = self.update_prior
-        elif update_method == 'hock':
-            self.update = self.update_hock
+        #elif update_method == 'hock':
+        #    self.update = self.update_hock
         elif update_method == 'fixed':
             self.update = self._set_boost
             self.discrete = True
@@ -116,7 +123,7 @@ class Fish:
                 print('leroy!')
                 self._choose_effort = self.leroy_jenkins
             elif effort_method[1] == 0.5: 
-                print('half leroy!')
+                #print('half leroy!')
                 self._choose_effort = self.half_jenkins
             elif effort_method[1] == '?':
                 self._choose_effort = self.random_effort
@@ -124,7 +131,7 @@ class Fish:
                 self._choose_effort = self.explore_effort
                 self.effort_method = [1,1]
             else:
-                print('continuous leroy')
+                #print('continuous leroy')
                 self.effort = max_energy * effort_method[1]
                 self._choose_effort = self.float_jenkins
         else:
@@ -134,9 +141,9 @@ class Fish:
         #self.effort = 0
         self.wager = 0
         self.boost = 0 ## Initial boost, needs to be 0, will change with winner/loser effect
-        self.energy = max_energy ## add some cost to competing
-        self.max_energy = max_energy
-        self.energy_cost = energy_cost
+        self.energy = params.start_energy ## add some cost to competing
+        self.max_energy = params.max_energy
+        self.energy_cost = params.energy_cost
 
 ## Initialize size and energy records
         self.size_record = [self.size]
@@ -146,19 +153,19 @@ class Fish:
         self.alive = True
         self.s_max = 100
         ## Define naive prior/likelihood for 'SA'
-        self.naive_params = fight_params
+        self.naive_params = params.fight_params
 ## This should be an average fish.
         naive_prior = self._prior_size(self.age,xs=self.xs)
         self.naive_prior = naive_prior / np.sum(naive_prior)
         self.naive_estimate = np.sum(self.prior * self.xs / np.sum(self.prior))
-        if likelihood is not None:
+        if params.likelihood is not None:
             #print('using existing likelihood')
-            self.naive_likelihood = likelihood
+            self.naive_likelihood = params.likelihood
         if self.effort_method[1] == 0:
             self.naive_likelihood = self._define_naive_likelihood()
         else:
             self.naive_likelihood = None
-        self.likelihood_dict = likelihood_dict
+        self.likelihood_dict = params.likelihood_dict
 ## Apply winner/loser effect. This could be more nuanced, eventually should be parameterized.
         
     def _set_boost(self,win,fight):

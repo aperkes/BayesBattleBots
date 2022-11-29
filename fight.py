@@ -14,20 +14,26 @@ import matplotlib.pyplot as plt
 from matplotlib import cm
 
 from fish import Fish
+from params import Params
 
 ## Simple-ish object to keep track of matchups (and decide outcome if necessary)
 class Fight():
-    def __init__(self,fish1,fish2,outcome="math",outcome_params=[.5,.5,.1],level=None,scale=.1,idx=0,food=True):
+    def __init__(self,fish1,fish2,params=None,
+                idx=0,outcome=None,level=None):
         self.fish1 = fish1
         self.fish2 = fish2
         self.fishes = [fish1,fish2]
-        self.mechanism = outcome
+        if params is None:
+            params=Params()
+        self.params = params
+        if outcome is None:
+            self.mechanism = params.outcome
         self.level = level
         self.outcome = '?'
-        self.params = outcome_params
-        self.scale=scale
+        self.outcome_params = params.outcome_params
+        self.scale= 0.1 # deprecated parameter used for hock.
         self.idx = idx
-        self.food = food
+        self.food = params.food
         self.p_win = None
         
     def run_outcome(self):
@@ -46,10 +52,10 @@ class Fight():
         elif self.mechanism == 'hock':
             scale = self.scale ## Could use this, but have to remember it...
             #scale = .1
-            self.outcome,self.level = self.hock_huber(scale=scale,params = self.params)
+            self.outcome,self.level = self.hock_huber(scale=scale,params = self.outcome_params)
         elif self.mechanism == 'math':
             #print('using mathy.',self.params)
-            self.outcome,self.level = self.mathy(self.params)
+            self.outcome,self.level = self.mathy(self.outcome_params)
             
         else:
             self.outcome = self.mechanism
