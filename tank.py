@@ -20,7 +20,7 @@ from fight import Fight
 from params import Params
 
 class Tank():
-    def __init__(self,fishes,fight_list = None,params=None,
+    def __init__(self,fishes,params=None,fight_list = None,
                  #n_fights = 10,
                  #f_method='balanced',f_outcome='math',f_params=[.3,.3,.3],
                  #effort_method=[1,1],u_method='bayes',scale=.1,fitness_ratio=None,death=False,food=1
@@ -70,7 +70,7 @@ class Tank():
                 max_size = self.fishes[max_idx].size
                 min_size = self.fishes[min_idx].size
 ## Frustratingly, we have to queue up a little dummy fight here
-                fight=Fight(self.fishes[i],self.fishes[j],outcome=0,outcome_params=self.f_params)
+                fight=Fight(self.fishes[i],self.fishes[j],self.params,outcome=0)
                 fight.winner,fight.loser = self.fishes[i],self.fishes[j]
                 likelihood_dict[i,j] = self.fishes[i]._define_likelihood_mutual(fight)
         for f in self.fishes:

@@ -34,7 +34,8 @@ naive_escalation = {
 class Fish:
     def __init__(self,idx=0,params=None,
                  #age=50,size=None,
-                 #prior=None,likelihood=None,likelihood_dict=None,hock_estimate=.5,update_method='bayes',decay=2,decay_all=False,
+                 prior=None,likelihood=None,likelihood_dict=None,
+#hock_estimate=.5,update_method='bayes',decay=2,decay_all=False,
                  #effort_method=[1,1],fight_params=[.6,.3,.01],escalation=naive_escalation,xs=np.linspace(7,100,500),
                  #r_rhp=0,a_growth=True,c_aversion=1,max_energy=1,acuity=10,awareness=10,insight=False,energy_cost=False
                  ):
@@ -43,6 +44,13 @@ class Fish:
 
         if params is None:
             params = Params()
+## Over rule params if you want to do that.
+        if prior is not None:
+            params.prior = prior
+        if likelihood is not None:
+            params.likelihood = likelihood
+        if likelihood_dict is not None:
+            params.likelihood_dict = likelihood_dict
         self.age = params.age
         self.xs = params.xs
         self.r_rhp = params.r_rhp

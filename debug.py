@@ -4,6 +4,7 @@ from fish import Fish
 from fight import Fight
 from tank import Tank
 from simulation import Simulation,SimParams
+from params import Params
 from matplotlib import pyplot as plt
 
 import numpy as np
@@ -16,7 +17,8 @@ s_space = [0.0,0.2,0.4,0.6,0.8,1.0]
 e_space = [0.0,0.2,0.4,0.6,0.8,1.0]
 l_space = [0.0,.05,0.1,0.2,0.3,0.5]
 results_array = np.full([6,6,6,3],np.nan)
-params = SimParams()
+#params = SimParams()
+params = Params()
 params.effort_method = [1,1]
 params.n_fights = 10 
 params.n_iterations = 1000 
@@ -65,14 +67,15 @@ elif False:
 
 elif True:
     if True:
-        pilot_fish = Fish(0,effort_method=params.effort_method,fight_params=params.outcome_params)
-        fishes = [Fish(f,prior=True,likelihood = pilot_fish.naive_likelihood,fight_params=params.outcome_params,effort_method=params.effort_method,update_method=params.u_method) for f in range(params.n_fish)]
+        pilot_fish = Fish(0,params)
+        fishes = [Fish(f,params,prior=True,likelihood = pilot_fish.naive_likelihood) for f in range(params.n_fish)]
 
     else:
         fishes = [Fish(f,prior=True,effort_method=params.effort_method,update_method=params.u_method) for f in range(params.n_fish)]
 
 
-    tank = Tank(fishes,n_fights = params.n_fights,f_params=params.outcome_params,f_outcome=params.f_outcome,f_method=params.f_method,u_method=params.u_method,fitness_ratio=0.1,death=False)
+    #tank = Tank(fishes,n_fights = params.n_fights,f_params=params.outcome_params,f_outcome=params.f_outcome,f_method=params.f_method,u_method=params.u_method,fitness_ratio=0.1,death=False)
+    tank = Tank(fishes,params)
     tank._initialize_likelihood()
 
     #ax.plot(fishes[0].xs,fishes[0].prior * 10,color='green')
