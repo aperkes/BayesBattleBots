@@ -49,7 +49,7 @@ if False:
 ## Estimate invasion
 elif True:
     params.effort_method = [None,0.1]
-    params.mutant_effort = 'PerfectNudge' ## Obviously perfect should be better. 
+    params.mutant_effort = 'PerfectPoly' ## Obviously perfect should be better. 
     params.mutant_prior = True
     #params.mutant_effort = 'Estimate'
     params.acuity = 20
@@ -73,7 +73,7 @@ else: ## .5 invasion of 100%
 
 params.f_outcome = 'math'
 params.outcome_params = [0.6,0.3,.05]
-params.generations = 10
+params.generations = 50
 params.iterations = 5 
 params.fitness_ratio = 0.1
 params.death=True

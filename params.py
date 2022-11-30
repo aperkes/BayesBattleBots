@@ -14,6 +14,7 @@ class Params():
                 xs=np.linspace(7,100,500),r_rhp=0,a_growth=True,c_aversion=1,
                 max_energy=1,start_energy=0.5,
                 acuity=10,pre_acuity=10,post_acuity=1,awareness=10,insight=True,
+                poly_param_a = 3,poly_param_b=-2.4,
                 mutant_effort=[1,1],mutant_update='bayes',mutant_prior=None,
 
                 verbose=False):                             ## Other params
@@ -56,6 +57,10 @@ class Params():
         self.post_acuity=post_acuity
         self.awareness=awareness
         self.insight=insight
+        self.poly_param_a = poly_param_a
+        self.poly_param_b = poly_param_b
+        self.poly_step = 0.1
+
 ## General Params
         self.verbose=verbose
         self.mutant=False

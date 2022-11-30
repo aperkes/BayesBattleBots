@@ -17,14 +17,6 @@ from params import Params
 
 ## Define a fish object
 
-naive_escalation = {
-      0:.10,
-      1:.20,
-      2:.30,
-      3:.50,
-      4:.70
-}
-
 ## Fish object with internal rules and estimates
 # Reminder: r_rhp is the rate that rhp increases when they eat/win
 #           a_growth is whether the growth rate should be asymptotic 
@@ -44,7 +36,7 @@ class Fish:
 
         if params is None:
             params = Params()
-        self.params = params
+        self.params = params.copy()
 ## Over rule params if you want to do that.
         if prior is None:
             self.prior = prior
@@ -66,6 +58,9 @@ class Fish:
         self.acuity = params.acuity
         self.awareness = params.awareness
         self.insight = params.insight
+        self.poly_param_a = params.poly_param_a
+        self.poly_param_b = params.poly_param_b
+
         if params.size is not None:
             if params.size == 0:   
                 self.size = self._growth_func(self.age)
@@ -150,6 +145,8 @@ class Fish:
                 self._choose_effort = self.float_jenkins
         elif effort_method == 'PerfectNudge':
             self._choose_effort = self.nudge_effort
+        elif effort_method == 'PerfectPoly':
+            self._choose_effort = self.poly_effort
         else:
             self._choose_effort = self.choose_effort_energy
 
@@ -185,6 +182,17 @@ class Fish:
         self.likelihood_dict = params.likelihood_dict
 ## Apply winner/loser effect. This could be more nuanced, eventually should be parameterized.
         
+    def coin(self):
+        if random.random() < 0.5:
+            return 1
+        else:
+            return -1
+
+    def mutate(self,step=0.01):
+        a_direction = self.coin()
+        self.poly_param_a += self.coin() * step * self.poly_param_a
+        self.poly_param_b += self.coin() * step * self.poly_param_b
+
     def _set_boost(self,win,fight):
         if win:
             other_fish = fight.loser
@@ -608,7 +616,7 @@ class Fish:
             print('#### RESTORING ENERGY #####')
             self.energy = self.max_energy 
         if self.energy <= 0:
-            print('I am dying!',fight.level,cost,self.energy,self.effort,self.params.mutant,self.idx)
+            print('I am dying!',fight.level,cost,self.energy,self.effort,self.idx,self.size,other_fish.size,self.params.mutant)
             self.energy = 0
             self.alive = False
             print(self.energy_record)
@@ -754,6 +762,28 @@ class Fish:
             p_win = 1 - p_upset 
         return p_win
 
+## Simpler calculation based on two parameters, which could be solved
+    def poly_effort(self,f_opp,strategy=None):
+        if strategy is None:
+            strategy = self.effort_method
+        if strategy == 'Estimate':
+            ## Now you have to estimate with some error
+            print('ESTIMATING!!!')
+            my_size = self.estimate ## You only have to do this once
+            opp_size = np.random.normal(f_opp.size,self.awareness)
+            opp_size = np.clip(opp_size,7,99)
+        elif strategy == 'PerfectPoly':
+            #print('Nudging perfect!!!')
+            my_size = self.size
+            opp_size = f_opp.size
+        else:
+            print('#### SOMETHING IS WRONG')
+        s,e,l = self.params.outcome_params
+        rough_wager = (my_size / opp_size) ** s * self.energy ** e
+        effort = self.poly_param_a * rough_wager ** 2 + self.poly_param_b
+        effort = np.clip(effort,0,1)
+        return effort * self.energy
+
 ## This function has parameters to allow to evolve optimal strategy
     def nudge_effort(self,f_opp,strategy=None):
         if strategy is None:
@@ -772,7 +802,7 @@ class Fish:
             opp_size = f_opp.size
         else:
             print('#### SOMETHING IS WRONG')
-        p_win = self.prob_win_wager(my_size,opp_size,self.naive_params,opp_effort = baseline_effort,own_effort = baseline_effort)
+        p_win = self.prob_win_wager(my_size,opp_size,self.naive_params,opp_effort = baseline_effort,own_effort = 1)
         #print(my_size,opp_size,f_opp.size,'calculated p_win:',p_win)
         if p_win >= 0.5:
             assessment = (1-baseline_effort)*(p_win)
