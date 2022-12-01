@@ -147,6 +147,8 @@ class Fish:
             self._choose_effort = self.nudge_effort
         elif effort_method == 'PerfectPoly':
             self._choose_effort = self.poly_effort
+        elif effort_method == 'EstimatePoly':
+            self._choose_effort = self.poly_effort
         else:
             self._choose_effort = self.choose_effort_energy
 
@@ -616,10 +618,10 @@ class Fish:
             print('#### RESTORING ENERGY #####')
             self.energy = self.max_energy 
         if self.energy <= 0:
-            print('I am dying!',fight.level,cost,self.energy,self.effort,self.idx,self.size,other_fish.size,self.params.mutant)
+            #print('I am dying!',fight.level,cost,self.energy,self.effort,self.idx,self.size,other_fish.size,self.params.mutant)
             self.energy = 0
             self.alive = False
-            print(self.energy_record)
+            #print(self.energy_record)
         self.size_record.append(self.size)
         self.energy_record.append(self.energy)
 
@@ -766,9 +768,9 @@ class Fish:
     def poly_effort(self,f_opp,strategy=None):
         if strategy is None:
             strategy = self.effort_method
-        if strategy == 'Estimate':
+        if strategy == 'EstimatePoly':
             ## Now you have to estimate with some error
-            print('ESTIMATING!!!')
+            #print('ESTIMATING!!!')
             my_size = self.estimate ## You only have to do this once
             opp_size = np.random.normal(f_opp.size,self.awareness)
             opp_size = np.clip(opp_size,7,99)
