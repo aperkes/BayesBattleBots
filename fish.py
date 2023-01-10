@@ -139,7 +139,7 @@ class Fish:
             elif effort_method[1] == '!':
                 self._choose_effort = self.explore_effort
                 self.effort_method = [1,1]
-            else:
+            else: ## if you give a float, it uses that
                 #print('continuous leroy')
                 self.effort = params.max_energy * effort_method[1]
                 self._choose_effort = self.float_jenkins
@@ -190,10 +190,13 @@ class Fish:
         else:
             return -1
 
-    def mutate(self,step=0.01):
+    def mutate(self,step=0.01): ## function to mutate both baseline effort, and poly params
         a_direction = self.coin()
         self.poly_param_a += self.coin() * step * self.poly_param_a
         self.poly_param_b += self.coin() * step * self.poly_param_b
+
+        self.params.baseline_effort += self.coin() * step * self.params.baseline_effort
+        self.effort = self.params.baseline_effort
 
     def _set_boost(self,win,fight):
         if win:
