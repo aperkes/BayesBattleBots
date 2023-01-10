@@ -44,7 +44,7 @@ if True:
 params.f_outcome = 'math'
 params.outcome_params = [0.6,0.3,.05]
 params.generations = 100
-params.iterations = 10 
+params.iterations = 20 
 params.fitness_ratio = 0.1
 params.death=True
 params.food=1
@@ -61,22 +61,28 @@ mutation_cost = .1
 
 fig,ax = plt.subplots()
 
+all_effort_maps = np.empty([params.iterations,params.generations,10])
 for mutation_cost in [0.0]:
     ess_count = 0
     gen_count = []
-    m_trajectories = np.empty([params.iterations,params.generations])
-    m_trajectories.fill(np.nan)
+    #m_trajectories = np.empty([params.iterations,params.generations])
+    #m_trajectories.fill(np.nan)
 #for i in range(params.iterations):
     pilot_fish = Fish(0,params)
     params.naive_likelihood = pilot_fish.naive_likelihood
     efforts = np.linspace(0,1,params.n_fish)
     for i in tqdm(range(params.iterations)):
+        effort_map = np.empty([params.generations,10])
         count = 0
         fishes = [Fish(f,params) for f in range(params.n_fish)]
+        effort_counts = np.zeros(10)
         for f_ in range(len(fishes)):
             f = fishes[f_]
             f.params.baseline_effort = efforts[f_]
+            f_effort = int(efforts[f_] * 9)
+            effort_counts[f_effort] += 1
             f.params.effort_method = [None,f.params.baseline_effort]
+        effort_map[0] = effort_counts
         while count < params.generations - 1:
             tank = Tank(fishes,params)
             tank._initialize_likelihood()
@@ -106,20 +112,32 @@ for mutation_cost in [0.0]:
                 possible_fish.extend([f_]*fitness[f_])
             new_fish_idx = random.sample(possible_fish,params.n_fish)
             new_fish = [Fish(f_,fishes[f_].params) for f_ in new_fish_idx]
+            for f in new_fish:
+                f.mutate()
             fishes = new_fish
+            effort_counts =  np.zeros(10)
+            for f_ in range(len(fishes)):
+                f = fishes[f_]
+                f_effort = int(f.params.baseline_effort * 9)
+                effort_counts[f_effort] += 1
+            effort_map[count] = effort_counts
+        all_effort_maps[i] = effort_map
+    #print('final count:',ess_count,'of',params.iterations)
+    #m_trajectories = m_trajectories / params.n_fish
+    #y_mean = np.nanmean(m_trajectories,0)
+    #y_err = np.nanstd(m_trajectories,0) / np.sum(~np.isnan(m_trajectories),0)
+    #ax.plot(y_mean,color=cm.viridis(mutation_cost),label=str(mutation_cost))
+    #ax.fill_between(np.arange(params.generations),y_mean+y_err,y_mean-y_err,color=cm.viridis(mutation_cost),alpha=.5)
+    #for i in range(params.iterations):
+    #    ax.plot(m_trajectories[i],color=cm.viridis(mutation_cost),alpha=.2)
 
-
-    print('final count:',ess_count,'of',params.iterations)
-    m_trajectories = m_trajectories / params.n_fish
-    y_mean = np.nanmean(m_trajectories,0)
-    y_err = np.nanstd(m_trajectories,0) / np.sum(~np.isnan(m_trajectories),0)
-    ax.plot(y_mean,color=cm.viridis(mutation_cost),label=str(mutation_cost))
-    ax.fill_between(np.arange(params.generations),y_mean+y_err,y_mean-y_err,color=cm.viridis(mutation_cost),alpha=.5)
-    for i in range(params.iterations):
-        ax.plot(m_trajectories[i],color=cm.viridis(mutation_cost),alpha=.2)
-
-ax.set_ylim([-0.1,1.1])
-fig.legend()
+for f in fishes:
+    print(f.effort)
+mean_map = np.transpose(np.nanmean(all_effort_maps,0))
+mean_map = np.flipud(mean_map)
+ax.imshow(mean_map)
+#ax.set_ylim([-0.1,1.1])
+#fig.legend()
 fig.show()
 plt.show()
 
