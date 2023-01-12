@@ -58,8 +58,8 @@ class Fish:
         self.acuity = params.acuity
         self.awareness = params.awareness
         self.insight = params.insight
-        self.poly_param_a = params.poly_param_a
-        self.poly_param_b = params.poly_param_b
+        self.params.poly_param_a = params.poly_param_a
+        self.params.poly_param_b = params.poly_param_b
 
         if params.size is not None:
             if params.size == 0:   
@@ -140,7 +140,6 @@ class Fish:
                 self._choose_effort = self.explore_effort
                 self.effort_method = [1,1]
             else: ## if you give a float, it uses that
-                #print('continuous leroy')
                 self.effort = params.max_energy * effort_method[1]
                 self._choose_effort = self.float_jenkins
         elif effort_method == 'PerfectNudge':
@@ -192,8 +191,10 @@ class Fish:
 
     def mutate(self,step=0.01): ## function to mutate both baseline effort, and poly params
         a_direction = self.coin()
-        self.poly_param_a += self.coin() * step * self.poly_param_a
-        self.poly_param_b += self.coin() * step * self.poly_param_b
+        if random.random() < 0.5:
+            self.params.poly_param_a = self.params.poly_param_a + self.coin() * step # * self.params.poly_param_a
+        else:
+            self.params.poly_param_b = self.params.poly_param_b + self.coin() * step # * self.params.poly_param_b
 
         self.params.baseline_effort += self.coin() * step * self.params.baseline_effort
         self.effort = self.params.baseline_effort
@@ -785,7 +786,7 @@ class Fish:
             print('#### SOMETHING IS WRONG')
         s,e,l = self.params.outcome_params
         rough_wager = (my_size / opp_size) ** s * self.energy ** e
-        effort = self.poly_param_a * rough_wager ** 2 + self.poly_param_b
+        effort = self.params.poly_param_a * rough_wager ** 2 + self.params.poly_param_b
         effort = np.clip(effort,0,1)
         return effort * self.energy
 

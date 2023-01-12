@@ -44,8 +44,8 @@ if True:
 effort_bins = 11
 params.f_outcome = 'math'
 params.outcome_params = [0.6,0.3,.05]
-params.generations = 50
-params.iterations = 5
+params.generations = 100
+params.iterations = 1000 
 params.fitness_ratio = 0.1
 params.death=True
 params.food=1
@@ -60,9 +60,9 @@ params.poly_param_a = 0.5
 params.poly_param_b = 0.5
 mutation_cost = .1
 
-fig,ax = plt.subplots()
 
 all_effort_maps = np.empty([params.iterations,params.generations,effort_bins])
+effort_history = np.empty([params.iterations,params.generations,params.n_fish])
 for mutation_cost in [0.0]:
     ess_count = 0
     gen_count = []
@@ -72,6 +72,7 @@ for mutation_cost in [0.0]:
     pilot_fish = Fish(0,params)
     params.naive_likelihood = pilot_fish.naive_likelihood
     efforts = np.linspace(0,1,params.n_fish)
+    effort_history[:,0] = efforts
     for i in tqdm(range(params.iterations)):
         effort_map = np.empty([params.generations,effort_bins])
         count = 0
@@ -121,6 +122,7 @@ for mutation_cost in [0.0]:
             effort_counts =  np.zeros(effort_bins)
             for f_ in range(len(fishes)):
                 f = fishes[f_]
+                effort_history[i,count,f_] = f.effort
                 f_effort = np.clip(int(f.params.baseline_effort * 10),0,1)
                 effort_counts[f_effort] += 1
             effort_map[count] = effort_counts
@@ -135,12 +137,17 @@ for mutation_cost in [0.0]:
     #    ax.plot(m_trajectories[i],color=cm.viridis(mutation_cost),alpha=.2)
 
 print(effort_map[0])
+print('mean last generation:',np.mean(effort_history[:,-1,:]))
+print('std last generation:',np.std(effort_history[:,-1,:]))
 mean_map = np.transpose(np.nanmean(all_effort_maps,0))
 mean_map = np.flipud(mean_map)
-ax.imshow(mean_map)
+
+if False:
+    fig,ax = plt.subplots()
+    ax.imshow(mean_map)
 #ax.set_ylim([-0.1,1.1])
 #fig.legend()
-fig.show()
-plt.show()
-
+    fig.show()
+    plt.show()
+print('all done!')
 
