@@ -37,8 +37,8 @@ if True:
 effort_bins = 11
 params.f_outcome = 'math'
 params.outcome_params = [0.6,0.3,.05]
-params.generations = 1000
-params.iterations = 10 
+params.generations = 300
+params.iterations = 5 
 params.fitness_ratio = 0.1
 params.death=True
 params.food=1
@@ -49,8 +49,13 @@ params.baseline_effort = 0.1
 params.assessment_weight = 0.9
 
 ## Parameters to mutate, not sure how they're used yet.
-params.poly_param_a = 0.5
-params.poly_param_b = 0.5
+if False: ## These are the best evolved parameters
+    params.poly_param_a = 0.6
+    params.poly_param_b = 0.1
+else:
+    params.poly_param_a = 0.9
+    params.poly_param_b = 0.9 
+
 mutation_cost = .1
 
 
@@ -67,8 +72,8 @@ for mutation_cost in [0.0]:
 ## optionally, start with random values
         for f_ in range(len(fishes)):
             f = fishes[f_]
-            f.params.poly_param_a = np.random.random()
-            f.params.poly_param_b = np.random.random()
+            #f.params.poly_param_a = np.random.random()
+            #f.params.poly_param_b = np.random.random()
             param_a_history[i,0,f_] = f.params.poly_param_a
             param_b_history[i,0,f_] = f.params.poly_param_b
         while count < params.generations - 1:
