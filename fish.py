@@ -138,7 +138,7 @@ class Fish:
                 self._choose_effort = self.random_effort
             elif effort_method[1] == '!':
                 self._choose_effort = self.explore_effort
-                self.effort_method = [1,1]
+                self.params.effort_method = [1,1]
             else: ## if you give anything else, it uses baseline effort
                 self.effort = params.max_energy * self.params.baseline_effort
                 self._choose_effort = self.float_jenkins
@@ -148,11 +148,13 @@ class Fish:
             self._choose_effort = self.poly_effort
         elif effort_method == 'EstimatePoly':
             self._choose_effort = self.poly_effort
+        elif effort_method == 'SmoothPoly':
+            self._choose_effort = self.poly_effort_prob
         else:
             self._choose_effort = self.choose_effort_energy
 
         self.update_method = update_method
-        self.effort_method = params.effort_method
+        self.params.effort_method = params.effort_method
         #self.effort = 0
         self.wager = 0
         self.boost = 0 ## Initial boost, needs to be 0, will change with winner/loser effect
@@ -176,7 +178,7 @@ class Fish:
         if params.likelihood is not None:
             #print('using existing likelihood')
             self.naive_likelihood = params.likelihood
-        if self.effort_method[1] == 0:
+        if self.params.effort_method[1] == 0:
             self.naive_likelihood = self._define_naive_likelihood()
         else:
             self.naive_likelihood = None
@@ -636,7 +638,7 @@ class Fish:
 ## For testing what happens if you just don't update ever
     def no_update(self,win,fight):
 
-        if False and self.effort_method == 'Perfect':
+        if False and self.params.effort_method == 'Perfect':
             if win:
                 print('I won!')
             else:
@@ -655,7 +657,7 @@ class Fish:
 ## Establish fishes and impose costs and benefits
         other_fish = self.update_energy(win,fight) # This currently updates win record, not ideal
 ## Get likelihood function
-        if self.effort_method[1] == 0:
+        if self.params.effort_method[1] == 0:
 
             likelihood = self._use_simple_likelihood(fight,win)
             i_estimate = np.argmax(self.xs > self.estimate)
@@ -735,7 +737,7 @@ class Fish:
     ## This needs to be divied up by strategy somehow...
     def choose_effort_discrete(self,f_opp,strategy=None):
         if strategy is None:
-            strategy = self.effort_method
+            strategy = self.params.effort_method
         if strategy == [1,0]:
             effort = self.estimate / 100
         elif strategy == [1,1]:
@@ -772,7 +774,7 @@ class Fish:
 ## Simpler calculation based on two parameters, which could be solved
     def poly_effort(self,f_opp,strategy=None):
         if strategy is None:
-            strategy = self.effort_method
+            strategy = self.params.effort_method
         if strategy == 'EstimatePoly':
             ## Now you have to estimate with some error
             #print('ESTIMATING!!!')
@@ -791,10 +793,33 @@ class Fish:
         effort = np.clip(effort,0,1)
         return effort * self.energy
 
+    def prob_bigger(self,mean1,mean2,std1,std2):
+        est_difference = mean1-mean2
+        combined_std = np.sqrt(std1**2+std2**2)
+        bigger_dist = norm.pdf(np.arange(1,100),est_difference,combined_std)
+        return np.sum(bigger_dist)
+
+## similar to poly effort above, but here we base it on the prob of being bigger
+    def poly_effort_prob(self,f_opp):
+        opp_size_guess = np.random.normal(f_opp.size,self.acuity) 
+        self.opp_size_guess = opp_size_guess
+        s,e,l = self.params.outcome_params
+
+        p_bigger = self.prob_bigger(self.estimate,opp_size_guess,self.awareness,self.acuity)
+        bigger_odds = p_bigger / (1-p_bigger)
+        rough_wager = bigger_odds**s * self.energy**e
+        effort = self.params.poly_param_a * rough_wager**2 + self.params.poly_param_b
+        effort = np.clip(effort,0,1)
+        #print('size,guess',f_opp.size,opp_size_guess)
+        #print('effort:',effort)
+        #print('\n#############')
+        #print(self.size,f_opp.size,p_bigger,bigger_odds,effort,self.energy)
+        return effort * self.energy 
+
 ## This function has parameters to allow to evolve optimal strategy
     def nudge_effort(self,f_opp,strategy=None):
         if strategy is None:
-            strategy = self.effort_method
+            strategy = self.params.effort_method
         baseline_effort = self.params.baseline_effort
         alpha = self.params.assessment_weight
         if strategy == 'Estimate':
@@ -826,7 +851,7 @@ class Fish:
         if self.discrete:
             return self.choose_effort_discrete(f_opp,strategy)
         if strategy is None:
-            strategy = self.effort_method
+            strategy = self.params.effort_method
 ## The latter strategy here is more in keeping with the probabilistic mutual assessment, just against an average fish
 
         my_size = self.estimate
@@ -845,7 +870,7 @@ class Fish:
                 ## Now you have to estimate with some error
 
                 my_size = self.estimate ## You only have to do this once
-                opp_size = np.random.normal(f_opp.size,self.awareness)
+                opp_size = np.random.normal(f_opp.size,self.acuity)
                 opp_size = np.clip(opp_size,7,99)
                 #print('guess vs self:',my_size,self.size)
                 #print('guess vs opp:',opp_size,f_opp.size)

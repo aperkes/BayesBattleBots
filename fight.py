@@ -167,7 +167,7 @@ class Fight():
             print('roll:',roll)
         #print('Actual p_win:',self.fish1.idx,self.fish2.idx,self.p_win)
         #print(winner)
-        if self.fish1.effort_method == 'PerfectNudge':
+        if self.fish1.params.effort_method == 'PerfectNudge':
             if winner and self.fish1.effort > 0.1:
                 print('LOOK HERE!')
                 print(self.fish1.effort,self.fish2.effort) 
@@ -244,10 +244,13 @@ class Fight():
    
     def summary(self):
         sum_str =  ' '.join([str(self.fish1.idx),'vs',str(self.fish2.idx),str(self.outcome),': So,',str(self.winner.idx),'won, prob of upset was:',str(self.p_win)])
-        strat_str = ' '.join(['Fish1:',str(self.fish1.effort_method),'Fish2:',str(self.fish2.effort_method)])
-        header_str = 'Fish : Size Own_estimate Opp_estimate Effort'
-        effort_str1 = ' '.join(['Fish1:',str(self.fish1.size),str(self.fish1.estimate),str(self.fish1.opp_estimate),str(self.fish1.effort)])
-        effort_str2 = ' '.join(['Fish2:',str(self.fish2.size),str(self.fish2.estimate),str(self.fish2.opp_estimate),str(self.fish2.effort)])
+        strat_str = ' '.join(['Fish1:',str(self.fish1.params.effort_method),'Fish2:',str(self.fish2.params.effort_method),str(self.fish1.params.mutant),str(self.fish2.params.mutant)])
+        header_str = 'Fish : Size : Effort'
+        effort_str1 = ' '.join(['Fish1',str(self.fish1.size),str(self.fish1.effort)])
+        effort_str2 = ' '.join(['Fish2',str(self.fish2.size),str(self.fish2.effort)])
+        #header_str = 'Fish : Size Own_estimate Opp_estimate Effort'
+        #effort_str1 = ' '.join(['Fish1:',str(self.fish1.size),str(self.fish1.estimate),str(self.fish1.opp_estimate),str(self.fish1.effort)])
+        #effort_str2 = ' '.join(['Fish2:',str(self.fish2.size),str(self.fish2.estimate),str(self.fish2.opp_estimate),str(self.fish2.effort)])
         sum_str = '\n'.join([sum_str,strat_str,header_str,effort_str1,effort_str2])
         return sum_str
 
