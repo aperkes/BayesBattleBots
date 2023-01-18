@@ -139,8 +139,8 @@ class Fish:
             elif effort_method[1] == '!':
                 self._choose_effort = self.explore_effort
                 self.effort_method = [1,1]
-            else: ## if you give a float, it uses that
-                self.effort = params.max_energy * effort_method[1]
+            else: ## if you give anything else, it uses baseline effort
+                self.effort = params.max_energy * self.params.baseline_effort
                 self._choose_effort = self.float_jenkins
         elif effort_method == 'PerfectNudge':
             self._choose_effort = self.nudge_effort
@@ -196,7 +196,8 @@ class Fish:
         else:
             self.params.poly_param_b = self.params.poly_param_b + self.coin() * step # * self.params.poly_param_b
 
-        self.params.baseline_effort += self.coin() * step * self.params.baseline_effort
+        self.params.baseline_effort = self.params.baseline_effort + self.coin() * step 
+        self.params.baseline_effort = np.clip(self.params.baseline_effort,0,1)
         self.effort = self.params.baseline_effort
 
     def _set_boost(self,win,fight):
@@ -596,7 +597,7 @@ class Fish:
             else: ## if a smaller fish wins, the bigger fish's effort is scaled up, but no more than effort spent
                 #print('How did I lose???')
                 #print(self.effort,other_fish.size,other_fish.effort,fight.params)
-                cost = min([self.effort,other_fish.wager * (other_fish.wager / self.wager)])
+                cost = np.nanmin([self.effort,other_fish.wager * (other_fish.wager / self.wager)])
             if fight.food is not None:
                 if fight.food > 0:
                     #print('pre energy:',self.energy,'cost:',cost)
@@ -931,7 +932,7 @@ class Fish:
         return effort
 
     def float_jenkins(self,f_opp):
-        effort = self.effort
+        effort = self.params.baseline_effort
         return effort
 
     def random_effort(self,f_opp):
