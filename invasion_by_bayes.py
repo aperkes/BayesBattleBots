@@ -37,7 +37,7 @@ params.xs = np.linspace(7,100,100)
 ## Bayes invasion
 ## Estimate invasion
 if True:
-    params.effort_method = [None,0.1]
+    params.effort_method = 'SmoothPoly'
     params.mutant_effort = 'SmoothPoly' ## Obviously perfect should be better. 
     params.poly_param_a = 1.5 ## the slope (if it were linear)
     params.poly_param_b = -.2 ## the intercept
@@ -47,7 +47,7 @@ if True:
     params.awareness = 5
 
     params.update_method = None
-    params.mutant_update = None
+    params.mutant_update = 'bayes'
 
 params.f_outcome = 'math'
 params.outcome_params = [0.6,0.3,.05]
@@ -66,13 +66,13 @@ mutation_cost = .1
 
 pilot_fish = Fish(0,params)
 params.naive_likelihood = pilot_fish.naive_likelihood
-#for baseline_effort in [0.01]:
-for baseline_effort in [0,0.01,0.2,0.4,0.6,0.8,1.0]:
+for baseline_effort in [0.01]: ## Since neither use this, it's just a placeholder.
+#for baseline_effort in [0,0.01,0.2,0.4,0.6,0.8,1.0]:
 #for baseline_effort in [0,0.1,0.8,1.0]:
     print('Baseline effort:',baseline_effort)
     fig,ax = plt.subplots()
-    for mutation_cost in [0.0,0.1,0.2,0.3]:
-    #for mutation_cost in [0.0]:
+    #for mutation_cost in [0.0,0.1,0.2,0.3]:
+    for mutation_cost in [0.0]:
         print('Effort:',baseline_effort,'Cost:',mutation_cost)
         params.baseline_effort = baseline_effort
         ess_count = 0
@@ -138,7 +138,7 @@ for baseline_effort in [0,0.01,0.2,0.4,0.6,0.8,1.0]:
 
     ax.set_ylim([-0.1,1.1])
     fig.legend()
-    fig.savefig('FigEstimateEss_'+str(baseline_effort)+'.png',dpi=300)
+    fig.savefig('FigBayesEss_'+str(baseline_effort)+'.png',dpi=300)
 plt.show()
 
 

@@ -157,10 +157,11 @@ class Tank():
                         c.outcome = None
                     continue
             process(c)
-            if c.loser.params.mutant is True and c.loser.effort > 0:
-                print('Loser Mutants!')
-                import pdb
-                pdb.set_trace()
+            if False:
+                if c.loser.params.mutant is True and c.loser.effort > 0:
+                    print('Loser Mutants!')
+                    import pdb
+                    pdb.set_trace()
             if plot_stuff:
                 if c.fish1.idx == 0:
                     ax.plot(c.fish1.naive_likelihood,alpha=.2)

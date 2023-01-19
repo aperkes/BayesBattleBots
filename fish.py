@@ -802,18 +802,23 @@ class Fish:
 ## similar to poly effort above, but here we base it on the prob of being bigger
     def poly_effort_prob(self,f_opp):
         opp_size_guess = np.random.normal(f_opp.size,self.acuity) 
-        self.opp_size_guess = opp_size_guess
+        self.guess = opp_size_guess
         s,e,l = self.params.outcome_params
 
         p_bigger = self.prob_bigger(self.estimate,opp_size_guess,self.awareness,self.acuity)
         bigger_odds = p_bigger / (1-p_bigger)
-        rough_wager = bigger_odds**s * self.energy**e
-        effort = self.params.poly_param_a * rough_wager**2 + self.params.poly_param_b
+        #rough_wager = bigger_odds**s * self.energy**e
+        rough_wager = p_bigger**s * self.energy**e
+        a = self.params.poly_param_a
+        b = self.params.poly_param_b
+        c = self.params.poly_param_c
+        effort = a*rough_wager**c + b
         effort = np.clip(effort,0,1)
-        #print('size,guess',f_opp.size,opp_size_guess)
-        #print('effort:',effort)
-        #print('\n#############')
-        #print(self.size,f_opp.size,p_bigger,bigger_odds,effort,self.energy)
+        if False:
+            print('size,guess',f_opp.size,opp_size_guess)
+            print('effort:',effort)
+            print('\n#############')
+            print(self.size,f_opp.size,p_bigger,bigger_odds,effort,self.energy)
         return effort * self.energy 
 
 ## This function has parameters to allow to evolve optimal strategy

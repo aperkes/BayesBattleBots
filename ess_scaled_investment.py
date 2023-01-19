@@ -49,15 +49,13 @@ params.baseline_effort = 0.1
 params.assessment_weight = 0.9
 
 ## Parameters to mutate, not sure how they're used yet.
-if False: ## These are the best evolved parameters
-    params.poly_param_a = 0.6
-    params.poly_param_b = 0.1
+## Default is a=3,b=-2.4, so my initial space was way off.
+if True: ## These are the best evolved parameters
+    params.poly_param_a = 3 
+    params.poly_param_b = -2.4
 else:
-    params.poly_param_a = 0.9
-    params.poly_param_b = 0.9 
-
-mutation_cost = .1
-
+    params.poly_param_a = 3 
+    params.poly_param_b = -2.4
 
 #all_effort_maps = np.empty([params.iterations,params.generations,effort_bins])
 #effort_history = np.empty([params.iterations,params.generations,params.n_fish])

@@ -34,17 +34,6 @@ params.n_fights = 10
 params.n_fish = 20
 params.f_method = 'shuffled'
 params.xs = np.linspace(7,100,100)
-## Bayes invasion
-if False:
-    params.effort_method = 'Estimate'
-    params.acuity = 5
-    params.awareness = 20
-    params.mutant_effort = 'BayesMA'
-
-    params.update_method = None
-    params.mutant_update = 'bayes'
-    params.mutant_prior = 51
-    params.xs = np.linspace(7,100,100)
 
 ## Estimate invasion
 elif True:
