@@ -7,7 +7,7 @@ class Params():
     def __init__(self,n_iterations=1000,                    ## Sim Params
                 n_fish=4,n_rounds=200,f_method='random',    ## Tank params
                 energy_refill=0.5,energy_cost=True,n_fights=10,
-                fitness_ratio=None,death=False,food=0.5,
+                fitness_ratio=None,death=False,food=0.5,free_food=0,
                 f_outcome='math',outcome_params=[.3,.3,.3], ## Fight Params
                 effort_method=[1,1],update_method='bayes',  ## Fish Params
                 age=50,size=None,prior=None,likelihood=None,likelihood_dict=None,
@@ -33,6 +33,7 @@ class Params():
         self.fitness_ratio=fitness_ratio
         self.death=death
         self.food=food
+        self.free_food=free_food
 
 ## Fight Params
         self.f_outcome = f_outcome ## This defines how fights are determined.

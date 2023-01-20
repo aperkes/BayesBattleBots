@@ -38,16 +38,22 @@ params.xs = np.linspace(7,100,100)
 ## Estimate invasion
 if True:
     params.effort_method = 'SmoothPoly'
-    params.mutant_effort = 'SmoothPoly' ## Obviously perfect should be better. 
-    params.poly_param_a = 1.5 ## the slope (if it were linear)
-    params.poly_param_b = -.2 ## the intercept
-    params.poly_param_c = 4 ## the exponent
+    params.mutant_effort = 'PerfectPoly' ## Obviously perfect should be better. 
     #params.mutant_effort = 'EstimatePoly'
     params.acuity = 5
     params.awareness = 5
 
     params.update_method = None
-    params.mutant_update = 'bayes'
+    params.mutant_update = None
+
+    mutant_params = params.copy()
+    mutant_params._mutate()
+    mutant_params.acuity = 0
+    mutant_params.awareness = 0
+## set normal params to the scaled version
+    #params.poly_param_a = 1.5 ## the slope (if it were linear)
+    #params.poly_param_b = -.2 ## the intercept
+    #params.poly_param_c = 4 ## the exponent
 
 params.f_outcome = 'math'
 params.outcome_params = [0.6,0.3,.05]
@@ -73,6 +79,7 @@ for baseline_effort in [0.01]: ## Since neither use this, it's just a placeholde
     fig,ax = plt.subplots()
     #for mutation_cost in [0.0,0.1,0.2,0.3]:
     for mutation_cost in [0.0]:
+        mutant_params.max_energy = mutant_params.max_energy - mutation_cost
         print('Effort:',baseline_effort,'Cost:',mutation_cost)
         params.baseline_effort = baseline_effort
         ess_count = 0
@@ -80,12 +87,9 @@ for baseline_effort in [0.01]: ## Since neither use this, it's just a placeholde
         m_trajectories = np.empty([params.iterations,params.generations])
         m_trajectories.fill(np.nan)
 #for i in range(params.iterations):
-        mutant_params = params.copy()
-        mutant_params._mutate()
-        mutant_params.max_energy = mutant_params.max_energy - mutation_cost
         for i in tqdm(range(params.iterations)):
             count = 0
-            n_mutants = 2
+            n_mutants = 5
             m_trajectories[i,0] = n_mutants
             while n_mutants < params.n_fish and count < params.generations - 1:
                 if n_mutants == 0:
@@ -113,9 +117,9 @@ for baseline_effort in [0.01]: ## Since neither use this, it's just a placeholde
                 other_fitness = sum(fitness[1:])
                 mutant_ratio = mutant_fitness / sum(fitness)
                 n_mutants = int(params.n_fish * mutant_ratio)
-                #print('n mutants:',n_mutants)
+                print('n mutants:',n_mutants)
 
-                #print('mutant fitness',mutant_fitness)
+                print('mutant fitness',mutant_fitness)
                 #print('total fitness',sum(fitness),fitness)
                 #print('n_mutant offspring:',n_mutants, 'of',params.n_fish)
                 count += 1

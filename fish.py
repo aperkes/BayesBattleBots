@@ -145,11 +145,16 @@ class Fish:
         elif effort_method == 'PerfectNudge':
             self._choose_effort = self.nudge_effort
         elif effort_method == 'PerfectPoly':
-            self._choose_effort = self.poly_effort
+            #self._choose_effort = self.poly_effort
+            self._choose_effort = self.poly_effort_combo
+            self.acuity = 0
+            self.awareness = 0
+            self.estimate = self.size
         elif effort_method == 'EstimatePoly':
             self._choose_effort = self.poly_effort
         elif effort_method == 'SmoothPoly':
-            self._choose_effort = self.poly_effort_prob
+            #self._choose_effort = self.poly_effort_prob
+            self._choose_effort = self.poly_effort_combo
         else:
             self._choose_effort = self.choose_effort_energy
 
@@ -599,7 +604,10 @@ class Fish:
             else: ## if a smaller fish wins, the bigger fish's effort is scaled up, but no more than effort spent
                 #print('How did I lose???')
                 #print(self.effort,other_fish.size,other_fish.effort,fight.params)
-                cost = np.nanmin([self.effort,other_fish.wager * (other_fish.wager / self.wager)])
+                if self.effort == 0:
+                    cost = 0
+                else:
+                    cost = np.nanmin([self.effort,other_fish.wager * (other_fish.wager / self.wager)])
             if fight.food is not None:
                 if fight.food > 0:
                     #print('pre energy:',self.energy,'cost:',cost)
@@ -779,7 +787,7 @@ class Fish:
             ## Now you have to estimate with some error
             #print('ESTIMATING!!!')
             my_size = self.estimate ## You only have to do this once
-            opp_size = np.random.normal(f_opp.size,self.awareness)
+            opp_size = np.random.normal(f_opp.size,self.acuity)
             opp_size = np.clip(opp_size,7,99)
         elif strategy == 'PerfectPoly':
             #print('Nudging perfect!!!')
@@ -793,18 +801,45 @@ class Fish:
         effort = np.clip(effort,0,1)
         return effort * self.energy
 
-    def prob_bigger(self,mean1,mean2,std1,std2):
+    def prob_bigger(self,mean1,mean2,std1,std2,cutoff=1):
         est_difference = mean1-mean2
         combined_std = np.sqrt(std1**2+std2**2)
-        bigger_dist = norm.pdf(np.arange(1,100),est_difference,combined_std)
-        return np.sum(bigger_dist)
+        #bigger_dist = norm.pdf(np.arange(cutoff,100),est_difference,combined_std)
+        bigger_dist = norm.cdf(np.arange(0,100),est_difference,combined_std)
+        return 1-bigger_dist[cutoff]
 
 ## similar to poly effort above, but here we base it on the prob of being bigger
-    def poly_effort_prob(self,f_opp):
+    def poly_perfect_prob(self,f_opp,cutoff_prop = 0.1):
+        if self.size - f_opp.size > self.size * cutoff_prop:
+            effort = 1
+        else:
+            effort = 0
+        return effort * self.energy
+
+    def poly_effort_combo(self,f_opp):
+        opp_size_guess = np.random.normal(f_opp.size,self.acuity)
+        self.guess = opp_size_guess
+        s,e,l = self.params.outcome_params
+        est_ratio = self.estimate / opp_size_guess
+        rough_wager = est_ratio ** s * self.energy ** e
+        effort = self.params.poly_param_a * rough_wager ** 2 + self.params.poly_param_b
+        confidence_correction = 1/(1+(0.1)*np.sqrt(self.acuity**2 + self.awareness**2))
+        scaled_effort = effort * confidence_correction
+        scaled_effort = np.clip(scaled_effort,0,1)
+        if False:
+            print('###',self.params.effort_method)
+            print(effort,scaled_effort,confidence_correction)
+            print(self.size,self.estimate,self.awareness)
+            print(f_opp.size,self.guess,self.acuity)
+        return scaled_effort * self.energy
+
+
+    def poly_effort_prob(self,f_opp,cutoff_prop = 0.1):
         opp_size_guess = np.random.normal(f_opp.size,self.acuity) 
         self.guess = opp_size_guess
         s,e,l = self.params.outcome_params
 
+        cutoff = int(self.estimate * cutoff_prop)
         p_bigger = self.prob_bigger(self.estimate,opp_size_guess,self.awareness,self.acuity)
         bigger_odds = p_bigger / (1-p_bigger)
         #rough_wager = bigger_odds**s * self.energy**e
