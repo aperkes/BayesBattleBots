@@ -843,8 +843,8 @@ class Fish:
         confidence_correction = 1/(1+(self.params.poly_param_c)*np.sqrt(self.acuity**2 + self.awareness**2))
         scaled_effort = effort * confidence_correction
         scaled_effort = np.clip(scaled_effort,0,1)
-        if False:
-            print('###',self.params.effort_method)
+        if self.params.print_me:
+            print('###',self.idx,self.params.effort_method)
             print(self.params.poly_param_a,rough_wager)
             print(effort,scaled_effort,confidence_correction)
             print(self.size,self.estimate,self.awareness)

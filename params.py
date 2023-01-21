@@ -4,7 +4,7 @@ import numpy as np
 import copy
 
 class Params():
-    def __init__(self,n_iterations=1000,                    ## Sim Params
+    def __init__(self,n_iterations=1000,print_me=False,     ## Sim Params
                 n_fish=4,n_rounds=200,f_method='random',    ## Tank params
                 energy_refill=0.5,energy_cost=True,n_fights=10,
                 fitness_ratio=None,death=False,food=0.5,free_food=0,
@@ -20,6 +20,7 @@ class Params():
                 verbose=False):                             ## Other params
 ## Sim params
         self.n_iterations = n_iterations
+        self.print_me = print_me
         self.mutant_effort = mutant_effort
         self.mutant_update = mutant_update
         self.mutant_prior = mutant_prior

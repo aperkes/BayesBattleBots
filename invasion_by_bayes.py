@@ -39,12 +39,14 @@ params.xs = np.linspace(7,100,100)
 if True:
     params.effort_method = 'SmoothPoly'
     params.mutant_effort = 'PerfectPoly' ## Obviously perfect should be better. 
+    params.print_me = False
     #params.mutant_effort = 'EstimatePoly'
     params.acuity = 5
     params.awareness = 5
 
     params.update_method = None
     params.mutant_update = None
+    params.poly_param_a = 32
 
     mutant_params = params.copy()
     mutant_params._mutate()
@@ -90,7 +92,7 @@ for baseline_effort in [0.01]: ## Since neither use this, it's just a placeholde
 #for i in range(params.iterations):
         for i in tqdm(range(params.iterations)):
             count = 0
-            n_mutants = 5
+            n_mutants = 10
             m_trajectories[i,0] = n_mutants
             while n_mutants < params.n_fish and count < params.generations - 1:
                 if n_mutants == 0:
@@ -108,7 +110,7 @@ for baseline_effort in [0.01]: ## Since neither use this, it's just a placeholde
                 tank = Tank(fishes,params)
                 tank._initialize_likelihood()
 
-                tank.run_all(progress=False,print_me=False)
+                tank.run_all(progress=False,print_me=params.print_me)
 
                 #print(fishes[0].fitness_record)
                 fitness = [sum(f.fitness_record) for f in fishes]
@@ -119,9 +121,9 @@ for baseline_effort in [0.01]: ## Since neither use this, it's just a placeholde
                 other_fitness = sum(fitness[1:])
                 mutant_ratio = mutant_fitness / sum(fitness)
                 n_mutants = int(params.n_fish * mutant_ratio)
-                print('n mutants:',n_mutants)
+                #print('n mutants:',n_mutants)
 
-                print('mutant fitness',mutant_fitness)
+                #print('mutant fitness',mutant_fitness)
                 #print('total fitness',sum(fitness),fitness)
                 #print('n_mutant offspring:',n_mutants, 'of',params.n_fish)
                 count += 1
@@ -145,6 +147,6 @@ for baseline_effort in [0.01]: ## Since neither use this, it's just a placeholde
     ax.set_ylim([-0.1,1.1])
     fig.legend()
     fig.savefig('FigBayesEss_'+str(baseline_effort)+'.png',dpi=300)
-plt.show()
+#plt.show()
 
 
