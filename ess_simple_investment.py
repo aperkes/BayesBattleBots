@@ -52,13 +52,9 @@ params.assessment_weight = 0.9
 ## Parameters to mutate, not sure how they're used yet.
 ## Default is a=3,b=-2.4, so my initial space was way off.
 if False: ## These are the best evolved parameters
-    params.poly_param_a = 2 
-    params.poly_param_b = -1.1
-    params.poly_param_c = 0.1
+    params.poly_param_a = 40
 else:
-    params.poly_param_a = 2.5
-    params.poly_param_b = -2
-    params.poly_param_c = 0.1
+    params.poly_param_a = 40
 #all_effort_maps = np.empty([params.iterations,params.generations,effort_bins])
 #effort_history = np.empty([params.iterations,params.generations,params.n_fish])
 npc_params = params.copy()
@@ -95,6 +91,14 @@ for mutation_cost in [0.0]:
             tank._initialize_likelihood()
 
             tank.run_all(progress=False,print_me=False)
+            if False:
+                print('NPCS:')
+                npc_sizes = [n.size for n in tank.npcs]
+                print(np.mean(npc_sizes),npc_sizes)
+                print('fishes:')
+                fish_sizes = [f.size for f in tank.fishes]
+                print(np.mean(fish_sizes),fish_sizes)
+
 
             #print(fishes[0].fitness_record)
             fitness = np.array([sum(f.fitness_record) for f in fishes])
@@ -120,16 +124,16 @@ for mutation_cost in [0.0]:
             new_fish_idx = random.sample(possible_fish,params.n_fish)
             new_fish = [Fish(f_,fishes[f_].params) for f_ in new_fish_idx]
             for f in new_fish:
-                f.mutate(jump=JUMP)
+                f.mutate(step=1,jump=JUMP)
             fishes = new_fish
             for f_ in range(len(fishes)):
                 f = fishes[f_]
                 param_a_history[i,count,f_] = f.params.poly_param_a
-                param_b_history[i,count,f_] = f.params.poly_param_b
-            #print('a param mean:',np.nanmean(param_a_history[i,count]))
+                #param_b_history[i,count,f_] = f.params.poly_param_b
+            print('a param mean:',np.nanmean(param_a_history[i,count]))
             #print('b param mean:',np.nanmean(param_b_history[i,count]))
 print('mean last generation param a:',np.nanmean(param_a_history[:,-1,:]))
-print('mean last generation param b:',np.nanmean(param_b_history[:,-1,:]))
+#print('mean last generation param b:',np.nanmean(param_b_history[:,-1,:]))
 print('std last generation param a:',np.nanstd(param_a_history[:,-1,:]))
 #print('std last generation:',np.std(effort_history[:,-1,:]))
 #mean_map = np.transpose(np.nanmean(all_effort_maps,0))
@@ -139,17 +143,17 @@ print(np.histogram(param_a_history[:,0],bins=effort_bins))
 heatmap_a = np.empty([params.generations,effort_bins])
 heatmap_b = np.empty([params.generations,effort_bins])
 for g in range(params.generations):
-    hist_a,edges = np.histogram(param_a_history[:,g],range=[0,5],bins=effort_bins)
+    hist_a,edges = np.histogram(param_a_history[:,g],bins=effort_bins)
     heatmap_a[g] = hist_a
-    hist_b,edges = np.histogram(param_b_history[:,g],range=[-5,0],bins=effort_bins)
-    heatmap_b[g] = hist_b
+    #hist_b,edges = np.histogram(param_b_history[:,g],bins=effort_bins)
+    #heatmap_b[g] = hist_b
 
 print(heatmap_b[-1])
 
 if True:
-    fig,(ax,ax1) = plt.subplots(2)
+    fig,ax = plt.subplots()
     ax.imshow(np.flipud(np.transpose(heatmap_a)))
-    ax1.imshow(np.flipud(np.transpose(heatmap_b)))
+    #ax1.imshow(np.flipud(np.transpose(heatmap_b)))
 #ax.set_ylim([-0.1,1.1])
 #fig.legend()
     fig.savefig('strategy_evolution.png',dpi=300)

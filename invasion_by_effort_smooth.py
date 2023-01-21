@@ -51,6 +51,7 @@ if True:
 
 params.f_outcome = 'math'
 params.outcome_params = [0.6,0.3,.05]
+params.get_L()
 params.generations = 50
 params.iterations = 10 
 params.fitness_ratio = 0.1

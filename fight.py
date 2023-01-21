@@ -113,7 +113,7 @@ class Fight():
         if l == 0:
             prob_win = 0
         else:
-            L = np.tan((np.pi - l)/2)
+            L = self.params.L
             prob_win = (w**L) / 2
         return prob_win
 

@@ -57,6 +57,7 @@ if True:
 
 params.f_outcome = 'math'
 params.outcome_params = [0.6,0.3,.05]
+params.get_L()
 params.generations = 50
 params.iterations = 10 
 params.fitness_ratio = 0.1
@@ -102,6 +103,7 @@ for baseline_effort in [0.01]: ## Since neither use this, it's just a placeholde
                 if baseline_effort == 0:
                     for n in range(n_mutants,params.n_fish):
                         fishes[n].params.baseline_effort = np.random.random()
+
 
                 tank = Tank(fishes,params)
                 tank._initialize_likelihood()

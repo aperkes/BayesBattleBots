@@ -36,7 +36,7 @@ params.f_method = 'shuffled'
 params.xs = np.linspace(7,100,100)
 
 ## Estimate invasion
-elif True:
+if True:
     params.effort_method = [None,0.1]
     params.mutant_effort = 'PerfectPoly' ## Obviously perfect should be better. 
     params.mutant_prior = 5
@@ -60,8 +60,10 @@ else: ## .5 invasion of 100%
     params.update_method = None
     params.mutant_update = None
 
+params.poly_param_a = 40
 params.f_outcome = 'math'
 params.outcome_params = [0.6,0.3,.05]
+params.get_L()
 params.generations = 50
 params.iterations = 10 
 params.fitness_ratio = 0.1

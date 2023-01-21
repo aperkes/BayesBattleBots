@@ -45,6 +45,7 @@ if True:
 effort_bins = 11
 params.f_outcome = 'math'
 params.outcome_params = [0.6,0.3,.05]
+params.get_L()
 params.generations = 300
 params.iterations = 1
 params.fitness_ratio = 0.1

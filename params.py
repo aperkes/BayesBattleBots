@@ -9,12 +9,12 @@ class Params():
                 energy_refill=0.5,energy_cost=True,n_fights=10,
                 fitness_ratio=None,death=False,food=0.5,free_food=0,
                 f_outcome='math',outcome_params=[.3,.3,.3], ## Fight Params
-                effort_method=[1,1],update_method='bayes',  ## Fish Params
+                effort_method=[1,1],baseline_effort=.2,update_method='bayes',  ## Fish Params
                 age=50,size=None,prior=None,likelihood=None,likelihood_dict=None,
                 xs=np.linspace(7,100,500),r_rhp=0,a_growth=True,c_aversion=1,
                 max_energy=1,start_energy=0.5,
                 acuity=10,pre_acuity=10,post_acuity=1,awareness=10,insight=True,
-                poly_param_a = 3,poly_param_b=-2.4,
+                poly_param_a = 3,poly_param_b=-2.4,poly_param_c=0.1,
                 mutant_effort=[1,1],mutant_update='bayes',mutant_prior=None,
 
                 verbose=False):                             ## Other params
@@ -25,6 +25,7 @@ class Params():
         self.mutant_prior = mutant_prior
 ## Tank Params
         self.n_fish = n_fish
+        self.n_npcs = 0
         self.n_rounds = n_rounds
         self.f_method = f_method ## this defines how much fish can pick their opponents
         self.energy_refill=0.5
@@ -38,9 +39,11 @@ class Params():
 ## Fight Params
         self.f_outcome = f_outcome ## This defines how fights are determined.
         self.outcome_params = outcome_params   ## This determines how fights are settled, skill,effort,luck
+        self.L = np.tan((np.pi - outcome_params[2])/2)
         self.outcome = None
 ## Fish Params
         self.effort_method = effort_method     ## self-assessment vs opponent assessment, [1,1] is MA
+        self.baseline_effort = baseline_effort
         self.update_method = update_method     ## how individuals update their self assessment
         self.age = age
         self.size = size
@@ -60,6 +63,7 @@ class Params():
         self.insight=insight
         self.poly_param_a = poly_param_a
         self.poly_param_b = poly_param_b
+        self.poly_param_c = poly_param_c
         self.poly_step = 0.1
 
 ## General Params
@@ -68,6 +72,9 @@ class Params():
         
     def copy(self):
         return copy.deepcopy(self)
+    
+    def get_L(self):
+        self.L = np.tan((np.pi - self.outcome_params[2])/2)
 
     def _mutate(self):
         self.effort_method = self.mutant_effort

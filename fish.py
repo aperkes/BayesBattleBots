@@ -140,6 +140,8 @@ class Fish:
                 self._choose_effort = self.explore_effort
                 self.params.effort_method = [1,1]
             else: ## if you give anything else, it uses baseline effort
+                if self.params.baseline_effort ==0 or self.params.baseline_effort is None:
+                    self.params.baseline_effort = np.random.random()
                 self.effort = params.max_energy * self.params.baseline_effort
                 self._choose_effort = self.float_jenkins
         elif effort_method == 'PerfectNudge':
@@ -196,16 +198,19 @@ class Fish:
         else:
             return -1
 
-    def mutate(self,step=0.01): ## function to mutate both baseline effort, and poly params
-        a_direction = self.coin()
-        if random.random() < 0.5:
-            self.params.poly_param_a = self.params.poly_param_a + self.coin() * step # * self.params.poly_param_a
+    def mutate(self,step=0.01,jump=False): ## function to mutate both baseline effort, and poly params
+        if random.random() < 0.2 or jump:
+            shift = (np.random.random() - 0.5) * step * 10
+            #shift = np.random.random() - 1
         else:
-            self.params.poly_param_b = self.params.poly_param_b + self.coin() * step # * self.params.poly_param_b
+            shift = step
+        self.params.poly_param_a = self.params.poly_param_a + shift * self.coin()
+        self.params.poly_param_b = self.params.poly_param_b + shift * self.coin()
 
-        self.params.baseline_effort = self.params.baseline_effort + self.coin() * step 
-        self.params.baseline_effort = np.clip(self.params.baseline_effort,0,1)
-        self.effort = self.params.baseline_effort
+        if self.params.effort_method[0] == None:
+            self.params.baseline_effort = self.params.baseline_effort + self.coin() * step 
+            self.params.baseline_effort = np.clip(self.params.baseline_effort,0,1)
+            self.effort = self.params.baseline_effort
 
     def _set_boost(self,win,fight):
         if win:
@@ -817,17 +822,30 @@ class Fish:
         return effort * self.energy
 
     def poly_effort_combo(self,f_opp):
+        order = 1
         opp_size_guess = np.random.normal(f_opp.size,self.acuity)
         self.guess = opp_size_guess
         s,e,l = self.params.outcome_params
-        est_ratio = self.estimate / opp_size_guess
-        rough_wager = est_ratio ** s * self.energy ** e
-        effort = self.params.poly_param_a * rough_wager ** 2 + self.params.poly_param_b
-        confidence_correction = 1/(1+(0.1)*np.sqrt(self.acuity**2 + self.awareness**2))
+        if opp_size_guess > self.estimate: 
+            est_ratio = self.estimate / opp_size_guess
+
+            rough_wager = est_ratio ** s * self.energy ** e
+            effort = (rough_wager ** self.params.poly_param_a)/2
+        else:
+            est_ratio = opp_size_guess / self.estimate
+            rough_wager = est_ratio ** s * self.energy ** e
+
+            effort = 1 - (rough_wager ** self.params.poly_param_a)/2
+        #est_ratio = self.estimate / opp_size_guess
+        #rough_wager = est_ratio ** s * self.energy ** e
+        #effort = self.params.poly_param_a * rough_wager ** order + self.params.poly_param_b
+
+        confidence_correction = 1/(1+(self.params.poly_param_c)*np.sqrt(self.acuity**2 + self.awareness**2))
         scaled_effort = effort * confidence_correction
         scaled_effort = np.clip(scaled_effort,0,1)
         if False:
             print('###',self.params.effort_method)
+            print(self.params.poly_param_a,rough_wager)
             print(effort,scaled_effort,confidence_correction)
             print(self.size,self.estimate,self.awareness)
             print(f_opp.size,self.guess,self.acuity)
@@ -1060,7 +1078,45 @@ class Fish:
         self.prior_std = prior_std
         
         return prior_mean,prior_std
-        
+ 
+## Simplified fish object to decrease overhead when desired
+class FishNPC(Fish):
+    def __init__(self,idx=0,params=None,prior=None,likelihood=None,likelihhood_dict=None):
+        self.idx = idx
+        self.name = 'NPC '+str(idx) 
+        self.alive = True
+        if params is not None:
+            self.params = params.copy()
+        else:
+            self.params = Params()
+
+        if self.params.size is not None:
+            if self.params.size == 0:   
+                self.size = self._growth_func(self.params.age)
+            else:
+                self.size = self.params.size
+        else:
+            mean = self._growth_func(self.params.age)
+            sd = mean/5
+            self.size = np.random.normal(mean,sd)
+
+        if self.params.baseline_effort == 0 or self.params.baseline_effort is None:
+            self.params.baseline_effort = np.random.random()
+        self.effort = self.params.baseline_effort
+        self.energy = 1
+        self.max_energy = 1
+        self._choose_effort = self.float_jenkins
+        self.update = self.empty_func
+        self.no_update = self.empty_func
+
+    def empty_func(self,*args):
+        return None
+
 if __name__ == '__main__':
     f1 = Fish() 
+    f2 = FishNPC()
     print(f1.idx,f1.size,len(f1.prior))
+    print(f2.idx,f2.size)
+    print(f2._choose_effort(f1))
+    print(f2.update())
+    print(f1.age,f1._growth_func(f1.age))
