@@ -127,8 +127,8 @@ class Fight():
         f1_rel_size = f1_size / max_size
         f2_rel_size = f2_size / max_size
 
-        f1_effort = self.fish1._choose_effort(self.fish2)
-        f2_effort = self.fish2._choose_effort(self.fish1)
+        f1_effort = self.fish1._choose_effort(self.fish2,self)
+        f2_effort = self.fish2._choose_effort(self.fish1,self)
         self.fish1.effort = f1_effort
         self.fish2.effort = f2_effort
 ## It might make more sense to multiply this...but I don't think so
@@ -243,7 +243,7 @@ class Fight():
         return winner,level
    
     def summary(self):
-        sum_str =  ' '.join([str(self.fish1.idx),'vs',str(self.fish2.idx),str(self.outcome),': So,',str(self.winner.idx),'won, prob of upset was:',str(self.p_win)])
+        sum_str =  ' '.join([str(self.fish1.idx),'vs',str(self.fish2.idx),str(self.outcome),': Fitness =',str(not self.food),': So,',str(self.winner.idx),'won, prob of upset was:',str(self.p_win)])
         strat_str = ' '.join(['Fish1:',str(self.fish1.params.effort_method),'Fish2:',str(self.fish2.params.effort_method),str(self.fish1.params.mutant),str(self.fish2.params.mutant)])
         header_str = 'Fish : Size : Effort'
         effort_str1 = ' '.join(['Fish1',str(self.fish1.size),str(self.fish1.effort)])

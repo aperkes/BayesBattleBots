@@ -748,7 +748,7 @@ class Fish:
         return self.name,self.size,self.estimate,self.win_record
     
     ## This needs to be divied up by strategy somehow...
-    def choose_effort_discrete(self,f_opp,strategy=None):
+    def choose_effort_discrete(self,f_opp,fight,strategy=None):
         if strategy is None:
             strategy = self.params.effort_method
         if strategy == [1,0]:
@@ -785,7 +785,7 @@ class Fish:
         return p_win
 
 ## Simpler calculation based on two parameters, which could be solved
-    def poly_effort(self,f_opp,strategy=None):
+    def poly_effort(self,f_opp,fight,strategy=None):
         if strategy is None:
             strategy = self.params.effort_method
         if strategy == 'EstimatePoly':
@@ -814,14 +814,14 @@ class Fish:
         return 1-bigger_dist[cutoff]
 
 ## similar to poly effort above, but here we base it on the prob of being bigger
-    def poly_perfect_prob(self,f_opp,cutoff_prop = 0.1):
+    def poly_perfect_prob(self,f_opp,fight,cutoff_prop = 0.1):
         if self.size - f_opp.size > self.size * cutoff_prop:
             effort = 1
         else:
             effort = 0
         return effort * self.energy
 
-    def poly_effort_combo(self,f_opp):
+    def poly_effort_combo(self,f_opp,fight):
         order = 1
         opp_size_guess = np.random.normal(f_opp.size,self.acuity)
         self.guess = opp_size_guess
@@ -832,10 +832,16 @@ class Fish:
             rough_wager = est_ratio ** s * self.energy ** e
             effort = (rough_wager ** self.params.poly_param_a)/2
         else:
-            est_ratio = opp_size_guess / self.estimate
-            rough_wager = est_ratio ** s * self.energy ** e
+            if not fight.food:
+                #print('FOR OUR CHILDREN!!!')
+                est_ratio = opp_size_guess / self.estimate
+                rough_wager = est_ratio
+                effort = 1
+            else:
+                est_ratio = opp_size_guess / self.estimate
+                rough_wager = est_ratio ** s * self.energy ** e
 
-            effort = 1 - (rough_wager ** self.params.poly_param_a)/2
+                effort = 1 - (rough_wager ** self.params.poly_param_a)/2
         #est_ratio = self.estimate / opp_size_guess
         #rough_wager = est_ratio ** s * self.energy ** e
         #effort = self.params.poly_param_a * rough_wager ** order + self.params.poly_param_b
@@ -852,7 +858,7 @@ class Fish:
         return scaled_effort * self.energy
 
 
-    def poly_effort_prob(self,f_opp,cutoff_prop = 0.1):
+    def poly_effort_prob(self,f_opp,fight,cutoff_prop = 0.1):
         opp_size_guess = np.random.normal(f_opp.size,self.acuity) 
         self.guess = opp_size_guess
         s,e,l = self.params.outcome_params
@@ -875,7 +881,7 @@ class Fish:
         return effort * self.energy 
 
 ## This function has parameters to allow to evolve optimal strategy
-    def nudge_effort(self,f_opp,strategy=None):
+    def nudge_effort(self,f_opp,fight,strategy=None):
         if strategy is None:
             strategy = self.params.effort_method
         baseline_effort = self.params.baseline_effort
@@ -905,7 +911,7 @@ class Fish:
         return effort
 
 ## This function is a mess. Need to break it up for sure.
-    def choose_effort(self,f_opp,strategy=None):
+    def choose_effort(self,f_opp,fight,strategy=None):
         if self.discrete:
             return self.choose_effort_discrete(f_opp,strategy)
         if strategy is None:
@@ -990,7 +996,7 @@ class Fish:
         #print('effort post boost:',effort)
         return effort
     
-    def explore_effort(self,f_opp):
+    def explore_effort(self,f_opp,fight):
         if np.random.random() > .9:
             effort = np.random.random()
         else:
@@ -998,7 +1004,7 @@ class Fish:
 
         return effort
 
-    def choose_effort_energy(self,f_opp,strategy=None):
+    def choose_effort_energy(self,f_opp,fight,strategy=None):
         effort = self.choose_effort(f_opp,strategy)
 ## A slightly more careful strategy, invests a proportion of available energy, should generally avoid death
         if True:
@@ -1006,19 +1012,23 @@ class Fish:
             effort = np.clip(effort,0,self.energy)
         return effort
 
-    def leroy_jenkins(self,f_opp):
+    def leroy_jenkins(self,f_opp,fight):
         effort= self.energy
         return effort
 
-    def half_jenkins(self,f_opp):
+    def half_jenkins(self,f_opp,fight):
         effort = self.energy * .5
         return effort
 
-    def float_jenkins(self,f_opp):
+    def float_jenkins(self,f_opp,fight):
         effort = self.params.baseline_effort
+        if not fight.food:
+            #print('FOR QBERT!!')
+            effort = np.cbrt(effort)
+            pass
         return effort
 
-    def random_effort(self,f_opp):
+    def random_effort(self,f_opp,fight):
         effort = np.random.random() * self.energy
         return effort
 
@@ -1030,7 +1040,7 @@ class Fish:
         return effort
 
     ## Function to estimate opponent size, should return a prior distribution of opponent size like own prior_cdf
-    def estimate_opponent(self,f_opp):
+    def estimate_opponent(self,f_opp,fight):
         return f_opp.cdf_prior
     
     def escalate_(self,x_opp,level=0): # Decide whether to fight (or escalate a fight) against a bigger fish

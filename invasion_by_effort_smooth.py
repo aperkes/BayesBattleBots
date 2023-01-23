@@ -62,6 +62,9 @@ params.free_food = 0.0
 params.baseline_effort = 0.1
 #params.baseline_weight,params.assessment_weight = [.9,.1]
 params.assessment_weight = 0.9
+params.poly_param_a = 40
+params.poly_param_c = 0.1
+params.print_me = False
 
 mutation_cost = .1
 
@@ -103,7 +106,7 @@ for baseline_effort in [0,0.01,0.2,0.4,0.6,0.8,1.0]:
                 tank = Tank(fishes,params)
                 tank._initialize_likelihood()
 
-                tank.run_all(progress=False,print_me=False)
+                tank.run_all(progress=False,print_me=params.print_me)
 
                 #print(fishes[0].fitness_record)
                 fitness = [sum(f.fitness_record) for f in fishes]

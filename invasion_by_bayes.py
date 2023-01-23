@@ -39,7 +39,7 @@ params.xs = np.linspace(7,100,100)
 if True:
     params.effort_method = 'SmoothPoly'
     params.mutant_effort = 'PerfectPoly' ## Obviously perfect should be better. 
-    params.print_me = False
+    params.print_me = True
     #params.mutant_effort = 'EstimatePoly'
     params.acuity = 5
     params.awareness = 5
