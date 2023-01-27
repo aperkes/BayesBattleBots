@@ -15,22 +15,28 @@ from fight import Fight
 from tank import Tank
 from simulation import Simulation,SimParams
 from matplotlib import cm
+from params import Params
 
 ## Define some global variables to determine if you will plot and save figures.
-PLOT = 1
+PLOT = False
 SAVE = False
 
-params = SimParams()
+params = Params()
 params.outcome_params = [1,0.3,.1]
 params.effort_method = [None,'!']
 params.f_method = 'shuffled'
+params.n_fights = 50
 ## Set up a tank
 if 1:
-    fishes = [Fish(f,age=50,size=47,prior=True,insight=True,acuity=0,effort_method=params.effort_method,fight_params=params.outcome_params) for f in range(5)]
+    params.prior = True
+    #fishes = [Fish(f,age=50,size=47,prior=True,insight=True,acuity=0,effort_method=params.effort_method,fight_params=params.outcome_params) for f in range(5)]
+    fishes = [Fish(f,params) for f in range(5)]
 else:
-    fishes = [Fish(f,insight=True,acuity=0,effort_method=params.effort_method,fight_params=params.outcome_params) for f in range(5)]
+    #fishes = [Fish(f,insight=True,acuity=0,effort_method=params.effort_method,fight_params=params.outcome_params) for f in range(5)]
+    fishes = [Fish(f,params) for f in range(5)]
 
-tank = Tank(fishes,n_fights = 50,death=False,f_method=params.f_method,f_params=params.outcome_params)
+#tank = Tank(fishes,n_fights = 50,death=False,f_method=params.f_method,f_params=params.outcome_params)
+tank = Tank(fishes,params)
 tank.run_all()
 
 ## Figure 3a: Proportion of fights won over time to show emergence of hierarchy

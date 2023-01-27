@@ -5,7 +5,8 @@
 from fish import Fish
 from fight import Fight
 from tank import Tank
-from simulation import Simulation,SimParams
+from simulation import Simulation
+from params import Params
 
 import numpy as np
 from scipy.stats import binom_test
@@ -21,7 +22,7 @@ import itertools
 
 s,e,l = .6,.3,.1
 
-params = SimParams()
+params = Params()
 params.effort_method = [1,1]
 params.n_fights = 50 
 params.n_iterations = 15
@@ -46,15 +47,15 @@ win_count1,win_count2 = 0,0
 win_shifts,loss_shifts = [],[]
 ## Lets assume their estimate is correct.
 
-age = 50
-size = 47
+params.age = 50
+params.size = 47
 ## Some helpful functions:
 ## Build copies of f0 with naive priors
 def build_fish(idx,f0):
-    return Fish(idx,size=f0.size,prior=True,effort_method=params.effort_method,fight_params=params.outcome_params,update_method=params.u_method,likelihood=f0.naive_likelihood,acuity=f0.acuity,insight=f0.insight)
+    return Fish(idx,f0.params)
 
-def check_success(f,f_match):
-    fight = Fight(f,f_match,outcome_params=params.outcome_params)
+def check_success(f,f_match,params):
+    fight = Fight(f,f_match,params)
     fight.run_outcome()
     return fight,fight.outcome
 
@@ -70,7 +71,7 @@ def build_results(n_matches=1):
 ## Dict to convert from outcome to letters
 conversion_dict = {0:'w',1:'l'}
 
-f0 = Fish(1,age=age,size=47,prior=True,effort_method=params.effort_method,fight_params=params.outcome_params,update_method=params.u_method,acuity=0,insight=False)
+f0 = Fish(1,params)
 n_matches = 3
 fishes = []
 match_results = build_results(n_matches)
@@ -82,9 +83,12 @@ for i in range(iterations):
 
     ## Run all matches
     for m in range(n_matches):
-        match,outcome =check_success(f,f_match)
+        print('f_before:',f.estimate)
+        match,outcome =check_success(f,f_match,params)
         f.update(1-outcome,match)
         #f.decay_prior(store=False)
+        print(f.effort,f_match.effort)
+        print('f_after:',f.estimate)
         match_results[results_str].append(1-outcome)
         results_str += conversion_dict[outcome]
 

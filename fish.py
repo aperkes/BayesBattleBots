@@ -913,7 +913,7 @@ class Fish:
 ## This function is a mess. Need to break it up for sure.
     def choose_effort(self,f_opp,fight,strategy=None):
         if self.discrete:
-            return self.choose_effort_discrete(f_opp,strategy)
+            return self.choose_effort_discrete(f_opp,fight,strategy)
         if strategy is None:
             strategy = self.params.effort_method
 ## The latter strategy here is more in keeping with the probabilistic mutual assessment, just against an average fish
@@ -1000,12 +1000,12 @@ class Fish:
         if np.random.random() > .9:
             effort = np.random.random()
         else:
-            effort = self.choose_effort(f_opp)
+            effort = self.choose_effort(f_opp,fight)
 
         return effort
 
     def choose_effort_energy(self,f_opp,fight,strategy=None):
-        effort = self.choose_effort(f_opp,strategy)
+        effort = self.choose_effort(f_opp,fight,strategy)
 ## A slightly more careful strategy, invests a proportion of available energy, should generally avoid death
         if True:
             effort = self.energy * (effort ** self.c_aversion)
