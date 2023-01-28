@@ -20,10 +20,10 @@ from tqdm import tqdm
 import random, copy
 import itertools
 
-s,e,l = .6,.3,.1
+#s,e,l = .6,.3,.1
 
 params = Params()
-if False:
+if True:
     params.effort_method = 'SmoothPoly'
 else:
     params.effort_method = [0,.5]
@@ -40,7 +40,7 @@ params.n_fish = 5
 params.f_method = 'balanced'
 params.u_method = 'bayes'
 params.f_outcome = 'math'
-params.outcome_params = [s,e,l]
+#params.outcome_params = [s,e,l]
 params.set_L()
 
 #s = Simulation(params)

@@ -83,8 +83,11 @@ class Fish:
         elif params.prior is not None:
             self.prior = params.pior
         else:
-            prior = self._prior_size(self.age,xs=self.xs)
-            self.prior = prior / np.sum(prior)
+            self.estimate = np.clip(np.random.normal(self.size,self.awareness),7,100)
+            prior = norm.pdf(self.xs,self.estimate,self.awareness)
+            self.prior = prior/ np.sum(prior)
+            #prior = self._prior_size(self.age,xs=self.xs)
+            #self.prior = prior / np.sum(prior)
         ## Define the rules one when to escalate, based on confidence
         #self.escalation_thresholds = escalation
         self.cdf_prior = self._get_cdf_prior(self.prior)
@@ -559,12 +562,14 @@ class Fish:
             wager_array[:wager_index] = x_wager[:wager_index] / o_wager[:wager_index]
             wager_array[wager_index:] = o_wager[wager_index:] / x_wager[wager_index:]
 
-        L = np.tan((np.pi - l)/2) ## calculate this once to speed things up
+        #L = np.tan((np.pi - l)/2) ## calculate this once to speed things up
+        L = self.params.L
         likelihood = self._wager_curve_smart(wager_array,L)
         if win: ## since likelihood is the probability of what happened, and wager_array was p(upset)
             likelihood[wager_index:] = 1 - likelihood[wager_index:]
         else:
             likelihood[:wager_index] = 1 - likelihood[:wager_index]
+## PDB
         return likelihood
 
 ## This also includes opponent assesment...need to fix that
@@ -597,22 +602,26 @@ class Fish:
         
         return self.prior,self.estimate
    
+    def calculate_cost(self,win,fight,other_fish):
+        if not other_fish.alive:
+            cost = 0
+        elif not win:
+            cost = self.effort
+        elif self.size >= other_fish.size: 
+            #cost = min([fight.fish1.wager,fight.fish2.wager])
+            cost = min([self.effort,other_fish.wager]) 
+        else: ## if a smaller fish wins, the bigger fish's effort is scaled up, but no more than effort spent
+            if self.effort == 0:
+                cost = 0
+            else:
+                cost = np.nanmin([self.effort,other_fish.wager * (other_fish.wager / self.wager)])
+        return cost
+
     def update_energy(self,win,fight):
         #print('in update energy:',fight)
         if win:
             other_fish = fight.loser
-            if not other_fish.alive:
-                cost = 0
-            elif self.size >= other_fish.size: 
-                #cost = min([fight.fish1.wager,fight.fish2.wager])
-                cost = min([self.effort,other_fish.wager]) 
-            else: ## if a smaller fish wins, the bigger fish's effort is scaled up, but no more than effort spent
-                #print('How did I lose???')
-                #print(self.effort,other_fish.size,other_fish.effort,fight.params)
-                if self.effort == 0:
-                    cost = 0
-                else:
-                    cost = np.nanmin([self.effort,other_fish.wager * (other_fish.wager / self.wager)])
+            cost = self.calculate_cost(win,fight,other_fish)
             if fight.food is not None:
                 if fight.food > 0:
                     #print('pre energy:',self.energy,'cost:',cost)
@@ -645,8 +654,7 @@ class Fish:
         self.size_record.append(self.size)
         self.energy_record.append(self.energy)
 
-        self.win_record.append([other_fish.size,win,self.effort,cost])
-        return other_fish
+        return other_fish,cost
 
 ## For testing what happens if you just don't update ever
     def no_update(self,win,fight):
@@ -668,8 +676,16 @@ class Fish:
         size_idx = np.argmax(self.xs >= self.size)
         size_possible_pre = self.prior[size_idx] > 0
 ## Establish fishes and impose costs and benefits
-        other_fish = self.update_energy(win,fight) # This currently updates win record, not ideal
+        if self.params.energy_cost:
+            other_fish,cost = self.update_energy(win,fight) # This currently updates win record, not ideal
+        else:
+            if win:
+                other_fish = fight.loser
+            else:
+                other_fish = fight.winner
+            cost = self.calculate_cost(win,fight,other_fish)
 ## Get likelihood function
+        self.win_record.append([other_fish.size,win,self.effort,cost])
         if self.params.effort_method[1] == 0:
 
             likelihood = self._use_simple_likelihood(fight,win)
