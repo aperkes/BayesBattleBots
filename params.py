@@ -12,7 +12,7 @@ class Params():
                 effort_method='SmoothPoly',baseline_effort=.2,update_method='bayes',  ## Fish Params
                 age=50,size=None,prior=None,likelihood=None,likelihood_dict=None,
                 xs=np.linspace(7,100,500),r_rhp=0,a_growth=True,c_aversion=1,
-                max_energy=1,start_energy=0.5,
+                max_energy=1,start_energy=0.5,effort_exploration=0.1,
                 acuity=10,pre_acuity=10,post_acuity=0,awareness=10,insight=True,
                 poly_param_a = 3,poly_param_b=-2.4,poly_param_c=0.1,
                 mutant_effort=[1,1],mutant_update='bayes',mutant_prior=None,
@@ -46,6 +46,7 @@ class Params():
         self.outcome = None
 ## Fish Params
         self.effort_method = effort_method     ## self-assessment vs opponent assessment, [1,1] is MA
+        self.effort_exploration = effort_exploration
         self.baseline_effort = baseline_effort
         self.update_method = update_method     ## how individuals update their self assessment
         self.age = age

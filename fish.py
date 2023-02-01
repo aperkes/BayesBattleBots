@@ -160,6 +160,8 @@ class Fish:
         elif effort_method == 'SmoothPoly':
             #self._choose_effort = self.poly_effort_prob
             self._choose_effort = self.poly_effort_combo
+        elif effort_method == 'ExplorePoly':
+            self._choose_effort = self.poly_explore
         else:
             self._choose_effort = self.choose_effort_energy
 
@@ -836,6 +838,14 @@ class Fish:
         else:
             effort = 0
         return effort * self.energy
+
+    def poly_explore(self,f_opp,fight):
+        if np.random.random() < self.params.effort_exploration:
+            effort = np.random.random()
+            effort = effort * self.energy
+        else:
+            effort = self.poly_effort_combo(f_opp,fight)
+        return effort
 
     def poly_effort_combo(self,f_opp,fight):
         order = 1
