@@ -839,7 +839,7 @@ class Fish:
 
     def poly_effort_combo(self,f_opp,fight):
         order = 1
-        opp_size_guess = np.random.normal(f_opp.size,self.acuity)
+        opp_size_guess = np.clip(np.random.normal(f_opp.size,self.acuity),7,100)
         self.guess = opp_size_guess
         s,e,l = self.params.outcome_params
         if opp_size_guess > self.estimate: 
