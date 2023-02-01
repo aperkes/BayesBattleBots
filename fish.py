@@ -608,10 +608,10 @@ class Fish:
             print('#### RESTORING ENERGY #####')
             self.energy = self.max_energy 
         if self.energy <= 0:
-            print('I am dying!',fight.level,cost,self.energy,self.effort,self.params.mutant,self.idx)
+            #print('I am dying!',fight.level,cost,self.energy,self.effort,self.params.mutant,self.idx)
             self.energy = 0
             self.alive = False
-            print(self.energy_record)
+            #print(self.energy_record)
         self.size_record.append(self.size)
         self.energy_record.append(self.energy)
 

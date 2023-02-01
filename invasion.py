@@ -73,8 +73,8 @@ else: ## .5 invasion of 100%
 
 params.f_outcome = 'math'
 params.outcome_params = [0.6,0.3,.05]
-params.generations = 10
-params.iterations = 5 
+params.generations = 20
+params.iterations = 10 
 params.fitness_ratio = 0.1
 params.death=True
 params.food=1
@@ -96,7 +96,7 @@ for mutation_cost in [0.0]:
 #for i in range(params.iterations):
     for i in tqdm(range(params.iterations)):
         count = 0
-        n_mutants = 2
+        n_mutants = 10
         m_trajectories[i,0] = n_mutants
         while n_mutants < params.n_fish and count < params.generations - 1:
             if n_mutants == 0:
