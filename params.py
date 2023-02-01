@@ -4,26 +4,30 @@ import numpy as np
 import copy
 
 class Params():
-    def __init__(self,n_iterations=1000,                    ## Sim Params
+    def __init__(self,iterations=1000,print_me=False,     ## Sim Params
                 n_fish=4,n_rounds=200,f_method='random',    ## Tank params
                 energy_refill=0.5,energy_cost=True,n_fights=10,
-                fitness_ratio=None,death=False,food=0.5,
+                fitness_ratio=None,death=False,food=0.5,free_food=0,
                 f_outcome='math',outcome_params=[.3,.3,.3], ## Fight Params
-                effort_method=[1,1],update_method='bayes',  ## Fish Params
+                effort_method='SmoothPoly',baseline_effort=.2,update_method='bayes',  ## Fish Params
                 age=50,size=None,prior=None,likelihood=None,likelihood_dict=None,
                 xs=np.linspace(7,100,500),r_rhp=0,a_growth=True,c_aversion=1,
                 max_energy=1,start_energy=0.5,
-                acuity=10,pre_acuity=10,post_acuity=1,awareness=10,insight=True,
+                acuity=10,pre_acuity=10,post_acuity=0,awareness=10,insight=True,
+                poly_param_a = 3,poly_param_b=-2.4,poly_param_c=0.1,
                 mutant_effort=[1,1],mutant_update='bayes',mutant_prior=None,
 
                 verbose=False):                             ## Other params
 ## Sim params
-        self.n_iterations = n_iterations
+        self.n_iterations = iterations ## Deprecated
+        self.iterations = iterations
+        self.print_me = print_me
         self.mutant_effort = mutant_effort
         self.mutant_update = mutant_update
         self.mutant_prior = mutant_prior
 ## Tank Params
         self.n_fish = n_fish
+        self.n_npcs = 0
         self.n_rounds = n_rounds
         self.f_method = f_method ## this defines how much fish can pick their opponents
         self.energy_refill=0.5
@@ -32,13 +36,17 @@ class Params():
         self.fitness_ratio=fitness_ratio
         self.death=death
         self.food=food
+        self.free_food=free_food
 
 ## Fight Params
         self.f_outcome = f_outcome ## This defines how fights are determined.
         self.outcome_params = outcome_params   ## This determines how fights are settled, skill,effort,luck
+        self.L = np.tan((np.pi - outcome_params[2])/2)
+        self.L_set = False
         self.outcome = None
 ## Fish Params
         self.effort_method = effort_method     ## self-assessment vs opponent assessment, [1,1] is MA
+        self.baseline_effort = baseline_effort
         self.update_method = update_method     ## how individuals update their self assessment
         self.age = age
         self.size = size
@@ -56,12 +64,26 @@ class Params():
         self.post_acuity=post_acuity
         self.awareness=awareness
         self.insight=insight
+        self.poly_param_a = poly_param_a
+        self.poly_param_b = poly_param_b
+        self.poly_param_c = poly_param_c
+        self.poly_step = 0.1
+
 ## General Params
         self.verbose=verbose
         self.mutant=False
         
     def copy(self):
         return copy.deepcopy(self)
+    
+## (deprecated)
+    def get_L(self):
+        print('get_L is deprecated, use set_L')
+        self.L = np.tan((np.pi - self.outcome_params[2])/2)
+
+    def set_L(self):
+        self.L = np.tan((np.pi - self.outcome_params[2])/2)
+        self.L_set = True
 
     def _mutate(self):
         self.effort_method = self.mutant_effort

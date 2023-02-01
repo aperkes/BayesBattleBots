@@ -49,11 +49,11 @@ if False:
 ## Estimate invasion
 elif True:
     params.effort_method = [None,0.1]
-    params.mutant_effort = 'PerfectNudge' ## Obviously perfect should be better. 
-    params.mutant_prior = True
-    #params.mutant_effort = 'Estimate'
-    params.acuity = 20
-    params.awareness = 20
+    params.mutant_effort = 'PerfectPoly' ## Obviously perfect should be better. 
+    params.mutant_prior = 5
+    #params.mutant_effort = 'EstimatePoly'
+    params.acuity = 5
+    params.awareness = 5
 
     params.update_method = None
     params.mutant_update = None
@@ -73,7 +73,7 @@ else: ## .5 invasion of 100%
 
 params.f_outcome = 'math'
 params.outcome_params = [0.6,0.3,.05]
-params.generations = 20
+params.generations = 50
 params.iterations = 10 
 params.fitness_ratio = 0.1
 params.death=True
@@ -88,7 +88,7 @@ mutation_cost = .1
 
 fig,ax = plt.subplots()
 
-for mutation_cost in [0.0]:
+for mutation_cost in [0.0,0.1,0.2,0.3]:
     ess_count = 0
     gen_count = []
     m_trajectories = np.empty([params.iterations,params.generations])
@@ -120,12 +120,13 @@ for mutation_cost in [0.0]:
             alive = [f.alive for f in fishes]
 
             mutant_fitness = sum([fitness[m] for m in range(n_mutants)])
-            print('mutant fitness',mutant_fitness)
             other_fitness = sum(fitness[1:])
             mutant_ratio = mutant_fitness / sum(fitness)
             n_mutants = int(params.n_fish * mutant_ratio)
-            print('total fitness',sum(fitness),fitness)
-            print('n_mutant offspring:',n_mutants, 'of',params.n_fish)
+
+            #print('mutant fitness',mutant_fitness)
+            #print('total fitness',sum(fitness),fitness)
+            #print('n_mutant offspring:',n_mutants, 'of',params.n_fish)
             count += 1
             #print(n_mutants)
             m_trajectories[i,count] = n_mutants

@@ -15,12 +15,12 @@ from matplotlib import cm
 
 from tqdm import tqdm
 
-from fish import Fish
+from fish import Fish,FishNPC
 from fight import Fight
 from params import Params
 
 class Tank():
-    def __init__(self,fishes,params=None,fight_list = None,
+    def __init__(self,fishes,params=None,fight_list = None,npc_params=None
                  #n_fights = 10,
                  #f_method='balanced',f_outcome='math',f_params=[.3,.3,.3],
                  #effort_method=[1,1],u_method='bayes',scale=.1,fitness_ratio=None,death=False,food=1
@@ -28,12 +28,14 @@ class Tank():
         if params is None:
             params = Params()
         self.params = params
+        self.npc_params = npc_params
         self.fishes = fishes
         self.n_fish = len(fishes)
         self.sizes = [f.size for f in fishes]
         self.f_method = params.f_method
         self.f_outcome = params.f_outcome
         self.f_params = params.outcome_params
+        self.params.get_L() ## confirm that the L is right
         self.u_method = params.update_method
         #self.scale = params.scale
         self.win_record = np.zeros([len(fishes),len(fishes)])
@@ -42,6 +44,9 @@ class Tank():
         self.food = params.food
         if fight_list is not None:
             self.fight_list = fight_list
+        elif npc_params is not None:
+            self.npc_params = npc_params
+            self.fight_list = self.get_npc_fights(npc_params.n_npcs,params.n_fights)
         else:
             self.fight_list = self.get_matchups(self.f_method,self.f_outcome,params.n_fights)
 
@@ -76,6 +81,28 @@ class Tank():
         for f in self.fishes:
             f.likelihood_dict = likelihood_dict
 
+    def get_npc_fights(self,n_npcs=0,n_fights=10):
+        fight_list = []
+
+        if n_npcs == 0:
+            n_npcs = len(self.fishes)
+        if self.npc_params.real_fish:
+            self.npcs = [Fish(n,self.npc_params) for n in range(n_npcs)]
+        else:
+            self.npcs = [FishNPC(n,self.npc_params) for n in range(n_npcs)]
+        npc_sizes = [n.size for n in self.npcs]
+        fish_sizes = [f.size for f in self.fishes]
+        #print('NPC vs Fish',np.mean(npc_sizes),np.mean(fish_sizes))
+        for i in range(n_fights):
+            for n in self.npcs:
+                for f in self.fishes:
+                    fight_list.append(Fight(f,n,self.params,idx=i))
+        random.shuffle(fight_list)
+        if self.fitness_ratio is not None:
+            for i in range(0,len(fight_list),int(1/self.fitness_ratio)):
+                fight_list[i].food = False
+        return fight_list
+
     def get_matchups(self,f_method='balanced',f_outcome='chance',n_fights=10):
         fight_list = []
 
@@ -100,10 +127,11 @@ class Tank():
 
     def process_fight(self,fight): ## This works without returning because of how objects work in python
         fight.run_outcome()
-
+        #print('/nbefore:',fight.winner.energy,fight.loser.energy)
         fight.winner.update(True,fight)
         fight.loser.update(False,fight)
 
+        #print('after:',fight.winner.energy,fight.loser.energy)
         #return fight.winner,fight.loser
         self.win_record[fight.winner.idx,fight.loser.idx] += 1
         self.history[fight.idx,fight.winner.idx,fight.loser.idx] = 1 ## Note, this works a bit different for 'random' and 'balanced'
@@ -157,6 +185,11 @@ class Tank():
                         c.outcome = None
                     continue
             process(c)
+            if False:
+                if c.loser.params.mutant is True and c.loser.effort > 0:
+                    print('Loser Mutants!')
+                    import pdb
+                    pdb.set_trace()
             if plot_stuff:
                 if c.fish1.idx == 0:
                     ax.plot(c.fish1.naive_likelihood,alpha=.2)
@@ -164,7 +197,7 @@ class Tank():
             if print_me:
                 print('UPDATE:_____')
                 print(c.summary())
-                self.print_status()
+                #self.print_status()
         if plot_stuff:
             return fig,ax
 
