@@ -726,22 +726,27 @@ class Fish:
     def update_linear(self,win,fight):
         #m = self.params.poly_params_m
         #b = self.params.poly_params_b
-        b = 1
-        m = 0.3 
+        b = 0
+        m = 0.1 
+
         if win:
+            other_fish = fight.loser
             from_max = self.params.max_size - self.estimate
             shift = from_max*m + b
         else:
+            other_fish = fight.winner
             from_min = self.estimate - self.params.min_size
             shift = -1 * from_min*m - b
         #print(win,shift)
         new_estimate = self.estimate + shift
-        new_estimate = np.clip(7,100,new_estimate)
+        new_estimate = np.clip(new_estimate,7,100)
 ## bit of a hack
         prior = norm.pdf(self.xs,new_estimate,self.awareness)
         self.estimate = new_estimate
         self.prior = prior / np.sum(prior)
         self.est_record.append(self.estimate)
+        cost = None
+        self.win_record.append([other_fish.size,win,self.effort,cost])
         return self.prior,self.estimate
 
     def decay_prior(self,store=False):

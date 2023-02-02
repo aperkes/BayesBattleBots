@@ -39,8 +39,8 @@ def run_tanks(params=Params(),pre_rounds=0,progress=False):
 
         if focal_fish.estimate < 8 or focal_fish.estimate > 99:
             drop_count += 1
-            #pass
-            continue
+            pass
+            #continue
         matched_fish.size = focal_fish.size
         match = Fight(matched_fish,focal_fish,params,outcome=np.random.randint(2))
         outcome = match.run_outcome()
@@ -59,10 +59,10 @@ def run_tanks(params=Params(),pre_rounds=0,progress=False):
 
 s,e,l = .6,.3,.01
 
-max_fights = 30
+max_fights = 20
 
 params_bayes = Params()
-params_bayes.iterations = 1000
+params_bayes.iterations = 100
 params_bayes.effort_method = 'SmoothPoly'
 params_bayes.n_fights = 5
 params_bayes.n_fish = 5
@@ -147,6 +147,13 @@ ax.fill_between(xs,linear_loss_ys-linear_loss_errs,linear_loss_ys + linear_loss_
 
 print('n winners, n_losers')
 print(len(results_linear[0]),len(results_linear[1]))
+
+for l in losers_linear:
+    print(l.est_record[-2:])
+    print(l.estimate)
+
+#import pdb
+#pdb.set_trace()
 
 if params_bayes.plot_me:
     plt.show()
