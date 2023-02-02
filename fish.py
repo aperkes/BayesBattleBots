@@ -119,6 +119,8 @@ class Fish:
         elif update_method == 'fixed':
             self.update = self._set_boost
             self.discrete = True
+        elif update_method == 'linear':
+            self.update = self.update_linear
         elif update_method == 'decay':
             self.update = self._set_boost
             self.discrete = True
@@ -670,7 +672,8 @@ class Fish:
                 print(fight.fish1.effort,fight.fish2.effort)
                 print(fight.fish1.wager,fight.fish2.wager)
                 print('calculated p_win:',fight.p_win,'\n')
-        self.update_energy(win,fight)
+        if self.energy_cost:
+            self.update_energy(win,fight)
         return self.prior,self.estimate
 
 # Updates the prior and handles food and cost. Should probably be rebuilt eventually
@@ -718,6 +721,27 @@ class Fish:
         self.estimate = estimate
         self.est_record.append(estimate)
         size_possible_post = self.prior[size_idx] > 0
+        return self.prior,self.estimate
+
+    def update_linear(self,win,fight):
+        #m = self.params.poly_params_m
+        #b = self.params.poly_params_b
+        b = 1
+        m = 0.3 
+        if win:
+            from_max = self.params.max_size - self.estimate
+            shift = from_max*m + b
+        else:
+            from_min = self.estimate - self.params.min_size
+            shift = -1 * from_min*m - b
+        #print(win,shift)
+        new_estimate = self.estimate + shift
+        new_estimate = np.clip(7,100,new_estimate)
+## bit of a hack
+        prior = norm.pdf(self.xs,new_estimate,self.awareness)
+        self.estimate = new_estimate
+        self.prior = prior / np.sum(prior)
+        self.est_record.append(self.estimate)
         return self.prior,self.estimate
 
     def decay_prior(self,store=False):

@@ -5,7 +5,7 @@
 from fish import Fish
 from fight import Fight
 from tank import Tank
-from simulation import Simulation,SimParams
+from params import Params
 
 import numpy as np
 from matplotlib import pyplot as plt
@@ -18,22 +18,22 @@ import random, copy
 
 s,e,l = .6,.3,.01
 
-params_bayes = SimParams()
+params_bayes = Params()
 params_bayes.effort_method = [1,1]
 params_bayes.n_fights = 5
 params_bayes.n_fish = 5
 params_bayes.f_method = 'balanced'
 params_bayes.f_outcome = 'math'
 params_bayes.outcome_params = [s,e,l]
+params_bayes.set_L()
 params_bayes.u_method = 'bayes'
 
 params_boost = copy.deepcopy(params_bayes)
 params_boost.u_method = 'size_boost'
-#s = Simulation(params)
 
 NAIVE = True
 
-def run_tanks(naive=True,params=SimParams()):
+def run_tanks(naive=True,params=Params()):
     drop_count = 0
     winners,losers = [],[]
     PLOT = 'estimate'
@@ -41,19 +41,20 @@ def run_tanks(naive=True,params=SimParams()):
 ## Let fish duke it out, then pull a fish out, check it's success against a size matched fish, and put it back in
     iterations = 500
     scale = 1
-    f0 = Fish(0,effort_method=params.effort_method,update_method=params.u_method)
+    f0 = Fish(0,params)
     results = [[],[]]
     if naive:
         pre_rounds = 0
     else:
         print('doing pre rounds this time')
-        pre_rounds = 20
+        pre_rounds = 5
+    params.n_fights = pre_rounds
     for i in tqdm(range(iterations)):
 #for i in range(iterations):
-        fishes = [Fish(f,likelihood=f0.naive_likelihood,effort_method=params.effort_method,update_method=params.u_method) for f in range(params.n_fish)]
-        tank = Tank(fishes,n_fights = pre_rounds,f_params=params.outcome_params,f_method=params.f_method,f_outcome=params.f_outcome,u_method=params.u_method)
-        tank._initialize_likelihood() ## This is super important, without intiializing it, it takes ages. 
-        tank.run_all(False)
+        fishes = [Fish(f,params,likelihood=f0.naive_likelihood) for f in range(params.n_fish)]
+        tank = Tank(fishes,params)
+        tank._initialize_likelihood() ## This used to be super important, without intiializing it, it takes ages. 
+        tank.run_all(progress=False)
 
         focal_fish = fishes[0]
         if focal_fish.estimate < 8 or focal_fish.estimate > 99:
@@ -64,12 +65,12 @@ def run_tanks(naive=True,params=SimParams()):
         #matched_fish = Fish(0,size=focal_fish.size,prior=True,effort_method=params.effort_method,update_method=params.u_method)
         matched_fish = copy.deepcopy(focal_fish)
         matched_fish.idx = 10
-        match = Fight(matched_fish,focal_fish,outcome_params=params.outcome_params,outcome=np.random.randint(2))
+        match = Fight(matched_fish,focal_fish,params,outcome=np.random.randint(2))
         outcome = match.run_outcome()
         focal_fish.update(outcome,match)
 
 
-        match2 = Fight(matched_fish,focal_fish,outcome_params=params.outcome_params)
+        match2 = Fight(matched_fish,focal_fish,params)
         test_outcome = match2.run_outcome()
         if outcome == 1:
             winners.append(focal_fish)
@@ -77,7 +78,7 @@ def run_tanks(naive=True,params=SimParams()):
             losers.append(focal_fish)
         results[outcome].append(test_outcome)
 
-        tank2 = Tank(fishes,n_fights = params.n_fights,f_params=params.outcome_params,f_method=params.f_method,f_outcome=params.f_outcome,u_method=params.u_method)
+        tank2 = Tank(fishes,params)
         tank2.run_all(False)
     print('dropped n crappy fish:',drop_count)
     return winners,losers,results

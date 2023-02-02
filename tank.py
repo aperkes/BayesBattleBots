@@ -35,7 +35,8 @@ class Tank():
         self.f_method = params.f_method
         self.f_outcome = params.f_outcome
         self.f_params = params.outcome_params
-        self.params.get_L() ## confirm that the L is right
+        if not self.params.L_set:
+            self.params.set_L() ## confirm that the L is right
         self.u_method = params.update_method
         #self.scale = params.scale
         self.win_record = np.zeros([len(fishes),len(fishes)])

@@ -6,13 +6,13 @@ import copy
 class Params():
     def __init__(self,iterations=1000,print_me=False,     ## Sim Params
                 n_fish=4,n_rounds=200,f_method='random',    ## Tank params
-                energy_refill=0.5,energy_cost=True,n_fights=10,
+                energy_refill=0.5,energy_cost=False,n_fights=10,
                 fitness_ratio=None,death=False,food=0.5,free_food=0,
                 f_outcome='math',outcome_params=[.3,.3,.3], ## Fight Params
                 effort_method='SmoothPoly',baseline_effort=.2,update_method='bayes',  ## Fish Params
                 age=50,size=None,prior=None,likelihood=None,likelihood_dict=None,
                 xs=np.linspace(7,100,500),r_rhp=0,a_growth=True,c_aversion=1,
-                max_energy=1,start_energy=0.5,effort_exploration=0.1,
+                max_energy=1,start_energy=1,effort_exploration=0.1,
                 acuity=10,pre_acuity=10,post_acuity=0,awareness=10,insight=True,
                 poly_param_a = 3,poly_param_b=-2.4,poly_param_c=0.1,
                 mutant_effort=[1,1],mutant_update='bayes',mutant_prior=None,
@@ -55,6 +55,8 @@ class Params():
         self.likelihood=likelihood
         self.likelihood_dict=likelihood_dict
         self.xs=xs
+        self.max_size = 100
+        self.min_size = 7
         self.r_rhp = r_rhp
         self.a_growth=a_growth
         self.c_aversion=c_aversion
