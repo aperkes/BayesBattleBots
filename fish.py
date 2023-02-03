@@ -58,23 +58,20 @@ class Fish:
         self.acuity = params.acuity
         self.awareness = params.awareness
         self.insight = params.insight
-        self.params.poly_param_a = params.poly_param_a
-        self.params.poly_param_b = params.poly_param_b
+        #self.params.poly_param_a = params.poly_param_a
+        #self.params.poly_param_b = params.poly_param_b
 
         if params.size is not None:
-            if params.size == 0:   
-                self.size = self._growth_func(self.age)
-            else:
-                self.size = params.size
+            self.size = params.size
         else:
-            mean = self._growth_func(self.age)
-            sd = mean/5
-            self.size = np.random.normal(mean,sd)
+            self.size = np.random.normal(self.params.mean_size,self.params.sd_size)
+        self.size = np.clip(self.size,self.params.min_size,self.params.max_size)
+        self.params.size = self.size
         if params.prior == True:
             self.prior = norm.pdf(self.xs,self.size,self.size/5)
             self.prior = self.prior / np.sum(self.prior)
         elif isinstance(params.prior,int):
-            self.estimate = np.clip(np.random.normal(self.size,self.awareness),7,100)
+            self.estimate = np.clip(np.random.normal(self.size,self.awareness),self.params.min_size,self.params.max_size)
             if params.prior == -1:
                 self.prior = np.ones_like(self.xs) / len(self.xs)
             else:
@@ -83,7 +80,7 @@ class Fish:
         elif params.prior is not None:
             self.prior = params.pior
         else:
-            self.estimate = np.clip(np.random.normal(self.size,self.awareness),7,100)
+            self.estimate = np.clip(np.random.normal(self.size,self.awareness),self.params.min_size,self.params.max_size)
             prior = norm.pdf(self.xs,self.estimate,self.awareness)
             self.prior = prior/ np.sum(prior)
             #prior = self._prior_size(self.age,xs=self.xs)
@@ -186,9 +183,10 @@ class Fish:
         ## Define naive prior/likelihood for 'SA'
         self.naive_params = params.outcome_params
 ## This should be an average fish.
-        naive_prior = self._prior_size(self.age,xs=self.xs)
-        self.naive_prior = naive_prior / np.sum(naive_prior)
-        self.naive_estimate = np.sum(self.prior * self.xs / np.sum(self.prior))
+        #naive_prior = self._prior_size(self.age,xs=self.xs)
+        self.naive_prior = np.array(self.prior)
+        #self.naive_estimate = np.sum(self.prior * self.xs / np.sum(self.prior))
+        self.naive_estimate = self.estimate
         if params.likelihood is not None:
             #print('using existing likelihood')
             self.naive_likelihood = params.likelihood
@@ -237,7 +235,7 @@ class Fish:
             other_fish = fight.winner
             self.estimate -= shift
             self.estimate_ -= shift
-        self.estimate = np.clip(self.estimate,7,100)
+        self.estimate = np.clip(self.estimate,self.params.min_size,self.params.max_size)
         self.win_record.append([other_fish.size,win,self.effort])
         self.est_record.append(self.estimate)
 
@@ -277,8 +275,8 @@ class Fish:
         prior = norm.pdf(xs,s_mean,sd)
         return prior / np.sum(prior)
 
-    def _growth_func(self,t,s_max = 100):
-        size = 7 + s_max - s_max/np.exp(t/100)
+    def _growth_func(self,t):
+        size = 7 + self.params.max_size - self.params.max_size/np.exp(t/100)
         return size
     
     def _win_by_ratio(self,r, k=0.1,m=0):
@@ -724,10 +722,10 @@ class Fish:
         return self.prior,self.estimate
 
     def update_linear(self,win,fight):
-        #m = self.params.poly_params_m
-        #b = self.params.poly_params_b
-        b = 0
-        m = 0.1 
+        m = self.params.poly_param_m
+        b = self.params.poly_param_b
+        #b = 0
+        #m = 0.1 
 
         if win:
             other_fish = fight.loser
@@ -739,7 +737,7 @@ class Fish:
             shift = -1 * from_min*m - b
         #print(win,shift)
         new_estimate = self.estimate + shift
-        new_estimate = np.clip(new_estimate,7,100)
+        new_estimate = np.clip(new_estimate,self.params.min_size,self.params.max_size)
 ## bit of a hack
         prior = norm.pdf(self.xs,new_estimate,self.awareness)
         self.estimate = new_estimate
@@ -878,7 +876,7 @@ class Fish:
 
     def poly_effort_combo(self,f_opp,fight):
         order = 1
-        opp_size_guess = np.clip(np.random.normal(f_opp.size,self.acuity),7,100)
+        opp_size_guess = np.clip(np.random.normal(f_opp.size,self.acuity),self.params.min_size,self.params.max_size)
         self.guess = opp_size_guess
         s,e,l = self.params.outcome_params
         if opp_size_guess > self.estimate: 
@@ -977,7 +975,7 @@ class Fish:
         if self.acuity == 0:
             opp_size = f_opp.size
         else:
-            opp_size = np.clip(np.random.normal(f_opp.size,self.acuity),7,100)
+            opp_size = np.clip(np.random.normal(f_opp.size,self.acuity),self.params.min_size,self.params.max_size)
         self.opp_estimate = opp_size
         if strategy == 'Perfect' or strategy == 'Estimate':
             #print('Choosing effort:')
@@ -1161,9 +1159,11 @@ class FishNPC(Fish):
             else:
                 self.size = self.params.size
         else:
-            mean = self._growth_func(self.params.age)
-            sd = mean/5
-            self.size = np.random.normal(mean,sd)
+            #mean = self._growth_func(self.params.age)
+            #sd = mean/5
+            self.size = np.random.normal(self.params.mean,self.params.sd)
+        self.size = np.clip(self.size,self.params.min_size,self.params.max_size)
+        self.params.size = self.size
 
         if self.params.baseline_effort == 0 or self.params.baseline_effort is None:
             self.params.baseline_effort = np.random.random()

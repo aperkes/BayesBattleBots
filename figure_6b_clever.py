@@ -66,7 +66,7 @@ linear_loss_ys,linear_loss_errs = np.zeros_like(win_ys),np.zeros_like(win_errs)
 params = params_linear
 
 fishes = [Fish(0,params) for f in range(params.iterations)]
-opp_fishes = [Fish(i + 2) for i in range(max_fights)]
+opp_fishes = [Fish(i + 2,params) for i in range(max_fights)]
 matched_fishes = [Fish(1,f.params) for f in fishes]
 
 win_props = np.empty([max_fights,params.iterations])

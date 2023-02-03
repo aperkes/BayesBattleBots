@@ -8,13 +8,16 @@ class Params():
                 n_fish=4,n_rounds=200,f_method='random',    ## Tank params
                 energy_refill=0.5,energy_cost=False,n_fights=10,
                 fitness_ratio=None,death=False,food=0.5,free_food=0,
+                mean_age=None,mean_size=None,sd_size=None,
+                min_size = 1,max_size = 99,
                 f_outcome='math',outcome_params=[.3,.3,.3], ## Fight Params
                 effort_method='SmoothPoly',baseline_effort=.2,update_method='bayes',  ## Fish Params
                 age=50,size=None,prior=None,likelihood=None,likelihood_dict=None,
-                xs=np.linspace(7,100,500),r_rhp=0,a_growth=True,c_aversion=1,
+                xs=np.linspace(1,99,500),r_rhp=0,a_growth=True,c_aversion=1,
                 max_energy=1,start_energy=1,effort_exploration=0.1,
                 acuity=10,pre_acuity=10,post_acuity=0,awareness=10,insight=True,
-                poly_param_a = 3,poly_param_b=-2.4,poly_param_c=0.1,
+                #poly_param_a = 3,poly_param_b=-2.4,poly_param_c=0.1,
+                poly_param_a = 5,poly_param_b=0,poly_param_c=0.1,poly_param_m=0.1,
                 mutant_effort=[1,1],mutant_update='bayes',mutant_prior=None,
 
                 verbose=False):                             ## Other params
@@ -30,6 +33,18 @@ class Params():
         self.n_npcs = 0
         self.n_rounds = n_rounds
         self.f_method = f_method ## this defines how much fish can pick their opponents
+        self.mean_age = mean_age
+        self.min_size = min_size 
+        self.max_size = max_size
+        if mean_size == None:
+            if self.mean_age is not None:
+                mean_size = self._growth_func(self.mean_age)
+            else:
+                mean_size = (self.max_size + self.min_size) / 2
+        if sd_size == None:
+            sd_size = mean_size/5
+        self.mean_size,self.sd_size = mean_size,sd_size
+
         self.energy_refill=0.5
         self.energy_cost=energy_cost
         self.n_fights = n_fights
@@ -55,8 +70,6 @@ class Params():
         self.likelihood=likelihood
         self.likelihood_dict=likelihood_dict
         self.xs=xs
-        self.max_size = 100
-        self.min_size = 7
         self.r_rhp = r_rhp
         self.a_growth=a_growth
         self.c_aversion=c_aversion
@@ -70,6 +83,7 @@ class Params():
         self.poly_param_a = poly_param_a
         self.poly_param_b = poly_param_b
         self.poly_param_c = poly_param_c
+        self.poly_param_m = poly_param_m
         self.poly_step = 0.1
 
 ## General Params
@@ -94,6 +108,10 @@ class Params():
         self.prior = self.mutant_prior
         self.mutant = True
 
+    def _growth_func(self,t):
+        size = 1 + self.max_size - self.max_size/np.exp(t/100)
+        return size
+   
     def summary(self):
         print('Number iterations:',self.n_iterations)
         print('Number of Fish:',self.n_fish)
