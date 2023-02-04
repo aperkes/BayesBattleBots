@@ -96,8 +96,8 @@ params_fixed = params_bayes.copy()
 params_fixed.update_method = None
 
 params_linear = params_bayes.copy()
-params_linear.poly_param_b = 1
-params_linear.poly_param_m = 0
+params_linear.poly_param_b = 0
+params_linear.poly_param_m = 0.1
 
 params_linear.update_method = 'linear'
 
@@ -115,7 +115,8 @@ fixed_loss_ys,fixed_loss_errs = np.zeros_like(win_ys),np.zeros_like(win_errs)
 linear_win_ys,linear_win_errs = np.zeros_like(win_ys),np.zeros_like(win_errs)
 linear_loss_ys,linear_loss_errs = np.zeros_like(win_ys),np.zeros_like(win_errs)
 
-fishes = [Fish(0,params_bayes) for f in range(params_bayes.iterations)]
+
+fishes = [Fish(0,params_linear) for f in range(params_bayes.iterations)]
 
 for r in range(max_fights):
     #winners_naive,losers_naive,results_naive = run_tanks(params=params_bayes,pre_rounds=0)

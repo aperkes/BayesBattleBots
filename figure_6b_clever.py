@@ -18,10 +18,10 @@ import random, copy
 
 s,e,l = .6,.3,.01
 
-max_fights = 20
+max_fights = 30
 
 params_bayes = Params()
-params_bayes.iterations = 400
+params_bayes.iterations = 300
 params_bayes.effort_method = 'SmoothPoly'
 params_bayes.n_fights = 5
 params_bayes.n_fish = 5
@@ -33,9 +33,6 @@ params_bayes.u_method = 'bayes'
 
 #params_bayes.mean_size = 58.5
 
-params_boost = params_bayes.copy()
-params_boost.u_method = 'size_boost'
-
 npc_params = params_bayes.copy()
 npc_params.baseline_effort = None ## use random effort
 #fig2,ax2 = plt.subplots()
@@ -44,8 +41,8 @@ params_fixed = params_bayes.copy()
 params_fixed.update_method = None
 
 params_linear = params_bayes.copy()
-params_linear.poly_param_b = 1
-params_linear.poly_param_m = 0
+params_linear.poly_param_b = 0
+params_linear.poly_param_m = 0.1
 
 params_linear.update_method = 'linear'
 
@@ -73,31 +70,51 @@ win_props = np.empty([max_fights,params.iterations])
 loss_props = np.empty_like(win_props)
 
 for i in tqdm(range(params.iterations)):
+    #random.shuffle(opp_fishes)
+    #opp_fishes = 
+    opp_fishes = [Fish(i + 2,params) for i in range(max_fights)]
     f = fishes[i]
     matched_fish = matched_fishes[i]
+    #print('New fish!:',f.size)
     for r in range(max_fights):
+        #matched_fish = Fish(1,f.params)
+        #print('pre imagination',f.estimate)
         opp_fish = opp_fishes[r]
         focal_winner = copy.deepcopy(f)
         focal_loser = copy.deepcopy(f)
 
-        win_fight = Fight(matched_fish,focal_winner,params,outcome=0)
-        lose_fight = Fight(matched_fish,focal_loser,params,outcome=1)
+        win_fight = Fight(matched_fish,focal_winner,params,outcome=1)
+        lose_fight = Fight(matched_fish,focal_loser,params,outcome=0)
         
-        win_fight.run_outcome()
-        lose_fight.run_outcome()
-        focal_winner.update(1,win_fight)
-        focal_loser.update(0,lose_fight)
+        win_outcome = win_fight.run_outcome()
+        loss_outcome = lose_fight.run_outcome()
+        #print('\n\nbefore win:',focal_winner.estimate)
+        focal_winner.update(win_outcome,win_fight)
+        #print('after win:',focal_winner.estimate)
+        focal_loser.update(loss_outcome,lose_fight)
 
-        check_post_win = Fight(opp_fish,focal_winner,params)
+        #print(opp_fish.size,focal_winner.size)
+        check_post_win = Fight(matched_fish,focal_winner,params)
         win_props[r,i] = check_post_win.run_outcome()
-
-        check_post_loss = Fight(opp_fish,focal_loser,params)
+        #print('results post win:',win_props[r,i])
+        check_post_loss = Fight(matched_fish,focal_loser,params)
+        #print('going into the fight:',opp_fish.estimate,focal_loser.estimate)
         loss_props[r,i] = check_post_loss.run_outcome()
+        #print(matched_fish.size,focal_winner.size,focal_loser.size)
+        #print(matched_fish.estimate,focal_winner.estimate,focal_loser.estimate)
+        #print('results post loss:',loss_props[r,i])
 
-        real_fight = Fight(matched_fish,f,params)
+        #print('post imagination',f.estimate)
+        real_fight = Fight(f,opp_fish,params)
         real_outcome = real_fight.run_outcome()
-        f.update(real_outcome,real_fight)
+        pre_estimate = f.estimate
+        f.update(1-real_outcome,real_fight)
 
+        #print('post real fight',f.estimate,real_outcome)
+
+opp_sizes = [f.size for f in opp_fishes]
+focal_sizes = [f.size for f in fishes]
+print(np.mean(opp_sizes),np.mean(focal_sizes))
 fig,ax = plt.subplots()
 
 ax.axhline(0.5,color='black',linestyle=':')
@@ -117,6 +134,9 @@ if False:
     ax.plot(xs,fixed_loss_ys,label='fixed_losers',color='black')
     ax.fill_between(xs,fixed_loss_ys-fixed_loss_errs,fixed_loss_ys + fixed_loss_errs,color='gray',alpha=0.5)
 
+linear_win_ys = np.mean(win_props,1)
+linear_win_errs = np.std(win_props,1) / np.sqrt(params.iterations)
+
 ax.plot(xs,linear_win_ys,label='linear_winners',color='green')
 ax.fill_between(xs,linear_win_ys-linear_win_errs,linear_win_ys + linear_win_errs,color='gray',alpha=0.5)
 
@@ -127,6 +147,8 @@ ax.plot(xs,linear_loss_ys,label='linear_losers',color='green')
 ax.fill_between(xs,linear_loss_ys-linear_loss_errs,linear_loss_ys + linear_loss_errs,color='gray',alpha=0.5)
 #import pdb
 #pdb.set_trace()
+for f in fishes:
+    ax.plot(np.array(f.est_record) / f.params.max_size,color='gray',alpha=.1)
 
 if params_bayes.plot_me:
     plt.show()
