@@ -20,6 +20,8 @@ params = Params()
 
 params.update_method = 'linear'
 params.energy_cost = False
+params.poly_param_b = 0
+params.poly_param_m = 0.1
 f = Fish(0,params)
 
 opp_params = params.copy()
@@ -35,9 +37,9 @@ matched_fish = Fish(1,opp_params)
 #matched_fish = FishNPC(1,npc_params)
 print('before:',f.estimate)
 for n in range(100):
-    if True:
+    if False:
         fight = Fight(matched_fish,f,params)
-    elif n % 2:
+    elif n % 3:
         fight = Fight(matched_fish,f,params,outcome=0)
     else:
         fight = Fight(matched_fish,f,params,outcome=1)
@@ -48,6 +50,6 @@ for n in range(100):
 
 fig,ax = plt.subplots()
 ax.plot(f.est_record)    
-ax.axhline(f.size)
+ax.axhline(f.size,color='black')
 plt.show()
 

@@ -42,7 +42,7 @@ params_fixed.update_method = None
 
 params_linear = params_bayes.copy()
 params_linear.poly_param_b = 0
-params_linear.poly_param_m = 0.1
+params_linear.poly_param_m = 0.1 
 
 params_linear.update_method = 'linear'
 
