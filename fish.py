@@ -1167,7 +1167,7 @@ class FishNPC(Fish):
         else:
             #mean = self._growth_func(self.params.age)
             #sd = mean/5
-            self.size = np.random.normal(self.params.mean,self.params.sd)
+            self.size = np.random.normal(self.params.mean_size,self.params.sd_size)
         self.size = np.clip(self.size,self.params.min_size,self.params.max_size)
         self.params.size = self.size
 
