@@ -77,8 +77,9 @@ for n in range(params.n_fish):
 
 opp_fish = Fish(0,opp_params)
 
-print(opp_fish.estimate_)
-print(prior_fishes[0].estimate_,null_fishes[0].estimate_,guess_fishes[0].estimate_)
+print(opp_fish.estimate)
+print(prior_fishes[0].estimate,null_fishes[0].estimate,guess_fishes[0].estimate)
+
 """
 ## Some helpful functions:
 ## Build copies of f0 with naive priors

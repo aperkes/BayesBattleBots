@@ -72,7 +72,7 @@ class Fish:
             self.prior = self.prior / np.sum(self.prior)
         elif isinstance(params.prior,int):
             self.estimate = np.clip(np.random.normal(self.size,self.awareness),self.params.min_size,self.params.max_size)
-            if params.prior is -1:
+            if params.prior == -1:
                 self.prior = np.ones_like(self.xs) / len(self.xs)
             else:
                 self.prior = norm.pdf(self.xs,self.estimate,params.prior)
@@ -89,9 +89,9 @@ class Fish:
         #self.escalation_thresholds = escalation
         self.cdf_prior = self._get_cdf_prior(self.prior)
         est_5,est_25,est_75,est_95 = self._get_range_prior(self.cdf_prior)
-        self.estimate = self.xs[np.argmax(self.prior)]
+        self.estimate_ = self.xs[np.argmax(self.prior)]
         prior_mean,prior_std = self.get_stats()
-        self.estimate_ = prior_mean
+        self.estimate = prior_mean
         #if hock_estimate == 'estimate':
         #    self.hock_estimate = self.estimate
         #else:
@@ -590,7 +590,7 @@ class Fish:
         self.prior = self._update(self.prior,likelihood,xs)
         self.cdf_prior = self._get_cdf_prior(self.prior)
 
-        if True: ## Need to decide which of these to use...
+        if False: ## Need to decide which of these to use...
             estimate = self.xs[np.argmax(self.prior)] ## This is easy, but should it be the mean?
         else:
             estimate = np.sum(self.prior * self.xs / np.sum(self.prior))
@@ -705,20 +705,21 @@ class Fish:
             self.prior = self._decay_flat(self.prior)
         self.cdf_prior = self._get_cdf_prior(self.prior)
         pre_estimate = self.estimate
-        estimate = self.xs[np.argmax(self.prior)]
+        estimate_ = self.xs[np.argmax(self.prior)]
+        prior_mean,prior_std = self.get_stats()
+        estimate = prior_mean
         post_estimate = estimate
         #self.estimate_ = np.sum(self.prior * self.xs / np.sum(self.prior))
-        prior_mean,prior_std = self.get_stats()
-        self.estimate_ =  prior_mean
-        self.est_record_.append(prior_mean)
+        self.estimate =  estimate
+        self.est_record.append(estimate)
 
         self.sdest_record.append(prior_std)
 
         est_5,est_25,est_75,est_95 = self._get_range_prior(self.cdf_prior) 
         self.range_record.append([est_5,est_25,est_75,est_95])
         
-        self.estimate = estimate
-        self.est_record.append(estimate)
+        #self.estimate_ = estimate_
+        #self.est_record_.append(estimate_)
         size_possible_post = self.prior[size_idx] > 0
         return self.prior,self.estimate
 
