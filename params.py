@@ -56,7 +56,8 @@ class Params():
 ## Fight Params
         self.f_outcome = f_outcome ## This defines how fights are determined.
         self.outcome_params = outcome_params   ## This determines how fights are settled, skill,effort,luck
-        self.L = np.tan((np.pi - outcome_params[2])/2)
+        #self.L = np.tan((np.pi - outcome_params[2])/2)
+        self.L = np.tan((np.pi/2 - outcome_params[2]*np.pi/2)/2)
         self.L_set = False
         self.outcome = None
 ## Fish Params
