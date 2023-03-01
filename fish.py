@@ -901,7 +901,7 @@ class Fish:
         #rough_wager = est_ratio ** s * self.energy ** e
         #effort = self.params.poly_param_a * rough_wager ** order + self.params.poly_param_b
 
-        confidence_correction = 1/(1+(self.params.poly_param_c)*np.sqrt(self.acuity**2 + self.awareness**2))
+        confidence_correction = 1/(1+(self.params.poly_param_c)*np.sqrt(self.acuity**2 + self.prior_std**2))
         scaled_effort = effort * confidence_correction
         scaled_effort = np.clip(scaled_effort,0,1)
         if self.params.print_me:
