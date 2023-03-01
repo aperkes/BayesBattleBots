@@ -67,18 +67,18 @@ class Fish:
             self.size = np.random.normal(self.params.mean_size,self.params.sd_size)
         self.size = np.clip(self.size,self.params.min_size,self.params.max_size)
         self.params.size = self.size
-        if params.prior == True:
-            self.prior = norm.pdf(self.xs,self.size,self.size/5)
+        if params.prior is True:
+            self.prior = norm.pdf(self.xs,self.size,self.params.awareness)
             self.prior = self.prior / np.sum(self.prior)
         elif isinstance(params.prior,int):
             self.estimate = np.clip(np.random.normal(self.size,self.awareness),self.params.min_size,self.params.max_size)
-            if params.prior == -1:
+            if params.prior is -1:
                 self.prior = np.ones_like(self.xs) / len(self.xs)
             else:
                 self.prior = norm.pdf(self.xs,self.estimate,params.prior)
                 self.prior = self.prior / np.sum(self.prior)
         elif params.prior is not None:
-            self.prior = params.pior
+            self.prior = params.prior
         else:
             self.estimate = np.clip(np.random.normal(self.size,self.awareness),self.params.min_size,self.params.max_size)
             prior = norm.pdf(self.xs,self.estimate,self.awareness)
