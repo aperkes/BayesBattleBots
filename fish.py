@@ -1137,7 +1137,8 @@ class Fish:
             return False
     def get_stats(self):
         prior_mean = np.sum(self.prior * self.xs / np.sum(self.prior))
-        prior_std = np.sum((self.xs - prior_mean)**2 * self.prior/(np.sum(self.prior)))
+        #prior_std = np.sum((self.xs - prior_mean)**2 * self.prior/(np.sum(self.prior)))
+        prior_std = np.sum((self.prior * (self.xs - prior_mean)**2))
         prior_std = np.sqrt(prior_std)
         self.prior_mean = prior_mean
         self.prior_std = prior_std
