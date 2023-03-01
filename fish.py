@@ -296,7 +296,8 @@ class Fish:
         if l == 0:
             prob_win = 0
         else:
-            L = np.tan((np.pi - l)/2)
+            #L = np.tan((np.pi - l)/2)
+            L = np.tan(np.pi/2 - l*np.pi/2) 
             prob_win = (w**L) / 2
         return prob_win
 

@@ -97,10 +97,10 @@ class Params():
 ## (deprecated)
     def get_L(self):
         print('get_L is deprecated, use set_L')
-        self.L = np.tan((np.pi - self.outcome_params[2])/2)
+        self.L = np.tan((np.pi - np.pi*self.outcome_params[2])/2)
 
     def set_L(self):
-        self.L = np.tan((np.pi - self.outcome_params[2])/2)
+        self.L = np.tan((np.pi - np.pi*self.outcome_params[2])/2)
         self.L_set = True
 
     def _mutate(self):
