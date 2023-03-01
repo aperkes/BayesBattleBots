@@ -65,7 +65,7 @@ for f in range(len(fishes)):
     ax2.set_ylabel('Cost (actual energy spent)')
 from scipy.ndimage import gaussian_filter1d
 
-smooth_costs = gaussian_filter1d(np.median(cost_array,0),3)
+smooth_costs = gaussian_filter1d(np.mean(cost_array,0),3)
 ax2.plot(smooth_costs,color='black')
 
 ## Figure 3c: Estimate over time, to show that bayes is accurate

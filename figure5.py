@@ -114,18 +114,18 @@ loser_estimates, winner_estimates = [],[]
 for f in fishes:
     jitter = np.random.randn() * 1
     jitter = 0
-    ax.plot(np.array(f.est_record_)[:] + jitter,alpha=.008,color='black')
+    ax.plot(np.array(f.est_record)[:] + jitter,alpha=.008,color='black')
     if False:
         if f.win_record[0][1] == 1: ## If you won the first fight
             if f.win_record[1][1] == 0: # but lost the second fight
-                winner_estimates.append(f.est_record_[2])
+                winner_estimates.append(f.est_record[2])
         elif f.win_record[1][1] == 1: # vs if you lost the first fight and won the second fight
-            loser_estimates.append(f.est_record_[2])
+            loser_estimates.append(f.est_record[2])
     if True: ## Get estimates after the first fight
         if f.win_record[0][1] == 1: ## if you won the first fight:
-            winner_estimates.append(f.est_record_[1])
+            winner_estimates.append(f.est_record[1])
         else:
-            loser_estimates.append(f.est_record_[1])
+            loser_estimates.append(f.est_record[1])
 #print(np.mean(match_results['wl']),np.mean(match_results['lw']))
 print(np.mean(winner_estimates),np.mean(loser_estimates))
 print('winners:',max(winner_estimates),min(winner_estimates),np.std(winner_estimates))

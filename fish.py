@@ -712,6 +712,7 @@ class Fish:
         #self.estimate_ = np.sum(self.prior * self.xs / np.sum(self.prior))
         self.estimate =  estimate
         self.est_record.append(estimate)
+        self.est_record_.append(estimate_)
 
         self.sdest_record.append(prior_std)
 
