@@ -9,7 +9,7 @@ from simulation import Simulation
 from params import Params
 
 import numpy as np
-from scipy.stats import binom_test
+from scipy.stats import binom_test,norm
 
 from matplotlib import pyplot as plt
 from matplotlib import cm
@@ -27,13 +27,15 @@ if True:
     params.effort_method = 'SmoothPoly'
 
 params.poly_param_a = 2
+params.poly_param_c = 0.1
 params.n_fights = 50 
+params.size = 50
 params.energy_cost = False
-params.acuity = 0
+params.acuity = 1
 params.awareness = 5
 params.start_energy = 1
 
-params.iterations = 1000
+params.iterations = 10000
 params.n_fish = 5
 params.f_method = 'balanced'
 params.u_method = 'bayes'
@@ -52,34 +54,98 @@ win_count1,win_count2 = 0,0
 win_shifts,loss_shifts = [],[]
 ## Lets assume their estimate is correct.
 
-params.age = 50
-params.size = 47
-prior_params = params.copy()
-null_params = params.copy()
-guess_params = params.copy()
+params.age = 52
+params.size = 50 
+
+## Set up the various fish conditions
+#size_params = params.copy() ## Fish determine prior from their size
+self_params = params.copy() ## fish determine prior from their size/age
+
+big_params = params.copy() ## Fish determine prior from surround fish (controlled to be big)
+big_prior = norm.pdf(params.xs,75,5)
+big_params.prior = big_prior / sum(big_prior)
+
+small_params = params.copy() ## Fish determine prior from surrounding fish (controlled to be small)
+small_prior = norm.pdf(params.xs,25,5)
+small_params.prior = small_prior / sum(small_prior)
+
+null_params = params.copy() ## Fish have null prior
+guess_params = params.copy() ## Fish have random prior (but confident)
+
 guess_params.awareness = 20
 opp_params = params.copy()
 opp_params.prior = True
-opp_params.size = 40
+opp_params.size = 35
 
 ## Uniform prior
 null_params.prior = np.ones_like(null_params.xs) / len(null_params.xs)
 
-prior_fishes = [Fish(n+1,prior_params) for n in range(params.n_fish)]
-null_fishes = [Fish(n+1,null_params) for n in range(params.n_fish)]
-
+self_fishes = [Fish(n+1,self_params) for n in range(params.iterations)]
+null_fishes = [Fish(n+1,null_params) for n in range(params.iterations)]
+big_fishes = [Fish(n+1,big_params) for n in range(params.iterations)]
+small_fishes = [Fish(n+1,small_params) for n in range(params.iterations)]
 guess_fishes = []
-for n in range(params.n_fish):
+## Make sloppy fish confident
+for n in tqdm(range(params.iterations)):
     f = Fish(n+1,guess_params)
-    prior = f.prior ** 5
+    prior = f.prior ** 10
     f.prior = prior / np.sum(prior)
+    f.get_stats()
     guess_fishes.append(f)
+
+for n in tqdm(range(params.iterations)):
+    f = Fish(n+1,guess_params)
 
 opp_fish = Fish(0,opp_params)
 
-print(opp_fish.estimate)
-print(prior_fishes[0].estimate,null_fishes[0].estimate,guess_fishes[0].estimate)
+#print(opp_fish.estimate)
+#print(prior_fishes[0].estimate,null_fishes[0].estimate,guess_fishes[0].estimate)
+p_efforts,n_efforts,g_efforts = [],[],[]
+b_efforts,s_efforts = [],[]
 
+for n in tqdm(range(params.iterations)):
+    self_fight = Fight(self_fishes[n],opp_fish)
+    self_fight.run_outcome()
+
+    null_fight = Fight(null_fishes[n],opp_fish)
+    null_fight.run_outcome()
+
+    guess_fight = Fight(guess_fishes[n],opp_fish)
+    guess_fight.run_outcome()
+
+    big_fight = Fight(big_fishes[n],opp_fish)
+    big_fight.run_outcome()
+
+    small_fight = Fight(small_fishes[n],opp_fish)
+    small_fight.run_outcome()
+    p,o = self_fishes[n],null_fishes[n]
+    g = guess_fishes[n]
+    b,s = big_fishes[n],small_fishes[n]
+
+    p_efforts.append(p.effort)
+    n_efforts.append(o.effort)
+    g_efforts.append(g.effort)
+    b_efforts.append(b.effort)
+    s_efforts.append(s.effort)
+
+p_mean,p_std = np.mean(p_efforts),np.std(p_efforts)
+n_mean,n_std = np.mean(n_efforts),np.std(n_efforts)
+g_mean,g_std = np.mean(g_efforts),np.std(g_efforts)
+print(np.mean(p_efforts),np.mean(n_efforts),np.mean(g_efforts))
+print(np.std(p_efforts),np.std(n_efforts),np.std(g_efforts))
+
+#fig,(ax,ax2,ax3) = plt.subplots(3)
+fig,ax = plt.subplots()
+#ax.bar([1,2,3],[p_mean,n_mean,g_mean],yerr=[p_std,n_std,g_std],alpha=.1)
+ax.boxplot([n_efforts,g_efforts,p_efforts,s_efforts,b_efforts])
+ax.set_xticklabels(['Uniform\nPrior','Random\nPrior','Self-Informed\nPrior','Small-Informed\nPrior','Big-Informed\nPrior'],rotation=45)
+ax.axvline(2.5,linestyle=':',color='black')
+#ax2.scatter([f.guess for f in prior_fishes],[f.effort for f in prior_fishes])
+#ax3.scatter([f.estimate for f in prior_fishes],[f.effort for f in prior_fishes])
+ax.set_ylabel('Effort')
+fig.tight_layout()
+fig.show()
+plt.show()
 """
 ## Some helpful functions:
 ## Build copies of f0 with naive priors
