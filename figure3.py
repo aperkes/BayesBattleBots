@@ -18,16 +18,18 @@ from matplotlib import cm
 from params import Params
 
 ## Define some global variables to determine if you will plot and save figures.
-PLOT = False
+PLOT = True
 SAVE = False
 
 params = Params()
-params.outcome_params = [1,0.3,.1]
-params.effort_method = [None,'!']
+params.outcome_params = [0.6,0.3,.1]
+#params.effort_method = [None,'!']
+params.effort_method = 'ExplorePoly'
+params.acuity = 5
 params.f_method = 'shuffled'
 params.n_fights = 50
 ## Set up a tank
-if 1:
+if False:
     params.prior = True
     #fishes = [Fish(f,age=50,size=47,prior=True,insight=True,acuity=0,effort_method=params.effort_method,fight_params=params.outcome_params) for f in range(5)]
     fishes = [Fish(f,params) for f in range(5)]

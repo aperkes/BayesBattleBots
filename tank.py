@@ -219,7 +219,7 @@ class Tank():
                 else:
                     color = cm.tab10(i)
                 f = fish_list[i]
-                ax.plot(f.est_record_, color=color,label=str(i))
+                ax.plot(f.est_record, color=color,label=str(i))
                 if food:
                     ax.plot(f.size_record,color=color)
                 else:
