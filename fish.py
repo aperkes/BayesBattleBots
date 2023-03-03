@@ -618,12 +618,13 @@ class Fish:
             cost = self.effort
         elif self.size >= other_fish.size: 
             #cost = min([fight.fish1.wager,fight.fish2.wager])
-            cost = min([self.effort,other_fish.wager]) 
-        else: ## if a smaller fish wins, the bigger fish's effort is scaled up, but no more than effort spent
+            cost = min([self.effort,other_fish.effort]) 
+        else: ## if a smaller fish wins, should we scale up effort?
             if self.effort == 0:
                 cost = 0
             else:
-                cost = np.nanmin([self.effort,other_fish.wager * (other_fish.wager / self.wager)])
+                #cost = np.nanmin([self.effort,other_fish.effort * (other_fish.wager / self.wager)])
+                cost = min([self.effort,other_fish.effort])
         return cost
 
     def update_energy(self,win,fight):
@@ -697,8 +698,9 @@ class Fish:
 ## Get likelihood function
         self.win_record.append([other_fish.size,win,self.effort,cost])
         if self.effort > other_fish.effort:
-            print(self.effort,other_fish.effort,cost)
-            import pdb;pdb.set_trace()
+            #print(self.effort,other_fish.effort,cost)
+            #import pdb;pdb.set_trace()
+            pass
         if self.params.effort_method[1] == 0:
             likelihood = self._use_simple_likelihood(fight,win)
             i_estimate = np.argmax(self.xs > self.estimate)

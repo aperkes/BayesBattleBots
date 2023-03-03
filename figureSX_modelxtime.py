@@ -26,7 +26,9 @@ params.outcome_params = [0.9,0.1,.1]
 params.set_L()
 
 #params.effort_method = [None,'!']
-params.effort_method = 'ExplorePoly'
+#params.effort_method = 'ExplorePoly'
+params.effort_method = 'SmoothPoly'
+params.poly_param_c = 0
 params.awareness = 15
 
 params.acuity = 2
@@ -44,7 +46,7 @@ else:
 
 #tank = Tank(fishes,n_fights = 50,death=False,f_method=params.f_method,f_params=params.outcome_params)
 tank = Tank(fishes,params)
-tank.run_all()
+tank.run_all(print_me=True)
 
 ## Figure 3a: Proportion of fights won over time to show emergence of hierarchy
 fig1,ax1 = plt.subplots()
@@ -71,7 +73,9 @@ for f in range(len(fishes)):
 from scipy.ndimage import gaussian_filter1d
 
 smooth_costs = gaussian_filter1d(np.mean(cost_array,0),3)
+smooth_effort = gaussian_filter1d(np.mean(effort_array,0),3)
 ax2.plot(smooth_costs,color='black')
+ax2.plot(smooth_effort,linestyle=':',color='black')
 
 ## Figure 3c: Estimate over time, to show that bayes is accurate
 
