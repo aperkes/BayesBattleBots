@@ -297,7 +297,8 @@ class Fish:
             prob_win = 0
         else:
             #L = np.tan((np.pi - l)/2)
-            L = np.tan(np.pi/2 - l*np.pi/2) 
+            #L = np.tan(np.pi/2 - l*np.pi/2) 
+            L = self.params.L
             prob_win = (w**L) / 2
         return prob_win
 
@@ -419,7 +420,8 @@ class Fish:
         return p_win
 
 ## This is closer to the true likelihood, although maybe it should infer relative effort
-    def _likelihood_function_se(self,x_size,o_size,x_eff = None,o_eff = None,fight=None):
+    def _likelihood_function_se(self,x_size,other_fish,x_eff = None,o_eff = None,fight=None):
+        print('using likelihood function se')
 ## Check fight params
         if fight is None:
             s,e,l = self.naive_params
@@ -428,7 +430,10 @@ class Fish:
         if x_eff is None:
             x_eff = 1
         if o_eff is None:
-            if fight.level is not None:
+            if self.params.post_acuity is True:
+                print('using known effort')
+                o_eff = other_fish.effort
+            elif fight.level is not None:
                 o_eff = fight.level
             else:
                 o_eff = 1
@@ -448,6 +453,7 @@ class Fish:
         else: ## x_wager is smaller, so they're the underdog
             rel_wag = x_wag / o_wag
             p_win = self._wager_curve(rel_wag,l)
+        print('rel_wager',rel_wager)
         if False and fight.p_win is not None:
             if fight.fish1.size == o_size:
                 other_fish = fight.fish1
@@ -483,10 +489,9 @@ class Fish:
             likelihood = self._define_likelihood_mut_array(fight,win)
 
         else: ## The dict is fast, but it doesn't work, I would need every possible effort in there too...
-            if win:
-                likelihood = self.likelihood_dict[fight.winner.idx,fight.loser.idx]
-            else:
-                likelihood = 1-self.likelihood_dict[fight.loser.idx,fight.winner.idx]
+            likelihood = self.likelihood_dict[fight.winner.idx,fight.loser.idx]
+            if not win:
+                likelihood = 1-likelihood
         return likelihood
 
     def _define_likelihood_mutual(self,fight,win=True):
@@ -504,17 +509,17 @@ class Fish:
                 if False:
                     likelihood[s] = self._likelihood_function_size(xs[s],x_opp)
                 else:
-                    likelihood[s] = self._likelihood_function_se(xs[s],x_opp,x_eff=self.effort,fight=fight)
+                    likelihood[s] = self._likelihood_function_se(xs[s],other_fish,x_eff=self.effort,fight=fight)
         elif not win:
             for s in range(len(xs)):
                 if False:
                     likelihood[s] = 1-self._likelihood_function_size(xs[s],x_opp)
                 else:
-                    likelihood[s] = 1- self._likelihood_function_se(xs[s],x_opp,o_eff=1,x_eff=self.effort,fight=fight)
+                    likelihood[s] = 1- self._likelihood_function_se(xs[s],other_fish,x_eff=self.effort,fight=fight)
         return likelihood
    
 ## Wager function optimized for array multiplication
-    def _wager_curve_smart(self,w,L=np.tan((np.pi - .25)/2)):
+    def _wager_curve_smart(self,w,L=np.tan((np.pi - np.pi*0.1)/2)):
         return (w ** L) / 2
 
 ## Updated likelihood function that *should* be faster
@@ -567,6 +572,7 @@ class Fish:
 
         #L = np.tan((np.pi - l)/2) ## calculate this once to speed things up
         L = self.params.L
+        #import pdb;pdb.set_trace()
         likelihood = self._wager_curve_smart(wager_array,L)
         if win: ## since likelihood is the probability of what happened, and wager_array was p(upset)
             likelihood[wager_index:] = 1 - likelihood[wager_index:]
@@ -691,14 +697,14 @@ class Fish:
 ## Get likelihood function
         self.win_record.append([other_fish.size,win,self.effort,cost])
         if self.params.effort_method[1] == 0:
-
             likelihood = self._use_simple_likelihood(fight,win)
             i_estimate = np.argmax(self.xs > self.estimate)
         else:
+            #import pdb;pdb.set_trace()
             likelihood = self._use_mutual_likelihood(fight,win)
-
             #likelihood = self._define_likelihood_mutual(fight,win)
-        pre_prior = self.prior
+        self.likelihood = likelihood
+        pre_prior = np.array(self.prior)
         self.prior = self._update(self.prior,likelihood,self.xs) ## this just multiplies prior*likelihood
         if self.decay_all:
             print('decaying...')
@@ -722,6 +728,21 @@ class Fish:
         #self.estimate_ = estimate_
         #self.est_record_.append(estimate_)
         size_possible_post = self.prior[size_idx] > 0
+        if self.idx == 0 and False:
+            #plt.cla()
+            fig,ax = plt.subplots()
+            ax.plot(self.xs,pre_prior*100,color='blue')
+            ax.plot(self.xs,self.likelihood,color='red')
+            ax.plot(self.xs,self.prior*100,color='green')
+            ax.axvline(self.estimate,color='green')
+            ax.axvline(self.size,color='blue')
+            ax.axvline(self.guess,color='black',linestyle=':')
+            ax.axvline(other_fish.size,color='black')
+            print(self.effort,other_fish.effort)
+            print(self.size,other_fish.size)
+            print(self.wager,other_fish.wager)
+            print(fight.p_win)
+            plt.show()
         return self.prior,self.estimate
 
     def update_linear(self,win,fight):
@@ -873,6 +894,7 @@ class Fish:
         if np.random.random() < self.params.effort_exploration:
             effort = np.random.random()
             effort = effort * self.energy
+            self.guess = 0
         else:
             effort = self.poly_effort_combo(f_opp,fight)
         return effort
@@ -886,18 +908,19 @@ class Fish:
             est_ratio = self.estimate / opp_size_guess
 
             rough_wager = est_ratio ** s * self.energy ** e
-            effort = (rough_wager ** self.params.poly_param_a)/2
+            effort = 1-fight._wager_curve(rough_wager)
+            #effort = (rough_wager ** self.params.poly_param_a)/2
         else:
             if not fight.food:
                 #print('FOR OUR CHILDREN!!!')
                 est_ratio = opp_size_guess / self.estimate
                 rough_wager = est_ratio
-                effort = 1
+                #effort = 1
             else:
                 est_ratio = opp_size_guess / self.estimate
                 rough_wager = est_ratio ** s * self.energy ** e
-
-                effort = 1 - (rough_wager ** self.params.poly_param_a)/2
+                #effort = 1 - (rough_wager ** self.params.poly_param_a)/2
+            effort = fight._wager_curve(rough_wager)
         #est_ratio = self.estimate / opp_size_guess
         #rough_wager = est_ratio ** s * self.energy ** e
         #effort = self.params.poly_param_a * rough_wager ** order + self.params.poly_param_b
@@ -906,7 +929,8 @@ class Fish:
         #confidence_correction = np.sum(self.prior[self.xs > opp_size_guess])
         confidence_correction = 1 - norm.cdf(0,self.estimate - self.guess,self.acuity + self.prior_std)
         self.correction = confidence_correction
-        scaled_effort = effort * confidence_correction
+        boldness = 1 - self.params.poly_param_c
+        scaled_effort = (effort * confidence_correction) ** boldness
         scaled_effort = np.clip(scaled_effort,0,1)
         if self.params.print_me:
             print('###',self.idx,self.params.effort_method)
