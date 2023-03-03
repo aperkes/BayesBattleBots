@@ -17,7 +17,7 @@ class Params():
                 max_energy=1,start_energy=1,effort_exploration=0.1,
                 acuity=10,pre_acuity=10,post_acuity=0,awareness=10,insight=True,
                 #poly_param_a = 3,poly_param_b=-2.4,poly_param_c=0.1,
-                poly_param_a = 5,poly_param_b=0,poly_param_c=0.1,poly_param_m=0.1,
+                poly_param_a = 5,poly_param_b=0,poly_param_c=0.3,poly_param_m=0.1,
                 mutant_effort=[1,1],mutant_update='bayes',mutant_prior=None,
 
                 verbose=False):                             ## Other params
@@ -82,7 +82,7 @@ class Params():
         self.insight=insight
         self.poly_param_a = poly_param_a
         self.poly_param_b = poly_param_b
-        self.poly_param_c = poly_param_c
+        self.poly_param_c = poly_param_c ## Currently scales up effort (i.e. boldness)
         self.poly_param_m = poly_param_m
         self.poly_step = 0.1
 

@@ -25,7 +25,7 @@ class Fight():
         self.fishes = [fish1,fish2]
         if params is None:
             params=Params()
-        self.params = params
+        self.params = params.copy()
         if outcome is None:
             self.mechanism = params.f_outcome
         else:
@@ -159,6 +159,8 @@ class Fight():
             winner = f_min
         else:
             winner = 1-f_min
+        self.min_normed = min_normed
+        self.roll = roll
         loser = 1-winner
         #print(f1_effort,f2_effort)
         level = min([f1_wager,f2_wager])
@@ -247,13 +249,19 @@ class Fight():
     def summary(self):
         sum_str =  ' '.join([str(self.fish1.idx),'vs',str(self.fish2.idx),str(self.outcome),': Fitness =',str(not self.food),': So,',str(self.winner.idx),'won, prob of upset was:',str(self.p_win)])
         strat_str = ' '.join(['Fish1:',str(self.fish1.params.effort_method),'Fish2:',str(self.fish2.params.effort_method),str(self.fish1.params.mutant),str(self.fish2.params.mutant)])
-        header_str = 'Fish : Size : Effort'
-        effort_str1 = ' '.join(['Fish1',str(self.fish1.size),str(self.fish1.effort)])
-        effort_str2 = ' '.join(['Fish2',str(self.fish2.size),str(self.fish2.effort)])
+        header_str = 'Fish : Size : Effort : Estimate : Guess'
+        effort_str1 = ' '.join(['Fish',str(self.fish1.idx),str(self.fish1.size),str(self.fish1.effort),str(self.fish1.estimate),str(self.fish1.guess)])
+        effort_str2 = ' '.join(['Fish',str(self.fish2.idx),str(self.fish2.size),str(self.fish2.effort),str(self.fish2.estimate),str(self.fish2.guess)])
         #header_str = 'Fish : Size Own_estimate Opp_estimate Effort'
         #effort_str1 = ' '.join(['Fish1:',str(self.fish1.size),str(self.fish1.estimate),str(self.fish1.opp_estimate),str(self.fish1.effort)])
         #effort_str2 = ' '.join(['Fish2:',str(self.fish2.size),str(self.fish2.estimate),str(self.fish2.opp_estimate),str(self.fish2.effort)])
         sum_str = '\n'.join([sum_str,strat_str,header_str,effort_str1,effort_str2])
+
+        #if self.winner.size < self.loser.size:
+        #    print('UPSET!')
+        #    print(sum_str)
+        #    import pdb
+        #    pdb.set_trace()
         return sum_str
 
 if __name__ == "__main__":

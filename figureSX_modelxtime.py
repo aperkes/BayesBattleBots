@@ -22,12 +22,17 @@ PLOT = True
 SAVE = False
 
 params = Params()
-params.outcome_params = [0.6,0.3,.1]
+params.outcome_params = [0.9,0.1,.1]
+params.set_L()
+
 #params.effort_method = [None,'!']
 params.effort_method = 'ExplorePoly'
-params.acuity = 5
+params.awareness = 15
+
+params.acuity = 2
+params.post_acuity = True
 params.f_method = 'shuffled'
-params.n_fights = 50
+params.n_fights = 100
 ## Set up a tank
 if False:
     params.prior = True
@@ -71,8 +76,14 @@ ax2.plot(smooth_costs,color='black')
 ## Figure 3c: Estimate over time, to show that bayes is accurate
 
 fig3,ax3 = tank.plot_estimates(food=False)
+
 fig4,ax4 = plt.subplots()
+f_estimates = [f.estimate for f in fishes]
+f_max = np.argmax(f_estimates)
+f = f_max
+print(f)
 ax4.plot(fishes[f].xs,fishes[f].prior)
+ax4.axvline(fishes[f].size,color='black')
 ax4.axvline(fishes[f].range_record[-1][1])
 ax4.axvline(fishes[f].range_record[-1][2])
 

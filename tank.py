@@ -27,7 +27,7 @@ class Tank():
                  ):
         if params is None:
             params = Params()
-        self.params = params
+        self.params = params.copy()
         self.npc_params = npc_params
         self.fishes = fishes
         self.n_fish = len(fishes)
@@ -37,6 +37,10 @@ class Tank():
         self.f_params = params.outcome_params
         if not self.params.L_set:
             self.params.set_L() ## confirm that the L is right
+            for f in fishes:
+                if not f.params.L_set:
+                    print('Warning!! Tank just set L and fish Ls are not set!!!')
+                    break
         self.u_method = params.update_method
         #self.scale = params.scale
         self.win_record = np.zeros([len(fishes),len(fishes)])
