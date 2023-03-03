@@ -696,6 +696,9 @@ class Fish:
             cost = self.calculate_cost(win,fight,other_fish)
 ## Get likelihood function
         self.win_record.append([other_fish.size,win,self.effort,cost])
+        if self.effort > other_fish.effort:
+            print(self.effort,other_fish.effort,cost)
+            import pdb;pdb.set_trace()
         if self.params.effort_method[1] == 0:
             likelihood = self._use_simple_likelihood(fight,win)
             i_estimate = np.argmax(self.xs > self.estimate)
@@ -904,23 +907,17 @@ class Fish:
         opp_size_guess = np.clip(np.random.normal(f_opp.size,self.acuity),self.params.min_size,self.params.max_size)
         self.guess = opp_size_guess
         s,e,l = self.params.outcome_params
-        if opp_size_guess > self.estimate: 
+        if opp_size_guess > self.estimate:  ## if you guess you are SMALLER
             est_ratio = self.estimate / opp_size_guess
 
             rough_wager = est_ratio ** s * self.energy ** e
-            effort = 1-fight._wager_curve(rough_wager)
-            #effort = (rough_wager ** self.params.poly_param_a)/2
-        else:
-            if not fight.food:
-                #print('FOR OUR CHILDREN!!!')
-                est_ratio = opp_size_guess / self.estimate
-                rough_wager = est_ratio
-                #effort = 1
-            else:
-                est_ratio = opp_size_guess / self.estimate
-                rough_wager = est_ratio ** s * self.energy ** e
-                #effort = 1 - (rough_wager ** self.params.poly_param_a)/2
             effort = fight._wager_curve(rough_wager)
+            #effort = (rough_wager ** self.params.poly_param_a)/2
+        else: ## if you think you're bigger
+            est_ratio = opp_size_guess / self.estimate
+            rough_wager = est_ratio ** s * self.energy ** e
+            #effort = 1 - (rough_wager ** self.params.poly_param_a)/2
+            effort = 1- fight._wager_curve(rough_wager)
         #est_ratio = self.estimate / opp_size_guess
         #rough_wager = est_ratio ** s * self.energy ** e
         #effort = self.params.poly_param_a * rough_wager ** order + self.params.poly_param_b
