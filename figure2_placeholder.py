@@ -29,11 +29,11 @@ tank = Tank(fishes,n_fights = 20,death=False,f_method=params.f_method)
 tank.run_all()
 
 
-## Figure 4a: Strength of winner effect
+## Figure 4a: Linearity without differences
 
-## Figure 4b: Persistance of winner effect
+## Figure 4b: intensity over time (decreases over time)
 
-## Figure 4c: Path dependence of winner effect
+## Figure 4c-d: Path dependence of winner effect
 
 
 if PLOT:
