@@ -22,8 +22,10 @@ PLOT = True
 SAVE = False
 
 params = Params()
-params.outcome_params = [0.9,0.1,.1]
+params.outcome_params = [0.6,0.3,.1]
 params.set_L()
+params.size=50
+params.prior = True
 
 #params.effort_method = [None,'!']
 #params.effort_method = 'ExplorePoly'
@@ -66,7 +68,7 @@ for f in range(len(fishes)):
     effort_record = np.array(tank.fishes[f].win_record)[:,2]
     effort_array[f] = effort_record
     cost_array[f] = cost_record
-    ax2.plot(cost_record,color=cm.tab10(f),alpha=.2)
+    ax2.plot(cost_record+f,color=cm.tab10(f),alpha=.2)
     #ax2.plot(effort_record,color=cm.tab10(f),alpha=0.4,linestyle=':')
     ax2.set_xlabel('time (n fights)')
     ax2.set_ylabel('Cost (actual energy spent)')
@@ -74,8 +76,8 @@ from scipy.ndimage import gaussian_filter1d
 
 smooth_costs = gaussian_filter1d(np.mean(cost_array,0),3)
 smooth_effort = gaussian_filter1d(np.mean(effort_array,0),3)
-ax2.plot(smooth_costs,color='black')
-ax2.plot(smooth_effort,linestyle=':',color='black')
+ax2.plot(smooth_costs*4,color='black')
+ax2.plot(smooth_effort*4,linestyle=':',color='black')
 
 ## Figure 3c: Estimate over time, to show that bayes is accurate
 
