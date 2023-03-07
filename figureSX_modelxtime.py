@@ -22,9 +22,15 @@ PLOT = True
 SAVE = False
 
 params = Params()
-params.outcome_params = [0.6,0.3,.1]
+params.outcome_params = [1,2,.1]
 params.set_L()
-params.size=50
+if False:
+    params.size=50
+else:
+    params.size=None
+    params.mean_size = 50
+    params.sd_size = 2
+
 params.prior = True
 
 #params.effort_method = [None,'!']
@@ -36,12 +42,14 @@ params.awareness = 15
 params.acuity = 2
 params.post_acuity = True
 params.f_method = 'shuffled'
-params.n_fights = 100
+params.n_fights = 200
 ## Set up a tank
+
 if False:
     params.prior = True
     #fishes = [Fish(f,age=50,size=47,prior=True,insight=True,acuity=0,effort_method=params.effort_method,fight_params=params.outcome_params) for f in range(5)]
     fishes = [Fish(f,params) for f in range(5)]
+   
 else:
     #fishes = [Fish(f,insight=True,acuity=0,effort_method=params.effort_method,fight_params=params.outcome_params) for f in range(5)]
     fishes = [Fish(f,params) for f in range(5)]

@@ -60,6 +60,9 @@ mean_int = np.nanmean(cost_array,axis=(0,1))
 sem_int = np.std(cost_array,axis=(0,1)) / np.sqrt(params.iterations)
 ax.plot(mean_int,color='black')
 ax.fill_between(range(params.n_rounds),mean_int-sem_int,mean_int+sem_int,color='gray',alpha=0.5)
+ax.set_xlabel('Contest number')
+ax.set_ylabel('Mean fight Intensity\n(+/- SEM of iterations')
+ax.set_title('Fight intensity decreases over repeated contests')
 
 if PLOT:
     plt.show()
