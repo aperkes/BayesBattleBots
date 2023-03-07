@@ -25,7 +25,7 @@ from params import Params
 #               an int: in which case it uses the int as the std (10 would be average)
 class Fish:
     def __init__(self,idx=0,params=None,
-                 #age=50,size=None,
+                 age=None,size=None,
                  prior=None,likelihood=None,likelihood_dict=None,
 #hock_estimate=.5,update_method='bayes',decay=2,decay_all=False,
                  #effort_method=[1,1],fight_params=[.6,.3,.01],escalation=naive_escalation,xs=np.linspace(7,100,500),
@@ -50,7 +50,12 @@ class Fish:
             self.likelihood_dict = likelihood_dict
         else:
             self.likelihood_dict = params.likelihood_dict
-        self.age = params.age
+
+        if age is not None:
+            self.age = age
+            self.params.age = self.age
+        else:
+            self.age = params.age
         self.xs = params.xs
         self.r_rhp = params.r_rhp
         self.a_growth = params.a_growth
@@ -61,7 +66,10 @@ class Fish:
         #self.params.poly_param_a = params.poly_param_a
         #self.params.poly_param_b = params.poly_param_b
 
-        if params.size is not None:
+        if size is not None:
+            self.size = size
+            self.params.size = self.size
+        elif params.size is not None:
             self.size = params.size
         else:
             self.size = np.random.normal(self.params.mean_size,self.params.sd_size)
@@ -438,6 +446,7 @@ class Fish:
             else:
                 o_eff = 1
 ## Get relative sizes and wagers
+        o_size = other_fish.size
         if x_size >= o_size:
             x_wag = x_eff**e
             o_wag = (o_size/x_size)**s * (o_eff**e)
@@ -453,7 +462,7 @@ class Fish:
         else: ## x_wager is smaller, so they're the underdog
             rel_wag = x_wag / o_wag
             p_win = self._wager_curve(rel_wag,l)
-        print('rel_wager',rel_wager)
+        print('rel_wager',rel_wag)
         if False and fight.p_win is not None:
             if fight.fish1.size == o_size:
                 other_fish = fight.fish1
