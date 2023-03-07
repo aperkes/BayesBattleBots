@@ -55,8 +55,9 @@ class Params():
 
 ## Fight Params
         self.f_outcome = f_outcome ## This defines how fights are determined.
-        self.outcome_params = outcome_params   ## This determines how fights are settled, skill,effort,luck
-        self.L = np.tan(np.pi/2 - outcome_params[2]*np.pi/2)
+        self.outcome_params = np.array(outcome_params)   ## This determines how fights are settled, skill,effort,luck
+        self.S,self.F,self.L = np.tan(np.pi/2 - self.outcome_params*np.pi/2)
+        #self.L = np.tan(np.pi/2 - outcome_params[2]*np.pi/2)
         self.L_set = False
         self.outcome = None
 ## Fish Params
@@ -102,6 +103,13 @@ class Params():
         self.L = np.tan((np.pi - np.pi*self.outcome_params[2])/2)
         self.L_set = True
 
+    def set_params(self):
+        self.outcome_params = np.array(self.outcome_params)
+        self.S,self.F,self.L = np.tan(np.array(np.pi/2 - self.outcome_params*np.pi/2))
+        self.S_set = True
+        self.F_set = True
+        self.L_set = True
+
     def _mutate(self):
         self.effort_method = self.mutant_effort
         self.update_method = self.mutant_update
@@ -123,10 +131,14 @@ class Params():
 
 if __name__ == "__main__":
     params = Params()
+    print(params.outcome_params)
+    print(params.S,params.F,params.L)
     s = 0
     e = 1
     l = 0
     params.outcome_params = [s,e,l]
+    params.set_params()
+    print(params.L)
     params.effort_method = [1,1]
     params.n_fights = 10*50
     params.n_iterations = 50

@@ -120,9 +120,13 @@ class Fight():
         return prob_win
 
     ## This is useful because it paramaterizes the relative impact of size, effort, and luck
-    def mathy(self,params=[1,.3,.05]):
+    def mathy(self,params=None):
         #print(params)
-        s,e,l = params
+        if params is None:
+            S,F,l = self.params.S,self.params.F,self.outcome_params[2]
+        else:
+            s,f,l = params
+            S,F = np.tan(np.pi/2 - np.array([s,f])*np.pi/2)
         f1_size = self.fish1.size
         f2_size = self.fish2.size
         max_size = max([f1_size,f2_size])
@@ -134,8 +138,8 @@ class Fight():
         self.fish1.effort = f1_effort
         self.fish2.effort = f2_effort
 ## It might make more sense to multiply this...but I don't think so
-        f1_wager = (f1_rel_size ** s) * (f1_effort ** e)
-        f2_wager = (f2_rel_size ** s) * (f2_effort ** e)
+        f1_wager = (f1_rel_size ** S) * (f1_effort ** F)
+        f2_wager = (f2_rel_size ** S) * (f2_effort ** F)
         if f2_wager > f2_effort:
             pass
             #print('calculation:',f2_rel_size,s,f2_effort,e)
