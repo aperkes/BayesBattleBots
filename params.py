@@ -56,7 +56,8 @@ class Params():
 ## Fight Params
         self.f_outcome = f_outcome ## This defines how fights are determined.
         self.outcome_params = np.array(outcome_params)   ## This determines how fights are settled, skill,effort,luck
-        self.S,self.F,self.L = np.tan(np.pi/2 - self.outcome_params*np.pi/2)
+        self.scaled_params = np.tan(np.pi/2 - self.outcome_params*np.pi/2)
+        self.S,self.F,self.L = self.scaled_params
         #self.L = np.tan(np.pi/2 - outcome_params[2]*np.pi/2)
         self.L_set = False
         self.outcome = None
@@ -93,19 +94,32 @@ class Params():
         
     def copy(self):
         return copy.deepcopy(self)
-    
+
+    def se_wager_function(self,rel_size,effort):    
+        wager = rel_size ** self.S * effort ** self.F
+        return wager
+
+    def wager_function(self,rel_wager):
+        p_win = (rel_wager ** self.L) /2
+        return p_win
+
 ## (deprecated)
     def get_L(self):
-        print('get_L is deprecated, use set_L')
-        self.L = np.tan((np.pi - np.pi*self.outcome_params[2])/2)
+        print('get_L is deprecated, use set_params')
+        #self.L = np.tan((np.pi - np.pi*self.outcome_params[2])/2)
+        self.set_params()
 
     def set_L(self):
-        self.L = np.tan((np.pi - np.pi*self.outcome_params[2])/2)
-        self.L_set = True
+        #self.L = np.tan((np.pi - np.pi*self.outcome_params[2])/2)
+        #self.L_set = True
+        print('set_L is deprecated, use set_params')
+        self.set_params()
 
     def set_params(self):
         self.outcome_params = np.array(self.outcome_params)
-        self.S,self.F,self.L = np.tan(np.array(np.pi/2 - self.outcome_params*np.pi/2))
+        shifted_params = (self.outcome_params +1) / 2
+        self.scaled_params = np.tan(np.array(np.pi/2 - shifted_params*np.pi/2))
+        self.S,self.F,self.L = self.scaled_params
         self.S_set = True
         self.F_set = True
         self.L_set = True

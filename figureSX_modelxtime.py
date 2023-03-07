@@ -22,8 +22,8 @@ PLOT = True
 SAVE = False
 
 params = Params()
-params.outcome_params = [1,2,.1]
-params.set_L()
+params.outcome_params = [0,1,-0.8]
+params.set_params()
 if False:
     params.size=50
 else:
@@ -55,6 +55,7 @@ else:
     fishes = [Fish(f,params) for f in range(5)]
 
 #tank = Tank(fishes,n_fights = 50,death=False,f_method=params.f_method,f_params=params.outcome_params)
+#import pdb;pdb.set_trace()
 tank = Tank(fishes,params)
 tank.run_all(print_me=True)
 
