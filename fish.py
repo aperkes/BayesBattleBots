@@ -601,7 +601,7 @@ class Fish:
 
         #L = np.tan((np.pi - l)/2) ## calculate this once to speed things up
         L = self.params.L
-        #import pdb;pdb.set_trace()
+        import pdb;pdb.set_trace()
         likelihood = self._wager_curve_smart(wager_array,L)
         if win: ## since likelihood is the probability of what happened, and wager_array was p(upset)
             likelihood[wager_index:] = 1 - likelihood[wager_index:]

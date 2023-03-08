@@ -10,7 +10,7 @@ class Params():
                 fitness_ratio=None,death=False,food=0.5,free_food=0,
                 mean_age=None,mean_size=None,sd_size=None,
                 min_size = 1,max_size = 99,
-                f_outcome='math',outcome_params=[.3,.3,.3], ## Fight Params
+                f_outcome='math',outcome_params=[0.0,0.0,-0.9], ## Fight Params
                 effort_method='SmoothPoly',baseline_effort=.2,update_method='bayes',  ## Fish Params
                 age=50,size=None,prior=None,likelihood=None,likelihood_dict=None,
                 xs=np.linspace(1,99,500),r_rhp=0,a_growth=True,c_aversion=1,

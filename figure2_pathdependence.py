@@ -28,12 +28,12 @@ if True:
 else:
     params.effort_method = [0,.5]
 
-params.poly_param_a = 2
-params.n_fights = 50 
+#params.poly_param_a = 2
+#params.n_fights = 50 
 params.energy_cost = False
 params.acuity = 0
 params.awareness = 5
-params.start_energy = 1
+#params.start_energy = 1
 
 params.iterations = 1000
 params.n_fish = 5
@@ -41,7 +41,7 @@ params.f_method = 'balanced'
 params.u_method = 'bayes'
 params.f_outcome = 'math'
 #params.outcome_params = [s,e,l]
-params.set_L()
+params.set_params()
 
 #s = Simulation(params)
 
@@ -49,8 +49,6 @@ winners,losers = [],[]
 PLOT = 'estimate'
 
 ## Have a fish win-lose, or lose-win, then measure the winner effect for that fish
-
-## Let fish duke it out, then pull a fish out, let it win, and put it back in with the rest.
 scale = 2
 
 upset_count = 0
@@ -58,8 +56,8 @@ win_count1,win_count2 = 0,0
 win_shifts,loss_shifts = [],[]
 ## Lets assume their estimate is correct.
 
-params.age = 50
-params.size = 47
+params.age = 51
+params.size = 50
 ## Some helpful functions:
 ## Build copies of f0 with naive priors
 def build_fish(idx,f0):
@@ -91,18 +89,26 @@ for i in range(params.iterations):
     results_str = ''
     f = build_fish(1,f0)
     f_match = build_fish(0,f0)
+    f_match.size = 51
 
     ## Run all matches
+    fig,ax = plt.subplots()
+    ax.plot(f.xs,f.prior)
     for m in range(n_matches):
         #print('f_before:',f.estimate)
         match,outcome =check_success(f,f_match,params)
+        #import pdb;pdb.set_trace()
         f.update(1-outcome,match)
         #f.decay_prior(store=False)
         #print(f.effort,f_match.effort)
         #print('f_after:',f.estimate)
         match_results[results_str].append(1-outcome)
         results_str += conversion_dict[outcome]
-
+        ax.plot(f.xs,f.prior*100)
+        ax.plot(f.xs,f.likelihood)
+    #plt.show()
+    break
+    #import pdb;pdb.set_trace()
     fishes.append(f)
 #print('round0 results:',match_results[''])
 print('round one average:',np.mean(match_results['']))
@@ -139,6 +145,6 @@ ax.set_ylabel('Estimate (mm)')
 ax.set_xlabel('Repeated Contests')
 
 fig.savefig('./figures/Fig4b.png',dpi=300)
-if False:
+if True:
     fig.show()
     plt.show()
