@@ -45,7 +45,7 @@ params.acuity = 2
 params.post_acuity = True
 params.f_method = 'shuffled'
 params.n_fights = 40
-params.iterations = 50
+params.iterations = 500
 ## Set up a tank
   
 ## Set up dummy tank to make calculating rounds easier
@@ -72,8 +72,11 @@ print(n_windows,len(tank.history))
 xs = np.arange(n_windows)
 mean_lin = np.nanmean(lin_array[:,:n_windows],axis=0)
 sem_lin = np.nanstd(lin_array[:,:n_windows],axis=0) / np.sqrt(params.iterations)
-ax5.plot(xs,mean_lin)
-ax5.fill_between(xs,mean_lin - sem_lin, mean_lin + sem_lin)
+ax5.plot(xs,mean_lin,color='black')
+ax5.fill_between(xs,mean_lin - sem_lin, mean_lin + sem_lin,alpha=0.5,color='gray')
+ax5.set_xlabel('n rounds of contests')
+ax5.set_ylabel('Linearity (1-triad ratio)')
+ax5.set_title('Linearity increases over time')
 
 PLOT = True
 if PLOT:
