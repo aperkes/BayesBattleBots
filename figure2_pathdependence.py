@@ -22,7 +22,9 @@ import itertools
 
 #s,e,l = .6,.3,.1
 
+s,e,l = -0.5,0.0,-0.9
 params = Params()
+
 if True:
     params.effort_method = 'SmoothPoly'
 else:
@@ -31,7 +33,7 @@ else:
 #params.poly_param_a = 2
 #params.n_fights = 50 
 params.energy_cost = False
-params.acuity = 0
+params.acuity = 5
 params.awareness = 5
 #params.start_energy = 1
 
@@ -106,6 +108,8 @@ for i in range(params.iterations):
         results_str += conversion_dict[outcome]
         ax.plot(f.xs,f.prior*100)
         ax.plot(f.xs,f.likelihood)
+        print(f.size,f.estimate,f.effort,f_match.size,f_match.effort)
+        print(f.likelihood.round(2))
     #plt.show()
     break
     #import pdb;pdb.set_trace()
