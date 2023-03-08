@@ -283,7 +283,6 @@ class Tank():
         return we_by_fish,le_by_fish,mean_by_fish,size_by_fish
 
     def __getitem__(self,idx):
-        tank_copy = copy.deepcopy(self)
         return self.fishes[idx]
     
 
