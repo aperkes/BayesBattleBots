@@ -301,7 +301,8 @@ class Fish:
         return prob_win
 
     def _wager_curve(self,w,l=.05):
-        if l == 0:
+        if l == 0 or l == -1:
+            import pdb;pdb.set_trace()
             prob_win = 0
         else:
             #L = np.tan((np.pi - l)/2)
@@ -317,7 +318,9 @@ class Fish:
 ## NOTE: Come back
     def _likelihood_function_wager(self,x,opp_size=None,opp_effort=None,opp_wager=None,outcome_params = [.3,.3,.3]):
         s,e,l = outcome_params
-        S,F,L = np.tan(np.pi/2 - np.array(outcome_params)*np.pi/2)
+        shifted_params = (np.array(outcome_params) + 1) / 2
+        #S,F,L = np.tan(np.pi/2 - np.array(outcome_params)*np.pi/2)
+        S,F,L = np.tan(np.pi/2 - shifted_params*np.pi/2)
         if opp_size is None:
             opp_size = self.est_record[0] ## Assume all opponents are average size
         opp_rel_size = opp_size / max([opp_size,x])
@@ -371,7 +374,8 @@ class Fish:
             s,e,l = self.naive_params
         else:
             s,e,l = fight.outcome_params
-        S,F,L = np.tan(np.pi/2 - np.array(outcome_params)*np.pi/2)
+        shifted_params = (np.array([s,e,l]) + 1) / 2
+        S,F,L = np.tan(np.pi/2 - shifted_params*np.pi/2)
         likelihood = np.zeros(len(self.xs))
 ## This assumes that all fish are the same age as you
         for i_ in range(len(self.xs)):
@@ -405,7 +409,8 @@ class Fish:
     def _define_likelihood_solo(self,fight,win):
         likelihood = np.zeros(len(self.xs))
         s,e,l = fight.outcome_params
-        S,F,L = np.tan(np.pi/2 - np.array(fight.outcome_params)*np.pi/2)
+        shifted_params = (np.array(fight.outcome_params) + 1) / 2
+        S,F,L = np.tan(np.pi/2 - shifted_params*np.pi/2)
         if win:
             e_self = fight.winner.effort
             w_opp = fight.loser.wager
@@ -440,7 +445,8 @@ class Fish:
             s,e,l = self.naive_params
         else:
             s,e,l = fight.outcome_params
-        S,F,L = np.tan(np.pi/2 - np.array([s,e,l])*np.pi/2)
+        shifted_params = (np.array([s,e,l]) + 1) / 2
+        S,F,L = np.tan(np.pi/2 - shifted_params*np.pi/2)
         if x_eff is None:
             x_eff = 1
         if o_eff is None:
@@ -534,7 +540,8 @@ class Fish:
         return likelihood
    
 ## Wager function optimized for array multiplication
-    def _wager_curve_smart(self,w,L=np.tan((np.pi - np.pi*0.1)/2)):
+    def _wager_curve_smart(self,w,L=np.tan((np.pi - np.pi*-0.9)/2)):
+        #import pdb; pdb.set_trace()
         return (w ** L) / 2
 
 ## Updated likelihood function that *should* be faster
@@ -543,9 +550,15 @@ class Fish:
             s,e,l = self.naive_params
         else:
             s,e,l = fight.outcome_params
-        S,F,L = np.tan(np.pi/2 - np.array([s,e,l])*np.pi/2)
-        if l == 0:
+        shifted_params = (np.array([s,e,l]) + 1) / 2
+        S,F,L = np.tan(np.pi/2 - shifted_params*np.pi/2)
+        if l == -1:
             print('#### l == 0, this is a little weird....')
+            import pdb;pdb.set_trace()
+            return np.ones_like(self.xs)
+        elif s == -1:
+            return np.ones_like(self.xs)
+        elif e == -1:
             return np.ones_like(self.xs)
         if self.effort == 0:
             return np.ones_like(self.xs)
@@ -595,6 +608,8 @@ class Fish:
         else:
             likelihood[:wager_index] = 1 - likelihood[:wager_index]
 ## PDB
+        #import pdb; pdb.set_trace()
+
         return likelihood
 
 ## This also includes opponent assesment...need to fix that
@@ -856,7 +871,8 @@ class Fish:
         if fight_params is None:
             fight_params = self.naive_params
         s,e,l = fight_params
-        S,F,L = np.tan(np.pi/2 - np.array([s,e,l])*np.pi/2)
+        shifted_params = (np.array([s,e,l]) + 1) / 2
+        S,F,L = np.tan(np.pi/2 - shifted_params*np.pi/2)
         bigger_size = max([my_size,opp_size])
         my_rel_size = my_size/bigger_size
         opp_rel_size = opp_size/bigger_size
@@ -891,8 +907,10 @@ class Fish:
             opp_size = f_opp.size
         else:
             print('#### SOMETHING IS WRONG')
-        s,e,l = self.params.outcome_params
-        S,F,L = np.tan(np.pi/2 - np.array([s,e,l])*np.pi/2)
+        #s,e,l = self.params.outcome_params
+        #shifted_params = (np.array([s,e,l]) + 1) / 2
+        #S,F,L = np.tan(np.pi/2 - shifted_params*np.pi/2)
+        S,F = self.params.S,self.params.F
         rough_wager = (my_size / opp_size) ** S * self.energy ** F
         effort = self.params.poly_param_a * rough_wager ** 2 + self.params.poly_param_b
         effort = np.clip(effort,0,1)
@@ -923,11 +941,13 @@ class Fish:
         return effort
 
     def poly_effort_combo(self,f_opp,fight):
-        order = 1
+        #order = 1
         opp_size_guess = np.clip(np.random.normal(f_opp.size,self.acuity),self.params.min_size,self.params.max_size)
         self.guess = opp_size_guess
         s,e,l = self.params.outcome_params
-        S,F,L = np.tan(np.pi/2 - np.array([s,e,l])*np.pi/2)
+        shifted_params = (np.array([s,e,l]) + 1) / 2
+        #S,F,L = np.tan(np.pi/2 - shifted_params*np.pi/2)
+        S,F = self.params.S,self.params.F
         if opp_size_guess > self.estimate:  ## if you guess you are SMALLER
             est_ratio = self.estimate / opp_size_guess
 
@@ -963,7 +983,8 @@ class Fish:
         opp_size_guess = np.random.normal(f_opp.size,self.acuity) 
         self.guess = opp_size_guess
         s,e,l = self.params.outcome_params
-        S,F,L = np.tan(np.pi/2 - np.array([s,e,l])*np.pi/2)
+        shifted_params = (np.array([s,e,l]) + 1) / 2
+        S,F,L = np.tan(np.pi/2 - shifted_params*np.pi/2)
 
         cutoff = int(self.estimate * cutoff_prop)
         p_bigger = self.prob_bigger(self.estimate,opp_size_guess,self.awareness,self.acuity)

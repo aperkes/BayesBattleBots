@@ -129,10 +129,14 @@ class Simulation():
         linearity,(d,p) = self._calc_linearity(tank)
         return p,self._calc_stability(tank),self._calc_accuracy(tank),self._calc_effort(tank)
     
-    def _calc_linearity(self,tank):
+    def _calc_linearity(self,tank,idx=None): ## idx is a slice object
         n_fish = len(tank.fishes)
         h_matrix = np.zeros([n_fish,n_fish])
-        win_record_dif = tank.win_record - np.transpose(tank.win_record)
+        if idx is not None:
+            win_record = np.nansum(tank.history[idx],axis=0)
+        else:
+            win_record = tank.win_record
+        win_record_dif = win_record - np.transpose(win_record)
         h_matrix[win_record_dif > 0] = 1
         tank.h_matrix = h_matrix
         ## DO THE MATHY THING HERE
@@ -153,6 +157,7 @@ class Simulation():
             chi_stat = (8/(N-4)) * ((N*(N-1)*(N-2)/24) - d + 0.5) + df
             p = 1 - chi2.cdf(chi_stat,df)
         linearity = 1 - (d / D) ## Percentage of non triadic interactions
+        #import pdb;pdb.set_trace()
         return linearity,[d,p]
         
 ## Stability the proportion of interactions consistent with the overall mean. 
@@ -233,7 +238,78 @@ class Simulation():
         
         return final_linearity,final_stability,final_accuracy
 
+_applebys = {
+    3:{0:0.750},
+    4:{0:0.375},
+    5:{0:0.117},
+    6:{0:0.022,
+        1:0.051,
+        2:0.120},
+    7:{1:0.006,
+        2:0.017,
+        3:0.033,
+        4:0.069,
+        5:0.112},
+    8:{4:0.006,
+        5:0.011,
+        6:0.023,
+        7:0.037,
+        8:0.063,
+        9:0.094,
+        10:0.153
+    },
+    9:{9:0.007,
+        10:0.012,
+        11:0.019,
+        12:0.030,
+        13:0.045,
+        14:0.067,
+        15:0.095,
+        16:0.138
+    },
+    10:{16:0.008,
+        17:0.012,
+        18:0.018,
+        19:0.026,
+        20:0.038,
+        21:0.052,
+        22:0.073,
+        23:0.097,
+        24:0.131
+    }
+    }
 
+def calc_linearity(tank,idx=None): ## idx is a slice object
+    n_fish = len(tank.fishes)
+    h_matrix = np.zeros([n_fish,n_fish])
+    if idx is not None:
+        win_record = np.nansum(tank.history[idx],axis=0)
+    else:
+        win_record = tank.win_record
+    win_record_dif = win_record - np.transpose(win_record)
+    h_matrix[win_record_dif > 0] = 1
+    tank.h_matrix = h_matrix
+    ## DO THE MATHY THING HERE
+    N = n_fish
+
+    D = N * (N-1) * (N-2) / 6 ## Total number of possible triads
+## Calculate the number of triads: 
+    d = N * (N-1) * (2*N-1) / 12 - 1/2 * np.sum(np.sum(h_matrix,1) ** 2) ## From Appleby, 1983
+    if N <= 10:
+        if d in _applebys[N].keys():
+            p = _applebys[N][round(d)]
+        elif d < min(_applebys[N].keys()):
+            p = min(_applebys[N].values())
+        else:
+            p = max(_applebys[N].values())
+    else:
+        df = N*(N-1)*(N-2)/(N-4)**2
+        chi_stat = (8/(N-4)) * ((N*(N-1)*(N-2)/24) - d + 0.5) + df
+        p = 1 - chi2.cdf(chi_stat,df)
+    linearity = 1 - (d / D) ## Percentage of non triadic interactions
+    #import pdb;pdb.set_trace()
+    return linearity,[d,p]
+ 
 if __name__ == "__main__":
     params = SimParams(n_iterations=300)
     s = 0

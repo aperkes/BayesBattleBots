@@ -61,11 +61,13 @@ class Tank():
             #else:
             #    self.fight_list = self.get_matchups(f_method,f_outcome,n_fights)
             self.n_fights = len(self.fight_list)
-        if self.f_method == 'balanced':
-            self.n_rounds = int(len(self.fight_list) / (self.n_fish * (self.n_fish-1) / 2))
+        if self.f_method == 'balanced' or self.f_method == 'shuffled':
+            #self.n_rounds = int(len(self.fight_list) / (self.n_fish * (self.n_fish-1) / 2))
+            self.n_rounds = self.fight_list[-1].idx+1
         else:
             self.n_rounds = len(self.fight_list)
         self.history = np.zeros([self.n_rounds,len(fishes),len(fishes)])
+        #self.history.fill(np.nan)
 
 
 ## Define a likelihood dict
@@ -114,11 +116,11 @@ class Tank():
         if f_method == 'balanced' or f_method == 'shuffled':
             short_list = []
             for i in range(n_fights):
-                for f1,f2 in itertools.combinations(self.fishes, 2):
+                combs = list(itertools.combinations(self.fishes,2))
+                if f_method == 'shuffled':
+                    random.shuffle(combs)
+                for f1,f2 in combs:
                     fight_list.append(Fight(f1,f2,self.params,idx=i)) ## So balanced is organized as rounds
-
-            if f_method == 'shuffled':
-                random.shuffle(fight_list)
         if f_method == 'random':
             combs = list(itertools.combinations(self.fishes,2))
             for i in range(n_fights):
@@ -140,6 +142,7 @@ class Tank():
         #return fight.winner,fight.loser
         self.win_record[fight.winner.idx,fight.loser.idx] += 1
         self.history[fight.idx,fight.winner.idx,fight.loser.idx] = 1 ## Note, this works a bit different for 'random' and 'balanced'
+        #self.history[fight.idx,fight.loser.idx,fight.winner.idx] = 0 ## Note, this works a bit different for 'random' and 'balanced'
         return 0
 
     def process_hock(self,fight):
@@ -282,6 +285,7 @@ class Tank():
     def __getitem__(self,idx):
         return self.fishes[idx]
     
+
 if __name__ == '__main__':
     fishes = [Fish(),Fish()]
     t = Tank(fishes)

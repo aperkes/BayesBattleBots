@@ -112,7 +112,8 @@ class Fight():
         return prob_win
 
     def _wager_curve(self,w,l=.05):
-        if l == 0:
+        #if l == 0 or l == -1:
+        if l == -1:
             prob_win = 0
         else:
             L = self.params.L
@@ -122,11 +123,16 @@ class Fight():
     ## This is useful because it paramaterizes the relative impact of size, effort, and luck
     def mathy(self,params=None):
         #print(params)
+        f1_wager,f2_wager = 0,0
+        min_normed = 0
         if params is None:
-            S,F,l = self.params.S,self.params.F,self.outcome_params[2]
+            S,F,L = self.params.scaled_params
+            s,f,l = self.params.outcome_params
+            #S,F,l = self.params.S,self.params.F,self.outcome_params[2]
         else:
             s,f,l = params
-            S,F = np.tan(np.pi/2 - np.array([s,f])*np.pi/2)
+            scaled_params = (np.array(params) + 1) /2
+            S,F,L = np.tan(np.pi/2 - scaled_params*np.pi/2)
         f1_size = self.fish1.size
         f2_size = self.fish2.size
         max_size = max([f1_size,f2_size])
@@ -138,26 +144,48 @@ class Fight():
         self.fish1.effort = f1_effort
         self.fish2.effort = f2_effort
 ## It might make more sense to multiply this...but I don't think so
-        f1_wager = (f1_rel_size ** S) * (f1_effort ** F)
-        f2_wager = (f2_rel_size ** S) * (f2_effort ** F)
-        if f2_wager > f2_effort:
-            pass
-            #print('calculation:',f2_rel_size,s,f2_effort,e)
-        self.fish1.wager = f1_wager
-        self.fish2.wager = f2_wager
+
+## there are some edge cases here. 
+        if s == -1:
+            if f1_size == f2_size:
+                self.p_win == 0.5
+                f_min = np.random.randint(2)
+            else:
+                self.p_win = 0 
+                f_min = np.argmin([f1_size,f2_size])
+            self.fishes[f_min].wager = 0
+            self.fishes[1-f_min].wager = 1
+        elif f == -1: 
+            if f1_effort == f2_effort or max([f1_effort,f2_effort]) < 1:
+                self.p_win = 0.5
+                f_min = np.random.randint(2)
+            else:
+                self.p_win = 0
+                f_min = np.argmin([f1_effort,f2_effort])
+            self.fishes[f_min].wager = 0
+            self.fishes[1-f_min].wager = 1
+            
+        else:
+            f1_wager = (f1_rel_size ** S) * (f1_effort ** F)
+            f2_wager = (f2_rel_size ** S) * (f2_effort ** F)
+            if f2_wager > f2_effort:
+                pass
+                #print('calculation:',f2_rel_size,s,f2_effort,e)
+            self.fish1.wager = f1_wager
+            self.fish2.wager = f2_wager
 
 ## Alternatively:
-        ##min_wager = min([f1_wager,f2_wager]) / (f1_wager + f2_wager)
-        #f_min = np.argmin([f1_wager,f2_wager]) ## For some reason, this biases it.
-        if f1_wager == f2_wager:
-            self.p_win = 0.5
-            f_min = np.random.randint(2)
-            min_normed = 'even'
-        else:
-            min_wager = min([f1_wager,f2_wager])
-            min_normed = min_wager / max([f1_wager,f2_wager])
-            f_min = 1 - np.argmax([f1_wager,f2_wager])
-            self.p_win = self._wager_curve(min_normed,l)
+            ##min_wager = min([f1_wager,f2_wager]) / (f1_wager + f2_wager)
+            #f_min = np.argmin([f1_wager,f2_wager]) ## For some reason, this biases it.
+            if f1_wager == f2_wager:
+                self.p_win = 0.5
+                f_min = np.random.randint(2)
+                min_normed = 'even'
+            else:
+                min_wager = min([f1_wager,f2_wager])
+                min_normed = min_wager / max([f1_wager,f2_wager])
+                f_min = 1 - np.argmax([f1_wager,f2_wager])
+                self.p_win = self._wager_curve(min_normed,l)
         roll = random.random()
         if roll < self.p_win: ## probability that the "lower invested" fish wins
             winner = f_min
@@ -175,6 +203,7 @@ class Fight():
             print('roll:',roll)
         #print('Actual p_win:',self.fish1.idx,self.fish2.idx,self.p_win)
         #print(winner)
+        #import pdb;pdb.set_trace()
         if self.fish1.params.effort_method == 'PerfectNudge':
             if winner and self.fish1.effort > 0.1:
                 print('LOOK HERE!')
