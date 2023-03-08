@@ -59,8 +59,12 @@ class Fight():
             self.outcome,self.level = self.hock_huber(scale=scale,params = self.outcome_params)
             
         else:
-            real_outcome,_ = self.mathy(self.outcome_params)
-            self.outcome,self.level = self.mechanism,0.5
+            real_outcome,real_level = self.mathy(self.outcome_params)
+            self.outcome = self.mechanism
+            if self.level is None:
+                self.level = real_level
+            #self.fish1.effort = self.level
+            #self.fish2.effort = self.level
       
         self.winner = self.fishes[self.outcome]
         self.loser = self.fishes[1-self.outcome]
