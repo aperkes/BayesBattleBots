@@ -61,7 +61,7 @@ class Tank():
             #else:
             #    self.fight_list = self.get_matchups(f_method,f_outcome,n_fights)
             self.n_fights = len(self.fight_list)
-        if self.f_method == 'balanced':
+        if self.f_method == 'balanced' or self.f_method == 'shuffled':
             self.n_rounds = int(len(self.fight_list) / (self.n_fish * (self.n_fish-1) / 2))
         else:
             self.n_rounds = len(self.fight_list)
@@ -280,8 +280,10 @@ class Tank():
         return we_by_fish,le_by_fish,mean_by_fish,size_by_fish
 
     def __getitem__(self,idx):
+        tank_copy = copy.deepcopy(self)
         return self.fishes[idx]
     
+
 if __name__ == '__main__':
     fishes = [Fish(),Fish()]
     t = Tank(fishes)

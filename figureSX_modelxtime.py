@@ -22,9 +22,9 @@ PLOT = True
 SAVE = False
 
 params = Params()
-params.outcome_params = [0,1,-0.8]
+params.outcome_params = [0,0,-0.99]
 params.set_params()
-if False:
+if True:
     params.size=50
 else:
     params.size=None
@@ -32,6 +32,7 @@ else:
     params.sd_size = 2
 
 params.prior = True
+sim = Simulation()
 
 #params.effort_method = [None,'!']
 #params.effort_method = 'ExplorePoly'
@@ -57,7 +58,7 @@ else:
 #tank = Tank(fishes,n_fights = 50,death=False,f_method=params.f_method,f_params=params.outcome_params)
 #import pdb;pdb.set_trace()
 tank = Tank(fishes,params)
-tank.run_all(print_me=True)
+tank.run_all(print_me=False)
 
 ## Figure 3a: Proportion of fights won over time to show emergence of hierarchy
 fig1,ax1 = plt.subplots()
@@ -102,5 +103,18 @@ ax4.axvline(fishes[f].size,color='black')
 ax4.axvline(fishes[f].range_record[-1][1])
 ax4.axvline(fishes[f].range_record[-1][2])
 
+print(np.shape(tank.win_record))
+window = 2 
+n_windows = len(tank.history) // window * 2
+lin_list = []
+for i in range(n_windows):
+    idx = slice(int(i*window/2),int(i*window/2 + window))
+    linearity,[d,p] = sim._calc_linearity(tank,idx)
+    lin_list.append(linearity)
+
+fig5,ax5 = plt.subplots()
+ax5.plot(lin_list)
+
+PLOT = True
 if PLOT:
     plt.show()

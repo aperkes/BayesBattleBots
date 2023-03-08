@@ -129,10 +129,14 @@ class Simulation():
         linearity,(d,p) = self._calc_linearity(tank)
         return p,self._calc_stability(tank),self._calc_accuracy(tank),self._calc_effort(tank)
     
-    def _calc_linearity(self,tank):
+    def _calc_linearity(self,tank,idx=None): ## idx is a slice object
         n_fish = len(tank.fishes)
         h_matrix = np.zeros([n_fish,n_fish])
-        win_record_dif = tank.win_record - np.transpose(tank.win_record)
+        if idx is not None:
+            win_record = np.nansum(tank.history[idx],axis=0)
+        else:
+            win_record = tank.win_record
+        win_record_dif = win_record - np.transpose(win_record)
         h_matrix[win_record_dif > 0] = 1
         tank.h_matrix = h_matrix
         ## DO THE MATHY THING HERE
@@ -153,6 +157,7 @@ class Simulation():
             chi_stat = (8/(N-4)) * ((N*(N-1)*(N-2)/24) - d + 0.5) + df
             p = 1 - chi2.cdf(chi_stat,df)
         linearity = 1 - (d / D) ## Percentage of non triadic interactions
+        #import pdb;pdb.set_trace()
         return linearity,[d,p]
         
 ## Stability the proportion of interactions consistent with the overall mean. 
