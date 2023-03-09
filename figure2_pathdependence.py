@@ -22,9 +22,15 @@ import itertools
 
 #s,e,l = .6,.3,.1
 
-s,e,l = -0.5,0.0,-0.9
+#s,e,l = -0.5,0.5,-0.9
+s= 0.0
+e= 0.7
+l= -0.9
+
 params = Params()
 
+params.acuity = 0
+params.boldness = 0.7
 if True:
     params.effort_method = 'SmoothPoly'
 else:
@@ -33,16 +39,18 @@ else:
 #params.poly_param_a = 2
 #params.n_fights = 50 
 params.energy_cost = False
-params.acuity = 5
 params.awareness = 5
+params.prior=True
 #params.start_energy = 1
 
-params.iterations = 1000
+params.iterations = 2000
+params.n_rounds = 5
+
 params.n_fish = 5
 params.f_method = 'balanced'
 params.u_method = 'bayes'
 params.f_outcome = 'math'
-#params.outcome_params = [s,e,l]
+params.outcome_params = [s,e,l]
 params.set_params()
 
 #s = Simulation(params)
@@ -83,40 +91,26 @@ def build_results(n_matches=1):
 conversion_dict = {0:'w',1:'l'}
 
 f0 = Fish(1,params)
-n_matches = 3
 fishes = []
-match_results = build_results(n_matches)
+match_results = build_results(params.n_rounds)
 for i in range(params.iterations):
 #for i in tqdm(range(iterations)):
     results_str = ''
     f = build_fish(1,f0)
     f_match = build_fish(0,f0)
-    f_match.size = 51
 
     ## Run all matches
-    fig,ax = plt.subplots()
-    ax.plot(f.xs,f.prior)
-    for m in range(n_matches):
-        #print('f_before:',f.estimate)
+    for m in range(params.n_rounds):
         match,outcome =check_success(f,f_match,params)
-        #import pdb;pdb.set_trace()
         f.update(1-outcome,match)
-        #f.decay_prior(store=False)
-        #print(f.effort,f_match.effort)
-        #print('f_after:',f.estimate)
         match_results[results_str].append(1-outcome)
         results_str += conversion_dict[outcome]
-        ax.plot(f.xs,f.prior*100)
-        ax.plot(f.xs,f.likelihood)
-        print(f.size,f.estimate,f.effort,f_match.size,f_match.effort)
-        print(f.likelihood.round(2))
-    #plt.show()
-    break
-    #import pdb;pdb.set_trace()
     fishes.append(f)
-#print('round0 results:',match_results[''])
 print('round one average:',np.mean(match_results['']))
-
+print('round two average:')
+print('winners:',np.mean(match_results['w']))
+print('losers:',np.mean(match_results['l']))
+print('...')
 fig,ax = plt.subplots()
 
 loser_estimates, winner_estimates = [],[]
@@ -124,7 +118,7 @@ loser_estimates, winner_estimates = [],[]
 for f in fishes:
     jitter = np.random.randn() * 1
     jitter = 0
-    ax.plot(np.array(f.est_record)[:] + jitter,alpha=.008,color='black')
+    ax.plot(np.array(f.est_record)[:] + jitter,alpha=.02,color='black')
     if False:
         if f.win_record[0][1] == 1: ## If you won the first fight
             if f.win_record[1][1] == 0: # but lost the second fight
@@ -136,19 +130,31 @@ for f in fishes:
             winner_estimates.append(f.est_record[1])
         else:
             loser_estimates.append(f.est_record[1])
-#print(np.mean(match_results['wl']),np.mean(match_results['lw']))
-print(np.mean(winner_estimates),np.mean(loser_estimates))
-print('winners:',max(winner_estimates),min(winner_estimates),np.std(winner_estimates))
-print('losers:',max(loser_estimates),min(loser_estimates),np.std(loser_estimates))
 
-[ax.axvline(f,color='black',linestyle=':') for f in [0,1,2,3]]
+[ax.axvline(f,color='black',linestyle=':') for f in range(params.n_rounds)]
 
-ax.set_xticks([0,1,2,3])
-#ax.set_xlim([-0.1,3.1])
+y_max = max(winner_estimates)
+y_min = min(loser_estimates)
+for r in range(params.n_rounds):
+    win_key = 'w' * r
+    r_winners = match_results[win_key]
+    win_str = str(np.round(np.mean(r_winners),2)) + ' +/- ' + str(np.round(np.std(r_winners) / np.sqrt(len(r_winners)),3))
+
+    loss_key = 'l' * r
+    r_losers = match_results[loss_key]
+    loss_str = str(np.round(np.mean(r_losers),2)) + ' +/- ' + str(np.round(np.std(r_losers) / np.sqrt(len(r_winners)),3))
+
+    ax.text(r+0.01,y_max+1,win_str)
+    ax.text(r+0.01,y_min-1,loss_str)
+
+ax.set_xticks(list(range(params.n_rounds)))
+ax.set_xlim([-0.1,params.n_rounds - 0.5])
 ax.set_ylabel('Estimate (mm)')
 ax.set_xlabel('Repeated Contests')
 
+ax.set_ylim([y_min - 1.5,y_max+1.5])
 fig.savefig('./figures/Fig4b.png',dpi=300)
 if True:
     fig.show()
     plt.show()
+

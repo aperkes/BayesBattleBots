@@ -8,7 +8,7 @@ from params import Params
 
 params = Params()
 
-s = 0.0
+s = -0.0
 f = 1.0
 l = -0.9
 
@@ -17,7 +17,9 @@ params.set_params()
 
 f1 = Fish(1,params)
 f2 = Fish(2,params)
-c = Fight(f1,f2)
+c = Fight(f1,f2,params)
+
+f1_size = 47
 
 f2_size = 47
 f2_effort = 0.37
@@ -54,7 +56,9 @@ for effort in [0.1,0.3,0.5,1]:
         ax.scatter(x,p_win,color='black')
 
 c.run_outcome()
+
 likelihood = f1._define_likelihood_mut_array(c,win=True)
-print(f1.xs,likelihood)
+#print(f1.xs,likelihood)
 ax.plot(f1.xs,likelihood)
-plt.show() 
+if True:
+    plt.show() 
