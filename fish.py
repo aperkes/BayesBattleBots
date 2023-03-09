@@ -549,8 +549,10 @@ class Fish:
             s,e,l = self.naive_params
         else:
             s,e,l = fight.outcome_params
-        shifted_params = (np.array([s,e,l]) + 1) / 2
-        S,F,L = np.tan(np.pi/2 - shifted_params*np.pi/2)
+        #shifted_params = (np.array([s,e,l]) + 1) / 2
+        #S,F,L = np.tan(np.pi/2 - shifted_params*np.pi/2)
+        S,F,L = fight.params.scaled_params
+        #print(S,F,L)
         if l == -1:
             print('#### l == 0, this is a little weird....')
             import pdb;pdb.set_trace()

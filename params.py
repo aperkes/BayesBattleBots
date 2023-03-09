@@ -57,6 +57,7 @@ class Params():
         self.f_outcome = f_outcome ## This defines how fights are determined.
         self.outcome_params = np.array(outcome_params)   ## This determines how fights are settled, skill,effort,luck
         self.scaled_params = np.tan(np.pi/2 - self.outcome_params*np.pi/2)
+        self.scaled_params = np.round(self.scaled_params,4)
         self.S,self.F,self.L = self.scaled_params
         #self.L = np.tan(np.pi/2 - outcome_params[2]*np.pi/2)
         self.L_set = False
@@ -119,6 +120,7 @@ class Params():
         self.outcome_params = np.array(self.outcome_params)
         shifted_params = (self.outcome_params +1) / 2
         self.scaled_params = np.tan(np.array(np.pi/2 - shifted_params*np.pi/2))
+        self.scaled_params = np.round(self.scaled_params,4)
         self.S,self.F,self.L = self.scaled_params
         self.S_set = True
         self.F_set = True
