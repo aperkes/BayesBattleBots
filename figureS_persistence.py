@@ -33,134 +33,170 @@ params.u_method = 'bayes'
 params.f_outcome = 'math'
 params.outcome_params = [s,e,l]
 params.set_params()
-
-winners,losers = [],[]
-biggers,smallers = [],[]
-winner_v_bigger,loser_v_bigger = [],[]
-winner_v_smaller,loser_v_smaller = [],[]
-winner_record,loser_record = [],[]
-final_win,final_loss = [],[]
-
 ## Let fish duke it out, then pull a fish out, let it win, and put it back in with the rest.
-replicates = 50
+replicates = 10
+iterations = 3
 scale = 1
 
 
-plt.rcParams.update({'font.size': 18})
-plt.rcParams.update({'lines.linewidth':5})
-plt.rcParams.update({'axes.linewidth':2})
-
-fig,ax = plt.subplots()
-fig.set_size_inches(17,11.5)
+#plt.rcParams.update({'font.size': 18})
+#plt.rcParams.update({'lines.linewidth':5})
+#plt.rcParams.update({'axes.linewidth':2})
 
 INIT = False
 
-
 ew_pairs = []
-for i in tqdm(range(replicates)):
-    #fishes = [Fish(f,effort_method=params.effort_method,update_method=params.u_method) for f in range(params.n_fish)]
-    #tank = Tank(fishes,n_fights = params.n_fights,f_params=params.outcome_params,f_method=params.f_method,f_outcome=params.f_outcome,u_method=params.u_method) fishes = [Fish(f,params) for f in range(params.n_fish)]
-    fishes = [Fish(f,params) for f in range(params.n_fish)]
-    tank = Tank(fishes,params)
-    if INIT:
-        tank._initialize_likelihood()
-    tank.run_all(False)
 
-    f = copy.deepcopy(tank.fishes[0])
-    #f2 = tank.fishes[1] ## remember, fish are pointers, so they can exist in both lists
-    f2 = copy.deepcopy(tank.fishes[1])
-    opp = Fish(size = f.size*scale)
-    opp2 = Fish(size = f2.size/scale)
-    f_win = Fight(f,opp,outcome=0)
-    f_loss = Fight(f2,opp2,outcome=1) 
-    f_win.winner = f
-    f_win.loser = opp
-    f_loss.winner = opp2
-    f_loss.loser = f2
-    #print(f.estimate,len(f.est_record))
+min_reps = 10
+max_reps = 20
+r_bins = max_reps - min_reps
+
+ps_array = np.empty([r_bins,iterations])
+pb_array = np.empty_like(ps_array)
+pm_array = np.empty_like(ps_array)
+smean_array = np.empty_like(ps_array)
+bmean_array = np.empty_like(ps_array)
+mmean_array = np.empty_like(ps_array)
+
+for reps in tqdm(range(min_reps,max_reps)):
+    for i in range(iterations): 
+        winners,losers = [],[]
+        biggers,smallers = [],[]
+        winner_v_bigger,loser_v_bigger = [],[]
+        winner_v_smaller,loser_v_smaller = [],[]
+        winner_record,loser_record = [],[]
+        final_win,final_loss = [],[]
+
+        for r in range(replicates):
+            fishes = [Fish(f,params) for f in range(params.n_fish)]
+            tank = Tank(fishes,params)
+            if INIT:
+                tank._initialize_likelihood()
+            tank.run_all(False)
+
+            f = copy.deepcopy(tank.fishes[0])
+            f2 = copy.deepcopy(tank.fishes[1])
+            opp = Fish(size = f.size*scale)
+            opp2 = Fish(size = f2.size/scale)
+            f_win = Fight(f,opp,outcome=0)
+            f_loss = Fight(f2,opp2,outcome=1) 
+            f_win.winner = f
+            f_win.loser = opp
+            f_loss.winner = opp2
+            f_loss.loser = f2
+            ## Because this fight is never actually run, it never asks about effort, so you have to provide it
+            f_win.winner.effort = 0.5
+            f_win.loser.effort = 0.5
+            f_loss.loser.effort = 0.5
+            f_loss.winner.effort = 0.5
+
+            f.update(True,f_win)    
+            f2.update(False,f_loss)
+            #print(f.estimate)
+            fishes2 = copy.deepcopy(fishes)
+            fishes2[0] = f
+            tank2 = Tank(fishes2,params)
+            if INIT:
+                tank2._initialize_likelihood()
+            fishes3 = copy.deepcopy(fishes)
+            fishes3[1] = f2
+            tank3 = Tank(fishes3,params)
+            if INIT:
+                tank3._initialize_likelihood()
+            #tank3 = copy.deepcopy(tank2)
+            tank2.run_all(False)
+            tank3.run_all(False)
+            winners.append(f)
+            rank_order= np.argsort(np.array(tank2.sizes))
+            ranks = np.empty_like(rank_order)
+            ranks[rank_order] = np.arange(tank2.n_fish) ## This took me an embarrasingly long time to get right. 
+            f_rank = ranks[f.idx]
+            l_rank = ranks[f2.idx]
+
+            winner_record.append(np.sum(tank2.history[-1,f.idx]) / (params.n_fish - 1))
+            loser_record.append(np.sum(tank3.history[-1,f2.idx]) / (params.n_fish - 1))
+
+            if np.max(tank2.sizes) != f2.size:
+                idx_bigger_l = np.arange(tank.n_fish)[ranks == (l_rank + 1)][0]
+                loser_v_bigger.append(tank3.win_record[f2.idx,idx_bigger_l]/params.n_fights)
+                #loser_v_bigger.append(tank3.history[-1,f2.idx,idx_bigger_l])
+
+            if np.min(tank2.sizes) != f.size:
+                idx_smaller_w = np.arange(tank.n_fish)[ranks == (f_rank - 1)][0]
+                winner_v_smaller.append(tank2.win_record[f.idx,idx_smaller_w]/params.n_fights)
+                #winner_v_smaller.append(tank2.history[-1,f.idx,idx_smaller_w])
+
+            if np.max(tank2.sizes) != f.size:
+                idx_bigger = np.arange(tank.n_fish)[ranks == (f_rank + 1)][0]
+                winner_v_bigger.append(tank2.win_record[f.idx,idx_bigger]/params.n_fights)
+                #winner_v_bigger.append(tank2.history[-1,f.idx,idx_bigger])
+
+            else:
+                idx_bigger = f.idx 
+            biggers.append(tank.fishes[idx_bigger])
+
+            if np.min(tank3.sizes) != f2.size:
+                idx_smaller = np.arange(tank.n_fish)[ranks == (l_rank - 1)][0]
+                loser_v_smaller.append(tank3.win_record[f2.idx,idx_smaller]/params.n_fights)
+                #loser_v_smaller.append(tank3.history[-1,f2.idx,idx_smaller])
+                #import pdb;pdb.set_trace()
+            else:
+                idx_smaller = f2.idx
+            smallers.append(tank2.fishes[idx_smaller])
+            losers.append(f2)
+
+            match1 = Fish(1,params,size = f.size)
+            match2 = Fish(2,params,size = f2.size)
+            #print(f.estimate,f2.estimate,match1.estimate,match2.estimate)
+            fight1 = Fight(f,match1,params)
+            fight2 = Fight(f2,match2,params)
+            fight1.run_outcome()
+            ew_pairs.append([f.effort,f.wager])
+            #import pdb;pdb.set_trace()
+            fight2.run_outcome()
+            #print(f2.effort,match2.effort,f.effort)
+            final_win.append(1-fight1.outcome)
+            final_loss.append(1-fight2.outcome)
+         
+        win_outcomes = []
+        loss_outcomes = []
 
 
-    ## Because this fight is never actually run, it never asks about effort, so you have to provide it
-    f_win.winner.effort = 0.5
-    f_win.loser.effort = 0.5
-    f_loss.loser.effort = 0.5
-    f_loss.winner.effort = 0.5
+        for f_i in range(len(winners)):
+            f = winners[f_i]
+            check_fish = Fish(0,params,size=f.size)
+            check_fight = Fight(check_fish,f,params)
+            outcome = check_fight.run_outcome()
+            win_outcomes.append(outcome)
 
-    f.update(True,f_win)    
-    f2.update(False,f_loss)
-    #print(f.estimate)
-    fishes2 = copy.deepcopy(fishes)
-    fishes2[0] = f
-    tank2 = Tank(fishes2,params)
-    if INIT:
-        tank2._initialize_likelihood()
-    fishes3 = copy.deepcopy(fishes)
-    fishes3[1] = f2
-    tank3 = Tank(fishes3,params)
-    if INIT:
-        tank3._initialize_likelihood()
-    #tank3 = copy.deepcopy(tank2)
-    tank2.run_all(False)
-    tank3.run_all(False)
-    winners.append(f)
-    rank_order= np.argsort(np.array(tank2.sizes))
-    ranks = np.empty_like(rank_order)
-    ranks[rank_order] = np.arange(tank2.n_fish) ## This took me an embarrasingly long time to get right. 
-    f_rank = ranks[f.idx]
-    l_rank = ranks[f2.idx]
-    #winner_record.append(np.sum(tank2.win_record[f.idx]) / (params.n_fights * (params.n_fish - 1)))
-    #loser_record.append(np.sum(tank3.win_record[f2.idx]) / (params.n_fights * (params.n_fish - 1)))
-    winner_record.append(np.sum(tank2.history[-1,f.idx]) / (params.n_fish - 1))
-    loser_record.append(np.sum(tank3.history[-1,f2.idx]) / (params.n_fish - 1))
+        for f_i in range(len(losers)):
+            f = losers[f_i]
 
-    if np.max(tank2.sizes) != f2.size:
-        idx_bigger_l = np.arange(tank.n_fish)[ranks == (l_rank + 1)][0]
-        loser_v_bigger.append(tank3.win_record[f2.idx,idx_bigger_l]/params.n_fights)
-        #loser_v_bigger.append(tank3.history[-1,f2.idx,idx_bigger_l])
+### Check loser against a size matched fish
+            check_fish = Fish(0,params,size=f.size)
+            check_fight = Fight(check_fish,f,params)
+            outcome = check_fight.run_outcome()
+            loss_outcomes.append(outcome)
 
-    if np.min(tank2.sizes) != f.size:
-        idx_smaller_w = np.arange(tank.n_fish)[ranks == (f_rank - 1)][0]
-        winner_v_smaller.append(tank2.win_record[f.idx,idx_smaller_w]/params.n_fights)
-        #winner_v_smaller.append(tank2.history[-1,f.idx,idx_smaller_w])
 
-    if np.max(tank2.sizes) != f.size:
-        idx_bigger = np.arange(tank.n_fish)[ranks == (f_rank + 1)][0]
-        winner_v_bigger.append(tank2.win_record[f.idx,idx_bigger]/params.n_fights)
-        #winner_v_bigger.append(tank2.history[-1,f.idx,idx_bigger])
+           
+        t_s,p_s = ttest_ind(winner_v_smaller,loser_v_smaller)
+        t_b,p_b = ttest_ind(winner_v_bigger,loser_v_bigger)
+        t_m,p_m = ttest_ind(win_outcomes,loss_outcomes)
+        s_diff = np.mean(winner_v_smaller) - np.mean(loser_v_smaller)
+        b_diff = np.mean(winner_v_bigger) - np.mean(loser_v_bigger)
+        m_diff = np.mean(win_outcomes) - np.mean(loss_outcomes)
+        ps_array[r,i] = p_s
+        pb_array[r,i] = p_b
+        pm_array[r,i] = p_b
+        smean_array[r,i] = s_diff
+        bmean_array[r,i] = b_diff
+        mmean_array[r,i] = m_diff
 
-    else:
-        idx_bigger = f.idx 
-    biggers.append(tank.fishes[idx_bigger])
-
-    if np.min(tank3.sizes) != f2.size:
-        idx_smaller = np.arange(tank.n_fish)[ranks == (l_rank - 1)][0]
-        loser_v_smaller.append(tank3.win_record[f2.idx,idx_smaller]/params.n_fights)
-        #loser_v_smaller.append(tank3.history[-1,f2.idx,idx_smaller])
-        #import pdb;pdb.set_trace()
-    else:
-        idx_smaller = f2.idx
-    smallers.append(tank2.fishes[idx_smaller])
-    losers.append(f2)
-
-    match1 = Fish(1,params,size = f.size)
-    match2 = Fish(2,params,size = f2.size)
-    #print(f.estimate,f2.estimate,match1.estimate,match2.estimate)
-    fight1 = Fight(f,match1,params)
-    fight2 = Fight(f2,match2,params)
-    fight1.run_outcome()
-    ew_pairs.append([f.effort,f.wager])
-    #import pdb;pdb.set_trace()
-    fight2.run_outcome()
-    #print(f2.effort,match2.effort,f.effort)
-    final_win.append(1-fight1.outcome)
-    final_loss.append(1-fight2.outcome)
-    
-print('win success:',np.mean(final_win),'sem:',np.std(final_win) / np.sqrt(len(final_win)))
-print('loser success:',np.mean(final_loss),'sem:',np.std(final_loss)/np.sqrt(len(final_loss)))
-print('winner estimate',np.mean([f.estimate for f in winners]))
-print('loser estimate',np.mean([f.estimate for f in losers]))
-print('match estimate:',match1.estimate)
-
+fig,ax = plt.subplots()
+ax.plot(np.arange(min_reps,max_reps),np.nanmean(pm_array,1))
+plt.show()
+"""
 if False:
     fig5,ax5 = plt.subplots()
     ew_pairs = np.array(ew_pairs)
@@ -339,9 +375,8 @@ fig4.tight_layout()
 #import pdb;pdb.set_trace()
 print('mean winner,loser')
 print(np.mean(winner_record),np.mean(loser_record))
-print('vs smaller:',ttest_ind(winner_v_smaller,loser_v_smaller))
-print('vs bigger:',ttest_ind(winner_v_bigger,loser_v_bigger))
-print('vs sizematch',ttest_ind(win_outcomes,loss_outcomes))
 plt.show()
 print(f.params.outcome_params)
+"""
 print('Done!')
+
