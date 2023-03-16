@@ -34,8 +34,8 @@ params.f_outcome = 'math'
 params.outcome_params = [s,e,l]
 params.set_params()
 ## Let fish duke it out, then pull a fish out, let it win, and put it back in with the rest.
-replicates = 10
-iterations = 3
+#replicates = 10
+iterations = 4
 scale = 1
 
 
@@ -48,7 +48,8 @@ INIT = False
 ew_pairs = []
 
 min_reps = 10
-max_reps = 20
+max_reps = 50
+rep_list = np.arange(min_reps,max_reps)
 r_bins = max_reps - min_reps
 
 ps_array = np.empty([r_bins,iterations])
@@ -58,7 +59,8 @@ smean_array = np.empty_like(ps_array)
 bmean_array = np.empty_like(ps_array)
 mmean_array = np.empty_like(ps_array)
 
-for reps in tqdm(range(min_reps,max_reps)):
+for rep in tqdm(range(r_bins)):
+    replicates = rep_list[rep]
     for i in range(iterations): 
         winners,losers = [],[]
         biggers,smallers = [],[]
@@ -78,8 +80,8 @@ for reps in tqdm(range(min_reps,max_reps)):
             f2 = copy.deepcopy(tank.fishes[1])
             opp = Fish(size = f.size*scale)
             opp2 = Fish(size = f2.size/scale)
-            f_win = Fight(f,opp,outcome=0)
-            f_loss = Fight(f2,opp2,outcome=1) 
+            f_win = Fight(f,opp,params,outcome=0)
+            f_loss = Fight(f2,opp2,params,outcome=1) 
             f_win.winner = f
             f_win.loser = opp
             f_loss.winner = opp2
@@ -186,16 +188,24 @@ for reps in tqdm(range(min_reps,max_reps)):
         s_diff = np.mean(winner_v_smaller) - np.mean(loser_v_smaller)
         b_diff = np.mean(winner_v_bigger) - np.mean(loser_v_bigger)
         m_diff = np.mean(win_outcomes) - np.mean(loss_outcomes)
-        ps_array[r,i] = p_s
-        pb_array[r,i] = p_b
-        pm_array[r,i] = p_b
-        smean_array[r,i] = s_diff
-        bmean_array[r,i] = b_diff
-        mmean_array[r,i] = m_diff
+        ps_array[rep,i] = p_s
+        pb_array[rep,i] = p_b
+        pm_array[rep,i] = p_b
+        smean_array[rep,i] = s_diff
+        bmean_array[rep,i] = b_diff
+        mmean_array[rep,i] = m_diff
+
+#import pdb;pdb.set_trace()
+prob_sig_m = pm_array < 0.05
+mean_prob_m = np.nanmean(prob_sig_m,1)
+std_prob_m = np.nanstd(prob_sig_m,1)
+xs = np.arange(min_reps,max_reps)
 
 fig,ax = plt.subplots()
-ax.plot(np.arange(min_reps,max_reps),np.nanmean(pm_array,1))
+ax.plot(xs,mean_prob_m)
+ax.fill_between(xs,mean_prob_m - std_prob_m,mean_prob_m + std_prob_m)
 plt.show()
+
 """
 if False:
     fig5,ax5 = plt.subplots()

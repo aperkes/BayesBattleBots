@@ -71,8 +71,8 @@ for i in tqdm(range(replicates)):
     f2 = copy.deepcopy(tank.fishes[1])
     opp = Fish(size = f.size*scale)
     opp2 = Fish(size = f2.size/scale)
-    f_win = Fight(f,opp,outcome=0)
-    f_loss = Fight(f2,opp2,outcome=1) 
+    f_win = Fight(f,opp,params,outcome=0)
+    f_loss = Fight(f2,opp2,params,outcome=1) 
     f_win.winner = f
     f_win.loser = opp
     f_loss.winner = opp2
