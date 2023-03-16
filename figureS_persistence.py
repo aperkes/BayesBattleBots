@@ -50,7 +50,7 @@ INIT = False
 
 #ew_pairs = []
 
-iterations = 50
+iterations = 100
 min_reps = 5
 max_reps = 8
 #rep_array = np.arange(min_reps,max_reps)
@@ -206,8 +206,13 @@ for rep in range(r_bins):
             outcome = check_fight.run_outcome()
             loss_outcomes[f_i] = outcome
            
-        t_s,p_s = ttest_ind(winner_v_smaller,loser_v_smaller)
-        t_b,p_b = ttest_ind(winner_v_bigger,loser_v_bigger)
+        cleaned_wvs = winner_v_smaller[~np.isnan(winner_v_smaller)]
+        cleaned_lvs = loser_v_smaller[~np.isnan(loser_v_smaller)]
+        cleaned_wvb = winner_v_bigger[~np.isnan(winner_v_bigger)]
+        cleaned_lvb = loser_v_bigger[~np.isnan(loser_v_bigger)]
+
+        t_s,p_s = ttest_ind(cleaned_wvs,cleaned_lvs)
+        t_b,p_b = ttest_ind(cleaned_wvb,cleaned_lvb)
         t_m,p_m = ttest_ind(win_outcomes,loss_outcomes)
 
         smaller_diff = winner_v_smaller - loser_v_smaller
@@ -239,36 +244,33 @@ for rep in range(r_bins):
 
 xs = rep_array
 log_xs = np.log(rep_array)
-
+log_xs = np.emath.logn(5, rep_array)
 
 ## Probabilities for size matched
 prob_sig_m = pm_array < 0.05
 mean_prob_m = np.nanmean(prob_sig_m,1)
 std_prob_m = np.nanstd(prob_sig_m,1)
 
-## Probabilities for bigger
-prob_sig_b = pb_array < 0.05
-mean_prob_b = np.nanmean(prob_sig_b,1)
-std_prob_b = np.nanstd(prob_sig_b,1)
-
 ## Probabilities for smaller
 prob_sig_s = ps_array < 0.05
 mean_prob_s = np.nanmean(prob_sig_s,1)
 std_prob_s = np.nanstd(prob_sig_s,1)
 
+## Probabilities for bigger
+prob_sig_b = pb_array < 0.05
+mean_prob_b = np.nanmean(prob_sig_b,1)
+std_prob_b = np.nanstd(prob_sig_b,1)
+
 ## Means (and std) for size matched, smallers, and biggers
-#print(mmean_array)
 mean_diff_m = np.nanmean(mmean_array,1)
-#print(mean_diff_m)
-#sem_diff_m = np.nanstd(mmean_array,1) / np.sqrt(rep_array)
 sem_diff_m = np.nanmean(mstd_array,1) / np.sqrt(rep_array)
 
 mean_diff_s = np.nanmean(smean_array,1)
-sem_diff_s = np.nanstd(smean_array,1) / np.sqrt(rep_array)
+#sem_diff_s = np.nanstd(smean_array,1) / np.sqrt(rep_array)
 sem_diff_s = np.nanmean(sstd_array,1) / np.sqrt(rep_array)
 
 mean_diff_b = np.nanmean(bmean_array,1)
-sem_diff_b = np.nanstd(bmean_array,1) / np.sqrt(rep_array)
+#sem_diff_b = np.nanstd(bmean_array,1) / np.sqrt(rep_array)
 sem_diff_b = np.nanmean(bstd_array,1) / np.sqrt(rep_array)
 
 
