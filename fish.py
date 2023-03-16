@@ -265,6 +265,9 @@ class Fish:
         #post = np.round(prior,4) * np.round(likelihood * 4)
         #post = prior * 1000 * likelihood * 1000
         post = prior * likelihood
+        if min(post) < 0:
+            import pdb; pdb.set_trace()
+            print('uh oh.')
         #post = post / auc(xs,post)
         post = post / np.sum(post)
         return post
