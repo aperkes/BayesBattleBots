@@ -121,6 +121,7 @@ class Fight():
             prob_win = 0
         else:
             L = self.params.L
+            #prob_win = (np.round(w,8)**L) / 2
             prob_win = (w**L) / 2
         return prob_win
 

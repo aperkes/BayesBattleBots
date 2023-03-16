@@ -260,6 +260,10 @@ class Fish:
         return self.xs[cdf_5],self.xs[cdf_25],self.xs[cdf_75],self.xs[cdf_95]
 
     def _update(self,prior,likelihood,xs = None):
+        #post = np.log(prior) * np.log(likelihood)
+        #post = np.exp(post)
+        #post = np.round(prior,4) * np.round(likelihood * 4)
+        #post = prior * 1000 * likelihood * 1000
         post = prior * likelihood
         #post = post / auc(xs,post)
         post = post / np.sum(post)
@@ -541,6 +545,7 @@ class Fish:
    
 ## Wager function optimized for array multiplication
     def _wager_curve_smart(self,w,L=np.tan((np.pi - np.pi*-0.9)/2)):
+        w = w.round(8)
         return (w ** L) / 2
 
 ## Updated likelihood function that *should* be faster
@@ -606,7 +611,6 @@ class Fish:
         else:
             likelihood[:wager_index] = 1 - likelihood[:wager_index]
 ## PDB
-        #import pdb; pdb.set_trace()
 
         return likelihood
 
@@ -727,14 +731,11 @@ class Fish:
 ## Get likelihood function
         self.win_record.append([other_fish.size,win,self.effort,cost])
         if self.effort > other_fish.effort:
-            #print(self.effort,other_fish.effort,cost)
-            #import pdb;pdb.set_trace()
             pass
         if self.params.effort_method[1] == 0:
             likelihood = self._use_simple_likelihood(fight,win)
             i_estimate = np.argmax(self.xs > self.estimate)
         else:
-            #import pdb;pdb.set_trace()
             likelihood = self._use_mutual_likelihood(fight,win)
             #likelihood = self._define_likelihood_mutual(fight,win)
         self.likelihood = likelihood
@@ -1075,11 +1076,6 @@ class Fish:
 ## Currenty, this is the probability of being bigger. I need the probability of winning.
             effort = 1 - self.cdf_prior[np.argmax(self.xs > opp_size)]
             effort = np.round(effort,4)
-            """
-            if effort > .5 and self.estimate < f_opp.size:
-                import pdb
-                pdb.set_trace()
-            """
             #effort =  np.sum(self.cdf_prior[self.xs > f_opp.size]) / np.sum(self.cdf_prior)
 
         elif strategy == 'BayesMA':
@@ -1204,7 +1200,10 @@ class Fish:
     def get_stats(self):
         prior_mean = np.sum(self.prior * self.xs / np.sum(self.prior))
         #prior_std = np.sum((self.xs - prior_mean)**2 * self.prior/(np.sum(self.prior)))
-        prior_std = np.sum((self.prior * (self.xs - prior_mean)**2))
+        prior_std = np.sum((self.prior * (self.xs - prior_mean)**2)) ## I need this for confidence correction
+        #prior_std = 0
+        if prior_std < 0:
+            import pdb;pdb.set_trace()
         prior_std = np.sqrt(prior_std)
         self.prior_mean = prior_mean
         self.prior_std = prior_std
