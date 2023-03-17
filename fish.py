@@ -24,6 +24,7 @@ from params import Params
 #               True: in which is uses a true mean with mean/5 as the std
 #               an int: in which case it uses the int as the std (10 would be average)
 class Fish:
+    __slots__ = ('idx', 'name', 'params', 'prior', 'likelihood', 'likelihood_dict', 'age', 'xs', 'r_rhp', 'a_growth', 'c_aversion', 'acuity', 'awareness', 'insight', 'size', 'estimate', 'cdf_prior', 'estimate_', 'prior_mean', 'prior_std', 'win_record', 'est_record', 'est_record_', 'sdest_record', 'range_record', 'effort', 'decay', 'decay_all', 'discrete', 'update', '_choose_effort', 'update_method', 'wager', 'boost', 'energy', 'max_energy', 'energy_cost', 'size_record', 'energy_record', 'fitness_record', 'alive', 's_max', 'naive_params', 'naive_prior', 'naive_estimate', 'naive_likelihood', 'guess', 'correction')
     def __init__(self,idx=0,params=None,
                  age=None,size=None,
                  prior=None,likelihood=None,likelihood_dict=None,
@@ -265,9 +266,6 @@ class Fish:
         #post = np.round(prior,4) * np.round(likelihood * 4)
         #post = prior * 1000 * likelihood * 1000
         post = prior * likelihood
-        if min(post) < 0:
-            import pdb; pdb.set_trace()
-            print('uh oh.')
         #post = post / auc(xs,post)
         post = post / np.sum(post)
         return post
@@ -491,16 +489,7 @@ class Fish:
                 me = fight.fish1
             else:
                 print('\nummmm.....')
-            print('\nTESTING STUFF:')
-            import copy
-            fight_ = copy.deepcopy(fight)
-            if fight_.fish1.size == o_size:
-                fight_.fish2.size = x_size
-            else:
-                fight_.fish1.size = x_size
-            _ = fight_.mathy()
-
-
+            
             print('my size,opp size,my effo, opp effort, my wager, opp wager')
             print(x_size,o_size,x_eff,o_eff,x_wag,o_wag)
             print('perceived p_win',p_win)
@@ -548,7 +537,6 @@ class Fish:
    
 ## Wager function optimized for array multiplication
     def _wager_curve_smart(self,w,L=np.tan((np.pi - np.pi*-0.9)/2)):
-        w = w.round(8)
         return (w ** L) / 2
 
 ## Updated likelihood function that *should* be faster
@@ -598,7 +586,7 @@ class Fish:
 
 ## Build relative wager array
         wager_array = np.empty_like(xs)
-        if x_wager[-1] < o_wager[-1]:
+        if x_wager[-1] <= o_wager[-1]:
             wager_index = len(o_wager) ## this deals with the case where x_wager is never bigger
             wager_array = x_wager / o_wager
         else:
@@ -1212,7 +1200,11 @@ class Fish:
         self.prior_std = prior_std
         
         return prior_mean,prior_std
- 
+    def copy(self):
+        self.params.prior = np.array(self.prior)
+        f = Fish(self.idx,self.params)
+        return f
+
 ## Simplified fish object to decrease overhead when desired
 class FishNPC(Fish):
     def __init__(self,idx=0,params=None,prior=None,likelihood=None,likelihhood_dict=None):

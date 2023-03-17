@@ -21,8 +21,8 @@ import cProfile,pstats
 ## for debugging runtime warnings:
 #np.seterr(all='raise')
 
-profile = cProfile.Profile()
-profile.enable()
+#profile = cProfile.Profile()
+#profile.enable()
 
 #s,e,l = -.8,-.6,-0.99
 s,e,l=-0.9,-0.5,-0.7
@@ -36,9 +36,9 @@ params.sd_size = 20
 params.n_fights = 5 
 params.n_fish = 5
 params.acuity = 5
-params.f_method = 'balanced'
-params.u_method = 'bayes'
-params.f_outcome = 'math'
+#params.f_method = 'balanced'
+#params.u_method = 'bayes'
+#params.f_outcome = 'math'
 params.outcome_params = [s,e,l]
 params.set_params()
 ## Let fish duke it out, then pull a fish out, let it win, and put it back in with the rest.
@@ -54,7 +54,7 @@ INIT = False
 
 #ew_pairs = []
 
-iterations = 1000
+iterations = 100
 min_reps = 5
 max_reps = 8
 #rep_array = np.arange(min_reps,max_reps)
@@ -87,9 +87,12 @@ for rep in range(r_bins):
         #final_win,final_loss = [],[]
 
         winners = [np.nan] * replicates
-        losers = copy.deepcopy(winners)
-        biggers = copy.deepcopy(winners)
-        smallers = copy.deepcopy(winners)
+        losers = [np.nan] * replicates
+        biggers = [np.nan] * replicates
+        smallers = [np.nan] * replicates
+        #losers = copy.deepcopy(winners)
+        #biggers = copy.deepcopy(winners)
+        #smallers = copy.deepcopy(winners)
 
         winner_v_bigger = np.empty(replicates)
         loser_v_bigger = np.empty_like(winner_v_bigger)
@@ -111,8 +114,10 @@ for rep in range(r_bins):
                 tank._initialize_likelihood()
             tank.run_all(False)
 
-            f = copy.deepcopy(tank.fishes[0])
-            f2 = copy.deepcopy(tank.fishes[1])
+            #f = copy.deepcopy(tank.fishes[0])
+            #f2 = copy.deepcopy(tank.fishes[1])
+            f = tank.fishes[0].copy()
+            f2 = tank.fishes[1].copy()
             opp = Fish(size = f.size*scale)
             opp2 = Fish(size = f2.size/scale)
             f_win = Fight(f,opp,params,outcome=0)
@@ -130,10 +135,12 @@ for rep in range(r_bins):
             f.update(True,f_win)    
             f2.update(False,f_loss)
             #print(f.estimate)
-            fishes2 = copy.deepcopy(fishes)
+            #fishes2 = copy.deepcopy(fishes)
+            fishes2 = [fishy.copy() for fishy in fishes]
             fishes2[0] = f
             tank2 = Tank(fishes2,params)
-            fishes3 = copy.deepcopy(fishes)
+            #fishes3 = copy.deepcopy(fishes)
+            fishes3 = [fishy.copy() for fishy in fishes]
             fishes3[1] = f2
             tank3 = Tank(fishes3,params)
 
@@ -245,11 +252,11 @@ for rep in range(r_bins):
         if b_diff > 1 or s_diff > 1 or m_diff > 1:
             import pdb;pdb.set_trace()
             print('uh oh.')
-    profile.disable()
-    ps = pstats.Stats(profile)
-    ps.sort_stats('calls','cumtime')
-    ps.print_stats(3)
-    import pdb;pdb.set_trace() 
+    #profile.disable()
+    #ps = pstats.Stats(profile)
+    #ps.sort_stats('tottime','cumtime')
+    #ps.print_stats(3)
+    #import pdb;pdb.set_trace() 
 
 xs = rep_array
 log_xs = np.log(rep_array)

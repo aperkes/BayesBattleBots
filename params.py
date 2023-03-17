@@ -4,6 +4,7 @@ import numpy as np
 import copy
 
 class Params():
+    __slots__ = ('n_iterations', 'iterations', 'print_me', 'mutant_effort', 'mutant_update', 'mutant_prior', 'n_fish', 'n_npcs', 'n_rounds', 'f_method', 'mean_age', 'min_size', 'max_size', 'mean_size', 'sd_size', 'energy_refill', 'energy_cost', 'n_fights', 'fitness_ratio', 'death', 'food', 'free_food', 'f_outcome', 'outcome_params', 'scaled_params', 'S', 'F', 'L', 'L_set', 'outcome', 'effort_method', 'effort_exploration', 'baseline_effort', 'update_method', 'age', 'size', 'prior', 'likelihood', 'likelihood_dict', 'xs', 'r_rhp', 'a_growth', 'c_aversion', 'max_energy', 'start_energy', 'acuity', 'pre_acuity', 'post_acuity', 'awareness', 'insight', 'poly_param_a', 'poly_param_b', 'poly_param_c', 'poly_param_m', 'poly_step', 'verbose', 'mutant','S_set','F_set')
     def __init__(self,iterations=1000,print_me=False,     ## Sim Params
                 n_fish=4,n_rounds=200,f_method='random',    ## Tank params
                 energy_refill=0.5,energy_cost=False,n_fights=10,
@@ -13,7 +14,7 @@ class Params():
                 f_outcome='math',outcome_params=[0.0,0.0,-0.9], ## Fight Params
                 effort_method='SmoothPoly',baseline_effort=.2,update_method='bayes',  ## Fish Params
                 age=50,size=None,prior=None,likelihood=None,likelihood_dict=None,
-                xs=np.linspace(1,99,500),r_rhp=0,a_growth=True,c_aversion=1,
+                xs=np.linspace(1,100,500),r_rhp=0,a_growth=True,c_aversion=1,
                 max_energy=1,start_energy=1,effort_exploration=0.1,
                 acuity=10,pre_acuity=10,post_acuity=0,awareness=10,insight=True,
                 #poly_param_a = 3,poly_param_b=-2.4,poly_param_c=0.1,
@@ -93,7 +94,7 @@ class Params():
         self.mutant=False
         
     def copy(self):
-        return copy.deepcopy(self)
+        return copy.copy(self)
 
     def se_wager_function(self,rel_size,effort):    
         wager = rel_size ** self.S * effort ** self.F

@@ -18,6 +18,7 @@ from params import Params
 
 ## Simple-ish object to keep track of matchups (and decide outcome if necessary)
 class Fight():
+    __slots__ = ('fish1', 'fish2', 'fishes', 'params', 'mechanism', 'level', 'outcome', 'outcome_params', 'scale', 'idx', 'food', 'p_win', 'min_normed', 'roll', 'winner', 'loser')
     def __init__(self,fish1,fish2,params=None,
                 idx=0,outcome=None,level=None):
         self.fish1 = fish1
