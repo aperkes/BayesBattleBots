@@ -323,6 +323,12 @@ ax1.set_ylabel('Mean difference observed (winner vs loser)')
 
 fig1.legend()
 
+if True:
+    fig1.savefig('./figures/fig4S_diff.svg')
+    fig.savefig('./figures/fig4S_prob.svg')
+if False:
+    plt.show()
+
 if np.nanmax(mean_diff_b) > 1:
     import pdb;pdb.set_trace()
 if np.nanmax(mean_diff_s) > 1:
@@ -331,7 +337,6 @@ if np.nanmax(mean_diff_m) > 1:
     import pdb;pdb.set_trace()
 
 
-plt.show()
 
 print('Done!')
 
