@@ -153,6 +153,7 @@ ax.set_ylabel('Estimate (mm)')
 ax.set_xlabel('Repeated Contests')
 
 ax.set_ylim([y_min - 1.5,y_max+1.5])
+ax.set_title('Fish estimates are path dependent and have recency bias')
 fig.savefig('./figures/Fig4b.png',dpi=300)
 if True:
     fig.show()
