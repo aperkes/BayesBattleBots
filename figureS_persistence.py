@@ -50,11 +50,11 @@ INIT = False
 
 #ew_pairs = []
 
-iterations = 100
+iterations = 1000
 min_reps = 5
 max_reps = 8
 #rep_array = np.arange(min_reps,max_reps)
-rep_array = np.array([5,20,50,100])
+rep_array = np.array([5,25,40,60,80,100,125,200,300,500])
 r_bins = len(rep_array)
 
 ps_array = np.empty([r_bins,iterations])
