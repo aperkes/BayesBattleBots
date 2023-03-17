@@ -24,6 +24,7 @@ from params import Params
 #               True: in which is uses a true mean with mean/5 as the std
 #               an int: in which case it uses the int as the std (10 would be average)
 class Fish:
+    __slots__ = ('idx', 'name', 'params', 'prior', 'likelihood', 'likelihood_dict', 'age', 'xs', 'r_rhp', 'a_growth', 'c_aversion', 'acuity', 'awareness', 'insight', 'size', 'estimate', 'cdf_prior', 'estimate_', 'prior_mean', 'prior_std', 'win_record', 'est_record', 'est_record_', 'sdest_record', 'range_record', 'effort', 'decay', 'decay_all', 'discrete', 'update', '_choose_effort', 'update_method', 'wager', 'boost', 'energy', 'max_energy', 'energy_cost', 'size_record', 'energy_record', 'fitness_record', 'alive', 's_max', 'naive_params', 'naive_prior', 'naive_estimate', 'naive_likelihood', 'guess', 'correction')
     def __init__(self,idx=0,params=None,
                  age=None,size=None,
                  prior=None,likelihood=None,likelihood_dict=None,
@@ -260,6 +261,10 @@ class Fish:
         return self.xs[cdf_5],self.xs[cdf_25],self.xs[cdf_75],self.xs[cdf_95]
 
     def _update(self,prior,likelihood,xs = None):
+        #post = np.log(prior) * np.log(likelihood)
+        #post = np.exp(post)
+        #post = np.round(prior,4) * np.round(likelihood * 4)
+        #post = prior * 1000 * likelihood * 1000
         post = prior * likelihood
         #post = post / auc(xs,post)
         post = post / np.sum(post)
@@ -484,16 +489,7 @@ class Fish:
                 me = fight.fish1
             else:
                 print('\nummmm.....')
-            print('\nTESTING STUFF:')
-            import copy
-            fight_ = copy.deepcopy(fight)
-            if fight_.fish1.size == o_size:
-                fight_.fish2.size = x_size
-            else:
-                fight_.fish1.size = x_size
-            _ = fight_.mathy()
-
-
+            
             print('my size,opp size,my effo, opp effort, my wager, opp wager')
             print(x_size,o_size,x_eff,o_eff,x_wag,o_wag)
             print('perceived p_win',p_win)
@@ -592,7 +588,7 @@ class Fish:
 
 ## Build relative wager array
         wager_array = np.empty_like(xs)
-        if x_wager[-1] < o_wager[-1]:
+        if x_wager[-1] <= o_wager[-1]:
             wager_index = len(o_wager) ## this deals with the case where x_wager is never bigger
             wager_array = x_wager / o_wager
         else:
@@ -608,7 +604,6 @@ class Fish:
         else:
             likelihood[:wager_index] = 1 - likelihood[:wager_index]
 ## PDB
-        #import pdb; pdb.set_trace()
 
         return likelihood
 
@@ -729,14 +724,11 @@ class Fish:
 ## Get likelihood function
         self.win_record.append([other_fish.size,win,self.effort,cost])
         if self.effort > other_fish.effort:
-            #print(self.effort,other_fish.effort,cost)
-            #import pdb;pdb.set_trace()
             pass
         if self.params.effort_method[1] == 0:
             likelihood = self._use_simple_likelihood(fight,win)
             i_estimate = np.argmax(self.xs > self.estimate)
         else:
-            #import pdb;pdb.set_trace()
             likelihood = self._use_mutual_likelihood(fight,win)
             #likelihood = self._define_likelihood_mutual(fight,win)
         self.likelihood = likelihood
@@ -1077,11 +1069,6 @@ class Fish:
 ## Currenty, this is the probability of being bigger. I need the probability of winning.
             effort = 1 - self.cdf_prior[np.argmax(self.xs > opp_size)]
             effort = np.round(effort,4)
-            """
-            if effort > .5 and self.estimate < f_opp.size:
-                import pdb
-                pdb.set_trace()
-            """
             #effort =  np.sum(self.cdf_prior[self.xs > f_opp.size]) / np.sum(self.cdf_prior)
 
         elif strategy == 'BayesMA':
@@ -1206,13 +1193,20 @@ class Fish:
     def get_stats(self):
         prior_mean = np.sum(self.prior * self.xs / np.sum(self.prior))
         #prior_std = np.sum((self.xs - prior_mean)**2 * self.prior/(np.sum(self.prior)))
-        prior_std = np.sum((self.prior * (self.xs - prior_mean)**2))
+        prior_std = np.sum((self.prior * (self.xs - prior_mean)**2)) ## I need this for confidence correction
+        #prior_std = 0
+        if prior_std < 0:
+            import pdb;pdb.set_trace()
         prior_std = np.sqrt(prior_std)
         self.prior_mean = prior_mean
         self.prior_std = prior_std
         
         return prior_mean,prior_std
- 
+    def copy(self):
+        self.params.prior = np.array(self.prior)
+        f = Fish(self.idx,self.params)
+        return f
+
 ## Simplified fish object to decrease overhead when desired
 class FishNPC(Fish):
     def __init__(self,idx=0,params=None,prior=None,likelihood=None,likelihhood_dict=None):
