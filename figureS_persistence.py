@@ -16,15 +16,19 @@ from scipy.stats import ttest_ind
 from tqdm import tqdm
 
 import copy
-
+import cProfile,pstats
 
 ## for debugging runtime warnings:
 #np.seterr(all='raise')
+
+profile = cProfile.Profile()
+profile.enable()
 
 #s,e,l = -.8,-.6,-0.99
 s,e,l=-0.9,-0.5,-0.7
 
 params = Params()
+params.xs = np.linspace(1,100,100)
 params.mean_size = 50
 params.sd_size = 20
 #params.poly_param_c = 0
@@ -241,6 +245,11 @@ for rep in range(r_bins):
         if b_diff > 1 or s_diff > 1 or m_diff > 1:
             import pdb;pdb.set_trace()
             print('uh oh.')
+    profile.disable()
+    ps = pstats.Stats(profile)
+    ps.sort_stats('calls','cumtime')
+    ps.print_stats(3)
+    import pdb;pdb.set_trace() 
 
 xs = rep_array
 log_xs = np.log(rep_array)
