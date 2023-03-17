@@ -25,12 +25,10 @@ params.mean_size = 50
 params.sd_size = 20
 #params.poly_param_c = 0
 #params.effort_method = [1,1]
+params.f_method = 'shuffled'
 params.n_fights = 5 
 params.n_fish = 5
 params.acuity = 5
-params.f_method = 'balanced'
-params.u_method = 'bayes'
-params.f_outcome = 'math'
 params.outcome_params = [s,e,l]
 params.set_params()
 
@@ -203,6 +201,8 @@ for f_i in range(len(winners)):
     est_pre.append(pre_estimate)
     est_post.append(post_estimate)
     #f = tank.fishes[0]
+
+    import pdb;pdb.set_trace()
     winner_array[f_i] = f.est_record-f.est_record[n_rounds-1]
     ax.plot(np.array(f.est_record)-f.est_record[n_rounds-1],color='gold',alpha=.01)
     jitter = (np.random.rand() - .5) * .01
