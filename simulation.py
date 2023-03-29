@@ -127,7 +127,8 @@ class Simulation():
     
     def _get_tank_stats(self,tank):
         linearity,(d,p) = self._calc_linearity(tank)
-        return p,self._calc_stability(tank),self._calc_accuracy(tank),self._calc_effort(tank)
+        stability,_ = self._calc_stability(tank)
+        return p,stability,self._calc_accuracy(tank),self._calc_effort(tank)
     
     def _calc_linearity(self,tank,idx=None): ## idx is a slice object
         n_fish = len(tank.fishes)
@@ -161,10 +162,9 @@ class Simulation():
         return linearity,[d,p]
         
 ## Stability the proportion of interactions consistent with the overall mean. 
-    def _calc_stability(self,tank):
-        ## This means working through tank matrix by time, and I guess it's the standard deviation or something?
+    def _calc_stability(self,tank,idx = None):
 ## A nicer metric would be the proportion of bins where mean heirarchy == overall hierarchy, 
-        if tank.f_method == 'balanced':
+        if tank.f_method == 'balanced' or tank.f_method == 'shuffled':
             binned_history = tank.history
         else: ## Something feels wrong here... 
             ## First calculate a sliding window bigger than 2*n^2. We're going to have some missing values
@@ -179,12 +179,14 @@ class Simulation():
                 h0 = w*win_size
                 h1 = (w+1)*win_size
                 binned_history[w] = np.sum(tank.history[h0:h1],0)
-            ## This doesn't quite work
-            #kernel = np.ones([min_slide,tank.n_fish,tank.n_fish])
-            #binned_history = convolve(tank.history,kernel)
+
 # Instead, calculate the proportion of binned interactions that = overall interactions
+        if idx is not None:
+            binned_history = binned_history[idx]
+            mean_history = np.mean(tank.history[idx],0)
+        else:
+            mean_history = np.mean(tank.history,0)
         binary_bins = np.sign(binned_history - np.transpose(binned_history,axes=[0,2,1]))
-        mean_history = np.mean(tank.history,0)
         binary_final = np.sign(mean_history - np.transpose(mean_history))
 
 ## Use nCr formulat to get the total number of possible interactions
@@ -194,7 +196,7 @@ class Simulation():
         number_consistent = total_interactions - np.sum(binary_difference)
         proportion_consistent = number_consistent / total_interactions 
         #stability = np.mean(np.std(binned_history,axis=0))
-        return proportion_consistent
+        return proportion_consistent, binary_final
     
 ## Calculate dominance using some metric...ELO? 
     def _calc_dominance(self,tank):
