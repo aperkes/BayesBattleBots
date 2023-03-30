@@ -25,11 +25,13 @@ SAVE = False
 def build_sim(sd_size=2,params=Params()):
     params.outcome_params = [0.5,-0.5,-.99]
     params.set_params()
-#params.size=50
-#params.prior = True
+    if sd_size == 0:
+        params.size=50
+    else:
+        params.size=None
+        params.mean_size = 50
+        params.sd_size=sd_size
 
-#params.effort_method = [None,'!']
-#params.effort_method = 'ExplorePoly'
     params.effort_method = 'SmoothPoly'
     params.poly_param_c = 0
     params.awareness = 15
@@ -40,7 +42,7 @@ def build_sim(sd_size=2,params=Params()):
 
     params.n_fish = 5
     params.n_fights = 30
-    params.iterations = 500
+    params.iterations = 50
     params.n_rounds = params.n_fights * (params.n_fish-1)
     return params
 

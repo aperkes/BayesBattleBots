@@ -26,12 +26,12 @@ def build_sim(sd_size=2,params=Params()):
     params.outcome_params = [0.5,-0.5,-0.99]
     params.set_params()
     params.n_fish = 5
-    if True:
+    if sd_size == 0:
         params.size=50
     else:
         params.size=None
         params.mean_size = 50
-        params.sd_size = 2
+        params.sd_size = sd_size
 
     params.prior = True
     sim = Simulation()
