@@ -83,7 +83,7 @@ if __name__ == '__main__':
 
         sem_stab = np.nanstd(stab_array[:,:n_windows],axis=0) / np.sqrt(params.iterations)
         ax.plot(xs,mean_stab,color='black')
-        ax.fill_between(xs,mean_stab - sem_stab, mean_stab + sem_stab,alpha=0.5,color=cmap(1- s/len(stds)),label='std: ' + str(s))
+        ax.fill_between(xs,mean_stab - sem_stab, mean_stab + sem_stab,alpha=0.5,color=cmap(1- s/len(stds)),label='std: ' + str(std))
 
     ax.set_xlabel('n rounds of contests')
     ax.set_ylabel('Stability (prop consistent with mean)')

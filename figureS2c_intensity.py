@@ -75,7 +75,7 @@ if __name__ == '__main__':
         sem_int = np.std(cost_array,axis=(0,1)) / np.sqrt(params.iterations)
         xs = np.arange(len(mean_int))
         ax.plot(xs,mean_int,color='black')
-        ax.fill_between(xs,mean_int-sem_int,mean_int+sem_int,color=cmap(1-s/len(stds)),label='std: ' + str(s),alpha=0.5)
+        ax.fill_between(xs,mean_int-sem_int,mean_int+sem_int,color=cmap(1-s/len(stds)),label='std: ' + str(std),alpha=0.5)
 
     ax.set_xlabel('Contest number')
     ax.set_ylabel('Mean fight Intensity\n(+/- SEM of iterations')

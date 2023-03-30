@@ -78,7 +78,7 @@ if __name__ == '__main__':
     for s in range(len(stds)):
         std = stds[s]
         params,sim = build_sim(std)
-        lin_array,n_windows = run_sim(params)
+        lin_array,n_windows = run_sim(params,window=6)
         lins.append(lin_array)
 
         xs = np.arange(n_windows)
@@ -86,7 +86,7 @@ if __name__ == '__main__':
         sem_lin = np.nanstd(lin_array[:,:n_windows],axis=0) / np.sqrt(params.iterations)
 
         ax.plot(xs,mean_lin,color='black')
-        ax.fill_between(xs,mean_lin - sem_lin, mean_lin + sem_lin,alpha=0.5,color=cmap(1-s/len(stds)),label='Std: ' + str(s))
+        ax.fill_between(xs,mean_lin - sem_lin, mean_lin + sem_lin,alpha=0.5,color=cmap(1-s/len(stds)),label='Std: ' + str(std))
 
     ax.set_xlabel('n rounds of contests')
     ax.set_ylabel('Linearity (1-triad ratio)')
