@@ -45,17 +45,16 @@ def build_sim(sd_size=2,params=Params()):
     params.acuity = 2
     params.post_acuity = True
     params.f_method = 'shuffled'
-    params.n_fights = 40
+    params.n_rounds = 30
     params.iterations = 500
     return params,sim
 ## Set up a tank
       
-def run_sim(params,window=6):
+def run_sim(params,window=3):
     fishes = [Fish(f,params) for f in range(5)]
     tank = Tank(fishes,params)
 
-    window = 3
-    n_windows = tank.n_rounds * 2 // window - 1
+    n_windows = tank.n_rounds - window + 1
 
     lin_array = np.zeros([params.iterations,n_windows])
     for i in tqdm(range(params.iterations)):
@@ -64,7 +63,7 @@ def run_sim(params,window=6):
         tank.run_all(print_me=False,progress=False)
         lin_list = []
         for w in range(n_windows):
-            idx = slice(int(w*window/2),int(w*window/2 + window))
+            idx = slice(w,w+window)
             linearity,[d,p] = sim._calc_linearity(tank,idx)
             lin_array[i,w] = linearity
     return lin_array,n_windows

@@ -44,7 +44,8 @@ params.awareness = 15
 params.acuity = 2
 params.post_acuity = True
 params.f_method = 'shuffled'
-params.n_fights = 40
+#params.n_fights = 40
+params.n_rounds = 30
 params.iterations = 500
 ## Set up a tank
   
@@ -53,7 +54,7 @@ fishes = [Fish(f,params) for f in range(5)]
 tank = Tank(fishes,params)
 
 window = 6
-n_windows = tank.n_rounds * 2 // window - 1
+n_windows = tank.n_rounds - window + 1
 
 lin_array = np.zeros([params.iterations,n_windows])
 #import pdb;pdb.set_trace()
@@ -63,7 +64,8 @@ for i in tqdm(range(params.iterations)):
     tank.run_all(print_me=False,progress=False)
     lin_list = []
     for w in range(n_windows):
-        idx = slice(int(w*window/2),int(w*window/2 + window))
+        #idx = slice(int(w*window/2),int(w*window/2 + window))
+        idx = slice(w,w+window)
         linearity,[d,p] = sim._calc_linearity(tank,idx)
         lin_array[i,w] = linearity
         #print(linearity)

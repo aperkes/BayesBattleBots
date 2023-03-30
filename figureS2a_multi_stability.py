@@ -44,13 +44,14 @@ def build_sim(sd_size=2,params=Params()):
     params.acuity = 10
     params.post_acuity = True
     params.f_method = 'shuffled'
-    params.n_fights = 40
+    #params.n_fights = 40
+    params.n_rounds = 30
     params.iterations = 500
  
     return sim, params
 
 def run_sim(params,window=3):
-    n_windows = params.n_rounds // params.n_fish * 2 // window - 1
+    n_windows = params.n_rounds - window + 1
     stab_array = np.zeros([params.iterations,n_windows])
 
     for i in tqdm(range(params.iterations)):
@@ -59,7 +60,7 @@ def run_sim(params,window=3):
         tank.run_all(print_me=False,progress=False)
         lin_list = []
         for w in range(n_windows):
-            idx = slice(int(w*window/2),int(w*window/2 + window))
+            idx = slice(w,w+window)
             stability,_ = sim._calc_stability(tank,idx)
             stab_array[i,w] = stability
 
