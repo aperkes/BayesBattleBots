@@ -41,14 +41,14 @@ def build_sim(sd_size=2,params=Params()):
     params.f_method = 'shuffled'
 
     params.n_fish = 5
-    params.n_fights = 30
-    params.iterations = 50
-    params.n_rounds = params.n_fights * (params.n_fish-1)
+    #params.n_fights = 30
+    params.iterations = 500
+    params.n_rounds = 30
     return params
 
 def run_sim(params):
 ## Set up a tank
-    cost_array = np.empty([params.iterations,params.n_fish,params.n_rounds])
+    cost_array = np.empty([params.iterations,params.n_fish,params.n_rounds * (params.n_fish -1)])
     for i in tqdm(range(params.iterations)):
         fishes = [Fish(f,params) for f in range(5)]
 
@@ -70,12 +70,12 @@ if __name__ == '__main__':
         std = stds[s]
         params = build_sim(std)
         cost_array = run_sim(params)
-        #xs = np.arange(n_windows)
 
         mean_int = np.nanmean(cost_array,axis=(0,1))
         sem_int = np.std(cost_array,axis=(0,1)) / np.sqrt(params.iterations)
-        ax.plot(range(params.n_rounds),mean_int,color='black')
-        ax.fill_between(range(params.n_rounds),mean_int-sem_int,mean_int+sem_int,color=cmap(1-s/len(stds)),label='std: ' + str(s),alpha=0.5)
+        xs = np.arange(len(mean_int))
+        ax.plot(xs,mean_int,color='black')
+        ax.fill_between(xs,mean_int-sem_int,mean_int+sem_int,color=cmap(1-s/len(stds)),label='std: ' + str(s),alpha=0.5)
 
     ax.set_xlabel('Contest number')
     ax.set_ylabel('Mean fight Intensity\n(+/- SEM of iterations')
