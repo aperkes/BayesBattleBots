@@ -45,7 +45,8 @@ params.awareness = 15
 params.acuity = 10
 params.post_acuity = True
 params.f_method = 'shuffled'
-params.n_fights = 40
+params.n_rounds = 25
+#params.n_rounds = 8
 params.iterations = 500
 ## Set up a tank
   
@@ -54,35 +55,39 @@ fishes = [Fish(f,params) for f in range(params.n_fish)]
 tank = Tank(fishes,params)
 
 window = 3
-n_windows = tank.n_rounds * 2 // window - 1
+#n_windows = tank.n_rounds * 2 // window - 1
+n_windows = tank.n_rounds - window +1
 print(tank.n_rounds,params.n_rounds,n_windows,params.n_fish)
 stab_array = np.zeros([params.iterations,n_windows])
+
 #import pdb;pdb.set_trace()
 for i in tqdm(range(params.iterations)):
     fishes = [Fish(f,params) for f in range(5)]
     tank = Tank(fishes,params)
     tank.run_all(print_me=False,progress=False)
+    #import pdb;pdb.set_trace()
     lin_list = []
     for w in range(n_windows):
-        idx = slice(int(w*window/2),int(w*window/2 + window))
+        #idx = slice(int(w*window/2),int(w*window/2 + window))
+        idx = slice(w,w+window)
         stability,_ = sim._calc_stability(tank,idx)
         stab_array[i,w] = stability
 
 
-fig5,ax5 = plt.subplots()
+fig,ax = plt.subplots()
 print(n_windows,len(tank.history))
 xs = np.arange(n_windows)
 mean_stab = np.nanmean(stab_array[:,:n_windows],axis=0)
 sem_stab = np.nanstd(stab_array[:,:n_windows],axis=0) / np.sqrt(params.iterations)
-ax5.plot(xs,mean_stab,color='black')
-ax5.fill_between(xs,mean_stab - sem_stab, mean_stab + sem_stab,alpha=0.5,color='gray')
-ax5.set_xlabel('n rounds of contests')
-ax5.set_ylabel('Stability (prop consistent with mean)')
-ax5.set_title('Stability increases over time')
+ax.plot(xs,mean_stab,color='black')
+ax.fill_between(xs,mean_stab - sem_stab, mean_stab + sem_stab,alpha=0.5,color='gray')
+ax.set_xlabel('n rounds of contests')
+ax.set_ylabel('Stability (prop consistent with mean)')
+ax.set_title('Stability increases over time')
 
-fig5.savefig('./figures/fig2a_stability.png',dpi=300)
+#fig5.savefig('./figures/fig2a_stability.png',dpi=300)
 print(mean_stab,sem_stab)
 
-PLOT = False
+PLOT = True
 if PLOT:
     plt.show()

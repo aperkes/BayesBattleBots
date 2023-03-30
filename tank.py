@@ -53,7 +53,7 @@ class Tank():
             self.npc_params = npc_params
             self.fight_list = self.get_npc_fights(npc_params.n_npcs,params.n_fights)
         else:
-            self.fight_list = self.get_matchups(self.f_method,self.f_outcome,params.n_fights)
+            self.fight_list = self.get_matchups(self.f_method,self.f_outcome,params.n_rounds)
 
             #if n_fights is None:
                 ## if n is not defined, just run each one once
@@ -111,6 +111,7 @@ class Tank():
         return fight_list
 
     def get_matchups(self,f_method='balanced',f_outcome='chance',n_fights=10):
+## N fights for balanced and shuffled is actually the number of rounds
         fight_list = []
 
         if f_method == 'balanced' or f_method == 'shuffled':
