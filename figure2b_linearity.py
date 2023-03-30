@@ -69,17 +69,18 @@ for i in tqdm(range(params.iterations)):
         linearity,[d,p] = sim._calc_linearity(tank,idx)
         lin_array[i,w] = linearity
         #print(linearity)
-fig5,ax5 = plt.subplots()
+fig,ax = plt.subplots()
 print(n_windows,len(tank.history))
 xs = np.arange(n_windows)
 mean_lin = np.nanmean(lin_array[:,:n_windows],axis=0)
 sem_lin = np.nanstd(lin_array[:,:n_windows],axis=0) / np.sqrt(params.iterations)
-ax5.plot(xs,mean_lin,color='black')
-ax5.fill_between(xs,mean_lin - sem_lin, mean_lin + sem_lin,alpha=0.5,color='gray')
-ax5.set_xlabel('n rounds of contests')
-ax5.set_ylabel('Linearity (1-triad ratio)')
-ax5.set_title('Linearity increases over time')
+ax.plot(xs,mean_lin,color='black')
+ax.fill_between(xs,mean_lin - sem_lin, mean_lin + sem_lin,alpha=0.5,color='gray')
+ax.set_xlabel('n rounds of contests')
+ax.set_ylabel('Linearity (1-triad ratio)')
+ax.set_title('Linearity increases over time')
 
+fig.savefig('./figures/figure2b_linearity.png',dpi=300)
 PLOT = True
 if PLOT:
     plt.show()

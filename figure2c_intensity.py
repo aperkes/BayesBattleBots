@@ -40,12 +40,12 @@ params.post_acuity = True
 params.f_method = 'shuffled'
 
 params.n_fish = 5
-params.n_fights = 30
+params.n_rounds = 30
 params.iterations = 500
-params.n_rounds = params.n_fights * (params.n_fish-1)
+#params.n_rounds = params.n_fights * (params.n_fish-1)
 
 ## Set up a tank
-cost_array = np.empty([params.iterations,params.n_fish,params.n_rounds])
+cost_array = np.empty([params.iterations,params.n_fish,params.n_rounds * (params.n_fish-1)])
 for i in tqdm(range(params.iterations)):
     fishes = [Fish(f,params) for f in range(5)]
 

@@ -85,7 +85,7 @@ ax.set_xlabel('n rounds of contests')
 ax.set_ylabel('Stability (prop consistent with mean)')
 ax.set_title('Stability increases over time')
 
-#fig5.savefig('./figures/fig2a_stability.png',dpi=300)
+fig.savefig('./figures/figure2a_stability.png',dpi=300)
 print(mean_stab,sem_stab)
 
 PLOT = True
