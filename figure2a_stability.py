@@ -23,6 +23,7 @@ PLOT = True
 SAVE = False
 
 params = Params()
+params.n_fish = 5
 params.outcome_params = [0.5,-0.5,-0.9]
 params.set_params()
 if True:
@@ -49,12 +50,12 @@ params.iterations = 500
 ## Set up a tank
   
 ## Set up dummy tank to make calculating rounds easier
-fishes = [Fish(f,params) for f in range(5)]
+fishes = [Fish(f,params) for f in range(params.n_fish)]
 tank = Tank(fishes,params)
 
 window = 3
 n_windows = tank.n_rounds * 2 // window - 1
-
+print(tank.n_rounds,params.n_rounds,n_windows,params.n_fish)
 stab_array = np.zeros([params.iterations,n_windows])
 #import pdb;pdb.set_trace()
 for i in tqdm(range(params.iterations)):
