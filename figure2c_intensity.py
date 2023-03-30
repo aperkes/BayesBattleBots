@@ -23,8 +23,9 @@ PLOT = True
 SAVE = False
 
 params = Params()
-params.outcome_params = [0.6,0.3,.1]
-params.set_L()
+params.outcome_params = [0.5,-0.5,-0.99]
+#params.set_L()
+params.set_params()
 #params.size=50
 #params.prior = True
 
@@ -40,7 +41,7 @@ params.f_method = 'shuffled'
 
 params.n_fish = 5
 params.n_fights = 30
-params.iterations = 100
+params.iterations = 500
 params.n_rounds = params.n_fights * (params.n_fish-1)
 
 ## Set up a tank
@@ -64,5 +65,6 @@ ax.set_xlabel('Contest number')
 ax.set_ylabel('Mean fight Intensity\n(+/- SEM of iterations')
 ax.set_title('Fight intensity decreases over repeated contests')
 
+fig.savefig('./figures/figure2c_intensity.png',dpi=300)
 if PLOT:
     plt.show()
