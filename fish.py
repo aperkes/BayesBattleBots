@@ -306,9 +306,10 @@ class Fish:
         return prob_win
 
     def _wager_curve(self,w,l=.05):
-        if l == 0 or l == -1:
-            import pdb;pdb.set_trace()
+        if l == -1:
             prob_win = 0
+        if l == 1:
+            prob_win = 0.5
         else:
             #L = np.tan((np.pi - l)/2)
             #L = np.tan(np.pi/2 - l*np.pi/2) 
@@ -1130,6 +1131,7 @@ class Fish:
         return effort
 
     def float_jenkins(self,f_opp,fight):
+        #import pdb;pdb.set_trace()
         effort = self.params.baseline_effort
         if not fight.food:
             #print('FOR QBERT!!')

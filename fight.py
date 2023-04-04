@@ -157,15 +157,13 @@ class Fight():
         if l == -1:
             self.p_win = 0.5
             f_min = np.random.randint(2)
-        elif s == -1:
-            if f1_size == f2_size:
-                self.p_win = 0.5
-                f_min = np.random.randint(2)
-            else:
-                self.p_win = 0 
-                f_min = np.argmin([f1_size,f2_size])
+        elif s == 1 and f1_size != f2_size:
+            self.p_win = 0 
+            f_min = np.argmin([f1_size,f2_size])
+
             self.fishes[f_min].wager = 0
             self.fishes[1-f_min].wager = 1
+            
         elif f == -1: 
             if f1_effort == f2_effort or max([f1_effort,f2_effort]) < 1:
                 self.p_win = 0.5
