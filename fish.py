@@ -550,8 +550,7 @@ class Fish:
         S,F,L = fight.params.scaled_params
         #print(S,F,L)
         if l == -1:
-            print('#### l == 0, this is a little weird....')
-            import pdb;pdb.set_trace()
+            #import pdb;pdb.set_trace()
             return np.ones_like(self.xs)
         elif s == -1:
             return np.ones_like(self.xs)
