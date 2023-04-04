@@ -18,7 +18,7 @@ from params import Params
 
 ## Simple-ish object to keep track of matchups (and decide outcome if necessary)
 class Fight():
-    __slots__ = ('fish1', 'fish2', 'fishes', 'params', 'mechanism', 'level', 'outcome', 'outcome_params', 'scale', 'idx', 'food', 'p_win', 'min_normed', 'roll', 'winner', 'loser')
+    __slots__ = ('fish1', 'fish2', 'fishes', 'params', 'mechanism', 'level', 'outcome', 'outcome_params', 'scale', 'idx', 'food', 'p_win','f_min','min_normed', 'roll', 'winner', 'loser')
     def __init__(self,fish1,fish2,params=None,
                 idx=0,outcome=None,level=None):
         self.fish1 = fish1
@@ -119,9 +119,9 @@ class Fight():
     def _wager_curve(self,w,l=.05):
         #if l == 0 or l == -1:
         if l == 1:
-            prob_win = 0
-        elif l == -1:
             prob_win = 0.5
+        elif l == -1:
+            prob_win = 0 
         else:
             L = self.params.L
             #prob_win = (np.round(w,8)**L) / 2
@@ -154,10 +154,11 @@ class Fight():
 ## It might make more sense to multiply this...but I don't think so
 
 ## there are some edge cases here. 
-        if l == -1:
+        if l == 1:
             self.p_win = 0.5
             f_min = np.random.randint(2)
-        elif s == 1 and f1_size != f2_size:
+            
+        elif s == -1 and f1_size != f2_size:
             self.p_win = 0 
             f_min = np.argmin([f1_size,f2_size])
 
@@ -165,15 +166,28 @@ class Fight():
             self.fishes[1-f_min].wager = 1
             
         elif f == -1: 
-            if f1_effort == f2_effort or max([f1_effort,f2_effort]) < 1:
-                self.p_win = 0.5
-                f_min = np.random.randint(2)
-            else:
+            #import pdb;pdb.set_trace()
+            if f1_effort != f2_effort:
                 self.p_win = 0
                 f_min = np.argmin([f1_effort,f2_effort])
-            self.fishes[f_min].wager = 0
-            self.fishes[1-f_min].wager = 1
-            
+                self.fishes[f_min].wager = 0
+                self.fishes[1-f_min].wager = 1
+            else: ## otherwise, rel effort cancels out and you go by size
+                f1_wager = f1_rel_size ** S
+                f2_wager = f2_rel_size ** S
+                f_min = np.argmin([f1_wager,f2_wager])
+                
+                self.fish1.wager = f1_wager
+                self.fish2.wager = f2_wager
+                if f1_wager == f2_wager:
+                    self.p_win = 0.5
+                    f_min = np.random.randint(2)
+                    min_normed = 'even'
+                else:
+                    min_wager = min([f1_wager,f2_wager])
+                    min_normed = min_wager / max([f1_wager,f2_wager])
+                    f_min = 1 - np.argmax([f1_wager,f2_wager])
+                    self.p_win = self._wager_curve(min_normed,l)
         else:
             f1_wager = (f1_rel_size ** S) * (f1_effort ** F)
             f2_wager = (f2_rel_size ** S) * (f2_effort ** F)
@@ -218,6 +232,7 @@ class Fight():
             if winner and self.fish1.effort > 0.1:
                 print('LOOK HERE!')
                 print(self.fish1.effort,self.fish2.effort) 
+        self.f_min = f_min
         return winner,level
      
     def hock_huber(self,scale=.1,params=[.5,.5,.5]):
