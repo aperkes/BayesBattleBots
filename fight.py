@@ -152,7 +152,10 @@ class Fight():
 ## It might make more sense to multiply this...but I don't think so
 
 ## there are some edge cases here. 
-        if s == -1:
+        if l == -1:
+            self.p_win == 0.5
+            f_min = np.random.randint(2)
+        elif s == -1:
             if f1_size == f2_size:
                 self.p_win == 0.5
                 f_min = np.random.randint(2)
