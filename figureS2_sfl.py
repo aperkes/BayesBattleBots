@@ -109,12 +109,12 @@ if __name__ == '__main__':
                 int_tern_0[s_,f_,l_] = int_0 
                 int_tern_20[s_,f_,l_] = int_20 
 
-    np.save('./results/lin_tern_0,npy',lin_tern_0)
-    np.save('./results/lin_tern_20,npy',lin_tern_20)
-    np.save('./results/stab_tern_0,npy',stab_tern_0)
-    np.save('./results/stab_tern_20,npy',stab_tern_20)
-    np.save('./results/int_tern_0,npy',int_tern_0)
-    np.save('./results/in_tern_20,npy',int_tern_20)
+    np.save('./results/lin_tern_0.npy',lin_tern_0)
+    np.save('./results/lin_tern_20.npy',lin_tern_20)
+    np.save('./results/stab_tern_0.npy',stab_tern_0)
+    np.save('./results/stab_tern_20.npy',stab_tern_20)
+    np.save('./results/int_tern_0.npy',int_tern_0)
+    np.save('./results/int_tern_20.npy',int_tern_20)
 
-import pdb;pdb.set_trace()
+#import pdb;pdb.set_trace()
 print('done!')
