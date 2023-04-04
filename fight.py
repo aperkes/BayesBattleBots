@@ -155,11 +155,11 @@ class Fight():
 
 ## there are some edge cases here. 
         if l == -1:
-            self.p_win == 0.5
+            self.p_win = 0.5
             f_min = np.random.randint(2)
         elif s == -1:
             if f1_size == f2_size:
-                self.p_win == 0.5
+                self.p_win = 0.5
                 f_min = np.random.randint(2)
             else:
                 self.p_win = 0 
@@ -198,6 +198,7 @@ class Fight():
                 f_min = 1 - np.argmax([f1_wager,f2_wager])
                 self.p_win = self._wager_curve(min_normed,l)
         roll = random.random()
+        
         if roll < self.p_win: ## probability that the "lower invested" fish wins
             winner = f_min
         else:
