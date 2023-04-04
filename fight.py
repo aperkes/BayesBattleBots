@@ -118,8 +118,10 @@ class Fight():
 
     def _wager_curve(self,w,l=.05):
         #if l == 0 or l == -1:
-        if l == -1:
+        if l == 1:
             prob_win = 0
+        elif l == -1:
+            prob_win = 0.5
         else:
             L = self.params.L
             #prob_win = (np.round(w,8)**L) / 2
