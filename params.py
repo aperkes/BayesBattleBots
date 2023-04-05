@@ -16,7 +16,7 @@ class Params():
                 age=50,size=None,prior=None,likelihood=None,likelihood_dict=None,
                 xs=np.linspace(1,100,200),r_rhp=0,a_growth=True,c_aversion=1,
                 max_energy=1,start_energy=1,effort_exploration=0.1,
-                acuity=.1,pre_acuity=.1,post_acuity=1,awareness=.1,insight=True,
+                acuity=.5,pre_acuity=.5,post_acuity=True,awareness=.5,insight=True,
                 boldness=-0.8,
                 #poly_param_a = 3,poly_param_b=-2.4,poly_param_c=0.1,
                 poly_param_a = 5,poly_param_b=0,poly_param_c=0.3,poly_param_m=0.1,
@@ -58,7 +58,9 @@ class Params():
 ## Fight Params
         self.f_outcome = f_outcome ## This defines how fights are determined.
         self.outcome_params = np.array(outcome_params)   ## This determines how fights are settled, skill,effort,luck
-        self.scaled_params = np.tan(np.pi/2 - self.outcome_params*np.pi/2)
+
+        shifted_params = (self.outcome_params +1) / 2
+        self.scaled_params = np.tan(np.array(np.pi/2 - shifted_params*np.pi/2))
         self.scaled_params = np.round(self.scaled_params,4)
         self.S,self.F,self.L = self.scaled_params
         #self.L = np.tan(np.pi/2 - outcome_params[2]*np.pi/2)
@@ -87,9 +89,10 @@ class Params():
         self.insight=insight
         self.boldness = boldness
 
-        self.A = np.tan(self.awareness*np.pi/2)
-        self.C = np.tan(self.acuity*np.pi/2)
-        self.B = np.tan(np.pi/2 - self.boldness*np.pi/2) 
+        self.A = np.tan(self.awareness*np.pi/2) * 20 ## this defines std at a = 0.5
+        self.C = np.tan(self.acuity*np.pi/2) * 20
+        shifted_boldness = (boldness + 1) / 2
+        self.B = np.tan(np.pi/2 - shifted_boldness*np.pi/2) 
 
         self.poly_param_a = poly_param_a
         self.poly_param_b = poly_param_b
@@ -134,9 +137,13 @@ class Params():
         self.F_set = True
         self.L_set = True
 
-        self.A = np.tan(self.awareness*np.pi/2)
-        self.C = np.tan(self.acuity*np.pi/2)
-        self.B = np.tan(np.pi/2 - self.boldness*np.pi/2) 
+
+        shifted_boldness = (self.boldness + 1) / 2
+        self.B = np.tan(np.pi/2 - shifted_boldness*np.pi/2) 
+
+        self.A = np.tan(self.awareness*np.pi/2) * 20
+        self.C = np.tan(self.acuity*np.pi/2) * 20
+
         self.A_set = True
         self.B_set = True
         self.C_set = True

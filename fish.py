@@ -914,7 +914,7 @@ class Fish:
         est_difference = mean1-mean2
         if np.isinf(std1) or np.isinf(std2): ## Edge cases...
             if np.isinf(std1) and np.isinf(std2):
-                return 0.5
+                return 0.5 - 1/(len(self.xs))
             elif np.isinf(std1):
                 return (mean2-self.params.xs[0]) / len(self.params.xs)
             else:
@@ -947,9 +947,10 @@ class Fish:
         opp_size_guess = np.clip(np.random.normal(f_opp.size,self.params.C),self.params.min_size,self.params.max_size)
         self.guess = opp_size_guess
         s,e,l = self.params.outcome_params
-        shifted_params = (np.array([s,e,l]) + 1) / 2
+        #shifted_params = (np.array([s,e,l]) + 1) / 2
         #S,F,L = np.tan(np.pi/2 - shifted_params*np.pi/2)
         S,F = self.params.S,self.params.F
+
         if opp_size_guess > self.estimate:  ## if you guess you are SMALLER
             est_ratio = self.estimate / opp_size_guess
 
