@@ -60,7 +60,7 @@ for s_ in tqdm(range(scale)):
                 p_array[s_,f_,l_] = 1 - fight.p_win
 
 
-print(np.round(p_array[:,0,:],3))
+#print(np.round(p_array[:,0,:],3))
 np.save('./results/fight_slf.npy',p_array)
 
 print('done!')

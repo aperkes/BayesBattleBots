@@ -35,17 +35,24 @@ def np_to_dict(a,p_list,keys=['s','f','l']):
 
 def plot_from_dict(p_dict,scale=10):
     fig,tax = ternary.figure(scale=scale)
-    tax.heatmap(p_dict,cmap=None)
+    tax.heatmap(p_dict,cmap='PiYG')
     return fig,tax 
 
 if __name__ == '__main__':
-    #a = np.load('./results/lin_tern_0.npy')
-    a = np.load('./results/fight_slf.npy')
-    #a = np.mean(a,axis=3)
+    if True:
+        a_0 = np.load('./results/lin_tern_0.npy')
+        a_20 = np.load('./results/lin_tern_20.npy')
+        a = a_20 - a_0
+        #a = np.mean(a,axis=3)
+        p_list = [-1,-0.9,-0.8,-0.2,-0.1,0,0.1,0.2,0.8,0.9,1.0]
+        a = np.flip(a,1)
+        a = np.flip(a,2)
+    else:
+        a = np.load('./results/fight_slf.npy')
+        p_list = np.linspace(-1,1,scale)
     a_dim = a.shape[0]
     a_buffer = np.pad(a,1,mode='edge')
     scale = a_dim-1
-    p_list = np.linspace(-1,1,scale)
     if True:
         a = a_buffer
         scale = scale+2
@@ -68,7 +75,10 @@ if __name__ == '__main__':
         tax._ticks['l'] = list(p_list.astype(str))
         tax.set_custom_ticks()
     tax.clear_matplotlib_ticks()
-    tax.set_title('Probability of winning over s,f,l')
-    tax.show()
+    tax.set_title('Linearity over s,f,l')
+    if False:
+        tax.show()
+    if True:
+        tax.savefig('./figures/figureS2_slf_ldiff.png',dpi=300)
 
 
