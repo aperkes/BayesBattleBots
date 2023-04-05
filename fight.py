@@ -148,7 +148,6 @@ class Fight():
         f1_rel_size = f1_size / max_size
         f2_rel_size = f2_size / max_size
 
-        import pdb;pdb.set_trace()
         f1_effort = self.fish1._choose_effort(self.fish2,self)
         f2_effort = self.fish2._choose_effort(self.fish1,self)
         self.fish1.effort = f1_effort
