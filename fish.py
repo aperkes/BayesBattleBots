@@ -893,7 +893,7 @@ class Fish:
             ## Now you have to estimate with some error
             #print('ESTIMATING!!!')
             my_size = self.estimate ## You only have to do this once
-            opp_size = np.random.normal(f_opp.size,self.acuity)
+            opp_size = np.random.normal(f_opp.size,self.params.C)
             opp_size = np.clip(opp_size,7,99)
         elif strategy == 'PerfectPoly':
             #print('Nudging perfect!!!')
@@ -944,7 +944,7 @@ class Fish:
 
     def poly_effort_combo(self,f_opp,fight):
         #order = 1
-        opp_size_guess = np.clip(np.random.normal(f_opp.size,self.acuity),self.params.min_size,self.params.max_size)
+        opp_size_guess = np.clip(np.random.normal(f_opp.size,self.params.C),self.params.min_size,self.params.max_size)
         self.guess = opp_size_guess
         s,e,l = self.params.outcome_params
         shifted_params = (np.array([s,e,l]) + 1) / 2
@@ -967,7 +967,7 @@ class Fish:
 
         #confidence_correction = 1/(1+(self.params.poly_param_c)*np.sqrt(self.acuity**2 + self.prior_std**2))
         #confidence_correction = np.sum(self.prior[self.xs > opp_size_guess])
-        confidence_correction = 1 - norm.cdf(0,self.estimate - self.guess,self.acuity + self.prior_std)
+        confidence_correction = 1 - norm.cdf(0,self.estimate - self.guess,self.params.C + self.prior_std)
         self.correction = confidence_correction
         #boldness = 1 - self.params.poly_param_c
         scaled_effort = (effort * confidence_correction) ** self.params.B
@@ -977,12 +977,12 @@ class Fish:
             print(self.params.poly_param_a,rough_wager)
             print(effort,scaled_effort,confidence_correction)
             print(self.size,self.estimate,self.awareness,self.params.A)
-            print(f_opp.size,self.guess,self.acuity)
+            print(f_opp.size,self.guess,self.acuity,self.params.C)
         return scaled_effort * self.energy
 
 
     def poly_effort_prob(self,f_opp,fight,cutoff_prop = 0.1):
-        opp_size_guess = np.random.normal(f_opp.size,self.acuity) 
+        opp_size_guess = np.random.normal(f_opp.size,self.params.C) 
         self.guess = opp_size_guess
         s,e,l = self.params.outcome_params
         shifted_params = (np.array([s,e,l]) + 1) / 2
@@ -1044,10 +1044,10 @@ class Fish:
 ## The latter strategy here is more in keeping with the probabilistic mutual assessment, just against an average fish
 
         my_size = self.estimate
-        if self.acuity == 0:
+        if self.params.C == 0:
             opp_size = f_opp.size
         else:
-            opp_size = np.clip(np.random.normal(f_opp.size,self.acuity),self.params.min_size,self.params.max_size)
+            opp_size = np.clip(np.random.normal(f_opp.size,self.params.C),self.params.min_size,self.params.max_size)
         self.opp_estimate = opp_size
         if strategy == 'Perfect' or strategy == 'Estimate':
             #print('Choosing effort:')
@@ -1059,7 +1059,7 @@ class Fish:
                 ## Now you have to estimate with some error
 
                 my_size = self.estimate ## You only have to do this once
-                opp_size = np.random.normal(f_opp.size,self.acuity)
+                opp_size = np.random.normal(f_opp.size,self.params.C)
                 opp_size = np.clip(opp_size,7,99)
                 #print('guess vs self:',my_size,self.size)
                 #print('guess vs opp:',opp_size,f_opp.size)
