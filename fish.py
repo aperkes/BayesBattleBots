@@ -76,11 +76,13 @@ class Fish:
             self.size = np.random.normal(self.params.mean_size,self.params.sd_size)
         self.size = np.clip(self.size,self.params.min_size,self.params.max_size)
         self.params.size = self.size
-        if params.prior is True:
-            self.prior = norm.pdf(self.xs,self.size,self.params.awareness)
+        if np.isinf(self.params.A):
+            self.prior = np.ones_like(self.xs) / len(self.xs)
+        elif params.prior is True:
+            self.prior = norm.pdf(self.xs,self.size,self.params.A)
             self.prior = self.prior / np.sum(self.prior)
         elif isinstance(params.prior,int):
-            self.estimate = np.clip(np.random.normal(self.size,self.awareness),self.params.min_size,self.params.max_size)
+            self.estimate = np.clip(np.random.normal(self.size,self.params.A),self.params.min_size,self.params.max_size)
             if params.prior == -1:
                 self.prior = np.ones_like(self.xs) / len(self.xs)
             else:
@@ -89,8 +91,8 @@ class Fish:
         elif params.prior is not None:
             self.prior = params.prior
         else:
-            self.estimate = np.clip(np.random.normal(self.size,self.awareness),self.params.min_size,self.params.max_size)
-            prior = norm.pdf(self.xs,self.estimate,self.awareness)
+            self.estimate = np.clip(np.random.normal(self.size,self.params.A),self.params.min_size,self.params.max_size)
+            prior = norm.pdf(self.xs,self.estimate,self.params.A)
             self.prior = prior/ np.sum(prior)
             #prior = self._prior_size(self.age,xs=self.xs)
             #self.prior = prior / np.sum(prior)
@@ -791,7 +793,7 @@ class Fish:
         new_estimate = self.estimate + shift
         new_estimate = np.clip(new_estimate,self.params.min_size,self.params.max_size)
 ## bit of a hack
-        prior = norm.pdf(self.xs,new_estimate,self.awareness)
+        prior = norm.pdf(self.xs,new_estimate,self.params.A)
         self.estimate = new_estimate
         self.prior = prior / np.sum(prior)
         self.est_record.append(self.estimate)
@@ -910,6 +912,14 @@ class Fish:
 
     def prob_bigger(self,mean1,mean2,std1,std2,cutoff=1):
         est_difference = mean1-mean2
+        if np.isinf(std1) or np.isinf(std2): ## Edge cases...
+            if np.isinf(std1) and np.isinf(std2):
+                return 0.5
+            elif np.isinf(std1):
+                return (mean2-self.params.xs[0]) / len(self.params.xs)
+            else:
+                return (mean1-self.params.xs[0]) / len(self.params.xs)
+                
         combined_std = np.sqrt(std1**2+std2**2)
         #bigger_dist = norm.pdf(np.arange(cutoff,100),est_difference,combined_std)
         bigger_dist = norm.cdf(np.arange(0,100),est_difference,combined_std)
@@ -959,14 +969,14 @@ class Fish:
         #confidence_correction = np.sum(self.prior[self.xs > opp_size_guess])
         confidence_correction = 1 - norm.cdf(0,self.estimate - self.guess,self.acuity + self.prior_std)
         self.correction = confidence_correction
-        boldness = 1 - self.params.poly_param_c
-        scaled_effort = (effort * confidence_correction) ** boldness
+        #boldness = 1 - self.params.poly_param_c
+        scaled_effort = (effort * confidence_correction) ** self.params.B
         scaled_effort = np.clip(scaled_effort,0,1)
         if self.params.print_me:
             print('###',self.idx,self.params.effort_method)
             print(self.params.poly_param_a,rough_wager)
             print(effort,scaled_effort,confidence_correction)
-            print(self.size,self.estimate,self.awareness)
+            print(self.size,self.estimate,self.awareness,self.params.A)
             print(f_opp.size,self.guess,self.acuity)
         return scaled_effort * self.energy
 
@@ -979,7 +989,7 @@ class Fish:
         S,F,L = np.tan(np.pi/2 - shifted_params*np.pi/2)
 
         cutoff = int(self.estimate * cutoff_prop)
-        p_bigger = self.prob_bigger(self.estimate,opp_size_guess,self.awareness,self.acuity)
+        p_bigger = self.prob_bigger(self.estimate,opp_size_guess,self.params.A,self.params.C)
         bigger_odds = p_bigger / (1-p_bigger)
         #rough_wager = bigger_odds**s * self.energy**e
         rough_wager = p_bigger**S * self.energy**F
