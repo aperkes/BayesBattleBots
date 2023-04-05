@@ -1254,10 +1254,12 @@ class FishNPC(Fish):
         return None
 
 if __name__ == '__main__':
+    from fight import Fight
+
     f1 = Fish() 
     f2 = FishNPC()
+    fight = Fight(f1,f2)
     print(f1.idx,f1.size,len(f1.prior))
     print(f2.idx,f2.size)
-    print(f2._choose_effort(f1))
-    print(f2.update())
-    print(f1.age,f1._growth_func(f1.age))
+    print(f2._choose_effort(f1,fight))
+    print(f2.update(True,fight))

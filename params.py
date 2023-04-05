@@ -85,6 +85,12 @@ class Params():
         self.post_acuity=post_acuity
         self.awareness=awareness
         self.insight=insight
+        self.boldness = boldness
+
+        self.A = np.tan(self.awareness*np.pi/2)
+        self.C = np.tan(self.acuity*np.pi/2)
+        self.B = np.tan(np.pi/2 - self.boldness*np.pi/2) 
+
         self.poly_param_a = poly_param_a
         self.poly_param_b = poly_param_b
         self.poly_param_c = poly_param_c ## Currently scales up effort (i.e. boldness)
