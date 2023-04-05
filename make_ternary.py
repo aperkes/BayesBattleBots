@@ -33,26 +33,38 @@ def np_to_dict(a,p_list,keys=['s','f','l']):
                 p_dict[key] = a[s_,f_,l_]
     return p_dict
 
-def plot_from_dict(p_dict,scale=10):
+def plot_from_dict(p_dict,scale=10,cmap=None):
     fig,tax = ternary.figure(scale=scale)
-    tax.heatmap(p_dict,cmap='PiYG')
+    tax.heatmap(p_dict,cmap=cmap)
     return fig,tax 
 
 if __name__ == '__main__':
-    if True:
+    if False:
         a_0 = np.load('./results/lin_tern_0.npy')
         a_20 = np.load('./results/lin_tern_20.npy')
         a = a_20 - a_0
-        #a = np.mean(a,axis=3)
         p_list = [-1,-0.9,-0.8,-0.2,-0.1,0,0.1,0.2,0.8,0.9,1.0]
         a = np.flip(a,1)
         a = np.flip(a,2)
+        outfile = './figures/figureS2_slf_ldiff.png'
+        cmap = 'PiYG'
+    elif True:
+        a = np.load('./results/eff_array.npy')
+        if False:
+            a = np.mean(a,axis=3)
+            outfile = './figures/figureXX_fight_ABC.png'
+        else:
+            a = np.std(a,axis=3)
+            outfile = './figures/figureXX_fight_ABC_std.png'
+        cmap = 'viridis'
     else:
         a = np.load('./results/fight_slf.npy')
         p_list = np.linspace(-1,1,scale)
+        outfile = './figures/figureSx_fight_sfl.png'
     a_dim = a.shape[0]
     a_buffer = np.pad(a,1,mode='edge')
     scale = a_dim-1
+    p_list = np.linspace(0,1,scale)
     if True:
         a = a_buffer
         scale = scale+2
@@ -64,10 +76,10 @@ if __name__ == '__main__':
         a[5,:,:] = 0
     #p_list = [-1,-0.9,-0.8,-0.2,-0.1,0,0.1,0.2,0.8,0.9,1]
     p_dict = np_to_dict(a,p_list)
-    fig,tax = plot_from_dict(p_dict,scale)
-    tax.bottom_axis_label("s")
-    tax.right_axis_label("f")
-    tax.left_axis_label("l")
+    fig,tax = plot_from_dict(p_dict,scale,cmap)
+    tax.bottom_axis_label("a")
+    tax.right_axis_label("b")
+    tax.left_axis_label("c")
     tax.ticks(axis='brl')
     if False:
         tax._ticks['b'] = list(p_list.astype(str))
@@ -79,6 +91,6 @@ if __name__ == '__main__':
     if False:
         tax.show()
     if True:
-        tax.savefig('./figures/figureS2_slf_ldiff.png',dpi=300)
+        tax.savefig(outfile,dpi=300)
 
 
