@@ -92,8 +92,12 @@ class Fish:
             self.prior = params.prior
         else:
             self.estimate = np.clip(np.random.normal(self.size,self.params.A),self.params.min_size,self.params.max_size)
-            prior = norm.pdf(self.xs,self.estimate,self.params.A)
-            self.prior = prior/ np.sum(prior)
+            if self.params.A == 0:
+                self.prior = np.zeros_like(self.xs)
+                self.prior[np.argmax(self.xs >= self.estimate)] = 1
+            else:
+                prior = norm.pdf(self.xs,self.estimate,self.params.A)
+                self.prior = prior/ np.sum(prior)
             #prior = self._prior_size(self.age,xs=self.xs)
             #self.prior = prior / np.sum(prior)
         ## Define the rules one when to escalate, based on confidence
@@ -968,7 +972,11 @@ class Fish:
 
         #confidence_correction = 1/(1+(self.params.poly_param_c)*np.sqrt(self.acuity**2 + self.prior_std**2))
         #confidence_correction = np.sum(self.prior[self.xs > opp_size_guess])
-        confidence_correction = 1 - norm.cdf(0,self.estimate - self.guess,self.params.C + self.prior_std)
+        if self.params.C == 0 and self.prior_std == 0:
+            confidence_correction = 1
+        else:
+## ideally this would be probabiliy of being wrong, but error will have to do.
+            confidence_correction = 1 - norm.cdf(-0.1 * self.guess,self.estimate - self.guess,self.params.C + self.prior_std)
         self.correction = confidence_correction
         #boldness = 1 - self.params.poly_param_c
         scaled_effort = (effort * confidence_correction) ** self.params.B
@@ -1203,6 +1211,13 @@ class Fish:
         else:
             return False
     def get_stats(self):
+        if self.awareness == 0:
+            prior_mean = self.estimate
+            prior_std = 0
+            self.prior_mean = prior_mean
+            self.prior_std = prior_std
+            return prior_mean,prior_std
+
         prior_mean = np.sum(self.prior * self.xs / np.sum(self.prior))
         #prior_std = np.sum((self.xs - prior_mean)**2 * self.prior/(np.sum(self.prior)))
         prior_std = np.sum((self.prior * (self.xs - prior_mean)**2)) ## I need this for confidence correction
