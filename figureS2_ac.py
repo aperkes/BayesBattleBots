@@ -25,11 +25,12 @@ SAVE = False
 ## Look, a smarter person would have made one function that could work in all these
 ## Maybe I'll get there, but it's actually a lot more manageable this way, really
 
-def build_sim(a,b,c,params=Params()):
+def build_sim(a,c,params=Params()):
     params.n_fish = 5
     params.awareness = a
-    params.boldness = b
+    #params.boldness = b
     params.acuity = c
+    params.outcome_params = [0,0.3,-0.9]
     params.set_params()
 
     sim = Simulation()
@@ -76,7 +77,7 @@ if __name__ == '__main__':
     ac_list = np.linspace(0,1,scale)
     b_list = np.linspace(-1,1,scale)
 
-    stab_tern_0 = np.zeros([scale,scale,scale])
+    stab_tern_0 = np.zeros([scale,scale])
     lin_tern_0 = np.zeros_like(stab_tern_0)
     int_tern_0 = np.zeros_like(stab_tern_0)
 
@@ -88,32 +89,31 @@ if __name__ == '__main__':
     print('working on it...')
     for a_ in tqdm(range(scale)):
         a = ac_list[a_]
-        for b_ in range(scale):
-            b = b_list[b_]
-            for c_ in range(scale):
-                c = ac_list[c_]
+        for c_ in range(scale):
+            c = ac_list[c_]
 
-                sim, params = build_sim(a,b,c)
-                lin_array, stab_array, cost_array, n_windows = run_sim(params)
-                lin_0,lin_20 = np.nanmean(lin_array[0]),np.nanmean(lin_array[-1])
-                stab_0,stab_20 = np.nanmean(stab_array[0]),np.nanmean(stab_array[-1])
-                int_0,int_20 = np.nanmean(cost_array[0]),np.nanmean(cost_array[-1])
-                
-                lin_tern_0[a_,b_,c_] = lin_0 
-                lin_tern_20[a_,b_,c_] = lin_20 
-                
-                stab_tern_0[a_,b_,c_] = stab_0 
-                stab_tern_20[a_,b_,c_] = stab_20 
-                
-                int_tern_0[a_,b_,c_] = int_0 
-                int_tern_20[a_,b_,c_] = int_20 
+            sim, params = build_sim(a,c)
+            #print(params.outcome_params)
+            lin_array, stab_array, cost_array, n_windows = run_sim(params)
+            lin_0,lin_20 = np.nanmean(lin_array[0]),np.nanmean(lin_array[-1])
+            stab_0,stab_20 = np.nanmean(stab_array[0]),np.nanmean(stab_array[-1])
+            int_0,int_20 = np.nanmean(cost_array[0]),np.nanmean(cost_array[-1])
+            
+            lin_tern_0[a_,c_] = lin_0 
+            lin_tern_20[a_,c_] = lin_20 
+            
+            stab_tern_0[a_,c_] = stab_0 
+            stab_tern_20[a_,c_] = stab_20 
+            
+            int_tern_0[a_,c_] = int_0 
+            int_tern_20[a_,c_] = int_20 
 
-    np.save('./results/lin_tern_0_abc.npy',lin_tern_0)
-    np.save('./results/lin_tern_20_abc.npy',lin_tern_20)
-    np.save('./results/stab_tern_0_abc.npy',stab_tern_0)
-    np.save('./results/stab_tern_20_abc.npy',stab_tern_20)
-    np.save('./results/int_tern_0_abc.npy',int_tern_0)
-    np.save('./results/int_tern_20_abc.npy',int_tern_20)
+    np.save('./results/lin_tern_0_ac.npy',lin_tern_0)
+    np.save('./results/lin_tern_20_ac.npy',lin_tern_20)
+    np.save('./results/stab_tern_0_ac.npy',stab_tern_0)
+    np.save('./results/stab_tern_20_ac.npy',stab_tern_20)
+    np.save('./results/int_tern_0_ac.npy',int_tern_0)
+    np.save('./results/int_tern_20_ac.npy',int_tern_20)
 
 #import pdb;pdb.set_trace()
 print('done!')

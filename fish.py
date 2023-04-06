@@ -556,7 +556,7 @@ class Fish:
         #S,F,L = np.tan(np.pi/2 - shifted_params*np.pi/2)
         S,F,L = fight.params.scaled_params
         #print(S,F,L)
-        if l == -1:
+        if l == -1: ## several weird edge cases here where you can't learn anything
             #import pdb;pdb.set_trace()
             return np.ones_like(self.xs)
         elif s == -1:
@@ -583,6 +583,7 @@ class Fish:
         likelihood = np.empty_like(xs)
 
 ## Build arrays of rel sizes of each fish as focal fish increases size
+## NOTE: This enforces post-acuity. How do I handle cases where this is a guess, or something?
         size_index = np.argmax(self.xs >= other_fish.size)
         rel_xs = np.ones_like(xs)
         rel_os = np.ones_like(xs)

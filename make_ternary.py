@@ -49,22 +49,12 @@ if __name__ == '__main__':
         outfile = './figures/figureS2_slf_ldiff.png'
         cmap = 'PiYG'
     elif True:
-        a = np.load('./results/lin_tern_20_abc.npy')
-        p_list = np.arange(-1,1.1,0.2)
+        a = np.load('./results/lin_tern_20.npy')
+        p_list = [-1,-0.9,-0.8,-0.2,-0.1,0,0.1,0.2,0.8,0.9,1.0]
         a = np.flip(a,1)
         a = np.flip(a,2)
-        outfile = './figures/figureS2_abc_l20.png'
+        outfile = './figures/figureS2_slf_l20.png'
         cmap = None
-    elif True:
-        a_0 = np.load('./results/lin_tern_0_abc.npy')
-        a_20 = np.load('./results/lin_tern_20_abc.npy')
-        a = a_20 - a_0
-        #p_list = [-1,-0.9,-0.8,-0.2,-0.1,0,0.1,0.2,0.8,0.9,1.0]
-        p_list = np.arange(-1,1.1,0.2)
-        a = np.flip(a,1)
-        a = np.flip(a,2)
-        outfile = './figures/figureS2_abc_ldiff.png'
-        cmap = 'PiYG'
     elif True:
         a = np.load('./results/eff_array.npy')
         a = np.flip(a,0)
@@ -95,9 +85,9 @@ if __name__ == '__main__':
     #p_list = [-1,-0.9,-0.8,-0.2,-0.1,0,0.1,0.2,0.8,0.9,1]
     p_dict = np_to_dict(a,p_list)
     fig,tax = plot_from_dict(p_dict,scale,cmap)
-    tax.bottom_axis_label("a")
-    tax.right_axis_label("b")
-    tax.left_axis_label("c")
+    tax.bottom_axis_label("s")
+    tax.right_axis_label("f")
+    tax.left_axis_label("l")
     tax.ticks(axis='brl')
     if False:
         tax._ticks['b'] = list(p_list.astype(str))

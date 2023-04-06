@@ -17,7 +17,7 @@ class Params():
                 xs=np.linspace(1,100,200),r_rhp=0,a_growth=True,c_aversion=1,
                 max_energy=1,start_energy=1,effort_exploration=0.1,
                 acuity=.5,pre_acuity=.5,post_acuity=True,awareness=.5,insight=True,
-                boldness=-0.8,
+                boldness=0,
                 #poly_param_a = 3,poly_param_b=-2.4,poly_param_c=0.1,
                 poly_param_a = 5,poly_param_b=0,poly_param_c=0.3,poly_param_m=0.1,
                 mutant_effort=[1,1],mutant_update='bayes',mutant_prior=None,
