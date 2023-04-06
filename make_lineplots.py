@@ -34,7 +34,8 @@ ax.fill_between(xs,mean_med - std_med,mean_med + std_med,alpha=0.5,color='blue',
 ax.plot(xs,mean_high,color='black')
 ax.fill_between(xs,mean_high - std_high,mean_high + std_high,alpha=0.5,color='green',label='a = 0.7')
 
-ax.set_xlabel('Effort')
-ax.set_ylabel('Acuity')
+ax.legend()
+ax.set_ylabel('Effort')
+ax.set_xlabel('Acuity')
 fig.savefig('./figures/line_plotAC.png',dpi=300)
 
