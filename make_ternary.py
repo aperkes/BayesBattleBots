@@ -50,11 +50,13 @@ if __name__ == '__main__':
         cmap = 'PiYG'
     elif True:
         a = np.load('./results/eff_array.npy')
-        if False:
-            a = np.mean(a,axis=3)
+        #a[np.isnan(a)] = 0
+        a = np.flip(a,0)
+        if True:
+            a = np.nanmean(a,axis=3)
             outfile = './figures/figureXX_fight_ABC.png'
         else:
-            a = np.std(a,axis=3)
+            a = np.nanstd(a,axis=3)
             outfile = './figures/figureXX_fight_ABC_std.png'
         cmap = 'viridis'
     else:
