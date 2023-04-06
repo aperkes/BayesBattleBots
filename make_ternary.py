@@ -49,8 +49,24 @@ if __name__ == '__main__':
         outfile = './figures/figureS2_slf_ldiff.png'
         cmap = 'PiYG'
     elif True:
+        a = np.load('./results/lin_tern_20_abc.npy')
+        p_list = np.arange(-1,1.1,0.2)
+        a = np.flip(a,1)
+        a = np.flip(a,2)
+        outfile = './figures/figureS2_abc_l20.png'
+        cmap = None
+    elif True:
+        a_0 = np.load('./results/lin_tern_0_abc.npy')
+        a_20 = np.load('./results/lin_tern_20_abc.npy')
+        a = a_20 - a_0
+        #p_list = [-1,-0.9,-0.8,-0.2,-0.1,0,0.1,0.2,0.8,0.9,1.0]
+        p_list = np.arange(-1,1.1,0.2)
+        a = np.flip(a,1)
+        a = np.flip(a,2)
+        outfile = './figures/figureS2_abc_ldiff.png'
+        cmap = 'PiYG'
+    elif True:
         a = np.load('./results/eff_array.npy')
-        #a[np.isnan(a)] = 0
         a = np.flip(a,0)
         if True:
             a = np.nanmean(a,axis=3)
