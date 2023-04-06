@@ -18,7 +18,17 @@ for p_ in range(len(ps)):
     shifted_p = (p + 1) / 2
     P = np.tan(np.pi/2 - shifted_p*np.pi/2)
 
-    ax.plot(xs,xs**P,color=cmap(p_/len(ps)),label=str(p))
+    if p == -1:
+        label = '-1.0 = inf'
+    elif p == 1:
+        label = ' 1.0 = 0.0'
+    elif p == 0:
+        label = ' 0.0 = 1.0'
+    elif p > 0:
+        label = ' ' + str(p) + ' = ' + str(np.round(P,3))
+    else:
+        label = str(p) + ' = ' + str(np.round(P,3))
+    ax.plot(xs,xs**P,color=cmap(p_/len(ps)),label=label)
 
 ax.set_xlabel('Invested input (Rel Size, Effort, etc)')
 ax.set_ylabel('Actual output')
