@@ -25,14 +25,15 @@ std_high = np.std(high_a,axis=1) / 10
 fig,ax  = plt.subplots()
 
 xs = np.linspace(0,1,11)
-ax.plot(xs,mean_low,color='black')
-ax.fill_between(xs,mean_low - std_low,mean_low + std_low,alpha=0.5,color='red',label='a = 0.7')
+
+ax.plot(xs,mean_high,color='black')
+ax.fill_between(xs,mean_high - std_high,mean_high + std_high,alpha=0.5,color='green',label='a = 0.3')
 
 ax.plot(xs,mean_med,color='black')
 ax.fill_between(xs,mean_med - std_med,mean_med + std_med,alpha=0.5,color='blue',label='a = 0.5')
 
-ax.plot(xs,mean_high,color='black')
-ax.fill_between(xs,mean_high - std_high,mean_high + std_high,alpha=0.5,color='green',label='a = 0.3')
+ax.plot(xs,mean_low,color='black')
+ax.fill_between(xs,mean_low - std_low,mean_low + std_low,alpha=0.5,color='red',label='a = 0.7')
 
 ax.legend()
 ax.set_ylabel('Effort')
