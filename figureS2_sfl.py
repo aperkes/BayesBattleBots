@@ -33,15 +33,14 @@ def build_sim(s,f,l,params=Params()):
     sim = Simulation()
 
     params.effort_method = 'SmoothPoly'
-    params.poly_param_c = 0
-    params.awareness = 5
+    params.awareness = 0.25
 
-    params.acuity = 5 
+    params.acuity = 0.25 
     params.post_acuity = True
     params.f_method = 'shuffled'
     #params.n_fights = 40
     params.n_rounds = 20
-    params.iterations = 200
+    params.iterations = 10
  
     return sim, params
 
@@ -52,7 +51,7 @@ def run_sim(params,window=3):
     lin_array = np.zeros([params.iterations,n_windows])
     cost_array = np.empty([params.iterations,params.n_fish,params.n_rounds * (params.n_fish -1)])
 
-    for i in tqdm(range(params.iterations)):
+    for i in range(params.iterations):
         fishes = [Fish(f,params) for f in range(params.n_fish)]
         tank = Tank(fishes,params)
         tank.run_all(print_me=False,progress=False)
@@ -86,13 +85,13 @@ if __name__ == '__main__':
     int_tern_20 = np.zeros_like(stab_tern_0)
 
     cmap = plt.cm.get_cmap('viridis')
-    for s_ in range(len(s_list)):
+    for s_ in tqdm(range(len(s_list))):
         s = s_list[s_]
         for f_ in range(len(f_list)):
             f = f_list[f_]
             for l_ in range(len(l_list)):
                 l = f_list[l_]
-                print(s,f,l)
+                #print(s,f,l)
 
                 sim, params = build_sim(s,f,l)
                 lin_array, stab_array, cost_array, n_windows = run_sim(params)
