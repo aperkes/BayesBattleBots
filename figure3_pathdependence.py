@@ -30,7 +30,7 @@ l= -0.9
 params = Params()
 
 params.acuity = 0
-params.boldness = 0.7
+#params.boldness = 0.7
 if True:
     params.effort_method = 'SmoothPoly'
 else:
@@ -39,7 +39,7 @@ else:
 #params.poly_param_a = 2
 #params.n_fights = 50 
 params.energy_cost = False
-params.awareness = 5
+params.awareness = 0.25
 params.prior=True
 #params.start_energy = 1
 
@@ -47,8 +47,8 @@ params.iterations = 2000
 params.n_rounds = 5
 
 params.n_fish = 5
-params.f_method = 'balanced'
-params.u_method = 'bayes'
+#params.f_method = 'balanced'
+#params.u_method = 'bayes'
 params.f_outcome = 'math'
 params.outcome_params = [s,e,l]
 params.set_params()
