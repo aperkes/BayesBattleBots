@@ -39,6 +39,8 @@ def plot_from_dict(p_dict,scale=10,cmap=None):
     return fig,tax 
 
 if __name__ == '__main__':
+    cmap = None
+    p_list = [-1,-0.9,-0.8,-0.2,-0.1,0,0.1,0.2,0.8,0.9,1.0]
     if False:
         a_0 = np.load('./results/lin_tern_0.npy')
         a_20 = np.load('./results/lin_tern_20.npy')
@@ -48,13 +50,18 @@ if __name__ == '__main__':
         a = np.flip(a,2)
         outfile = './figures/figureS2_slf_ldiff.png'
         cmap = 'PiYG'
-    elif True:
+    elif False:
         a = np.load('./results/lin_tern_20.npy')
         p_list = [-1,-0.9,-0.8,-0.2,-0.1,0,0.1,0.2,0.8,0.9,1.0]
         a = np.flip(a,1)
         a = np.flip(a,2)
         outfile = './figures/figureS2_slf_l20.png'
-        cmap = None
+    elif True:
+        a = np.load('./results/recency_array.npy')
+        a = np.flip(a,0)
+        p_list = np.linspace(-1,1,21)
+        outfile = './figures/recency_array.png'
+        cmap = 'PiYG'
     elif True:
         a = np.load('./results/eff_array.npy')
         a = np.flip(a,0)
@@ -83,7 +90,10 @@ if __name__ == '__main__':
         a[4,:,:] = 0
         a[5,:,:] = 0
     #p_list = [-1,-0.9,-0.8,-0.2,-0.1,0,0.1,0.2,0.8,0.9,1]
+    print('converting')
     p_dict = np_to_dict(a,p_list)
+
+    print('building figure...')
     fig,tax = plot_from_dict(p_dict,scale,cmap)
     tax.bottom_axis_label("s")
     tax.right_axis_label("f")
@@ -96,9 +106,10 @@ if __name__ == '__main__':
         tax.set_custom_ticks()
     tax.clear_matplotlib_ticks()
     tax.set_title('Linearity over s,f,l')
-    if False:
-        tax.show()
+    print('plotting and/or saving')
     if True:
         tax.savefig(outfile,dpi=300)
+    if True:
+        tax.show()
 
 
