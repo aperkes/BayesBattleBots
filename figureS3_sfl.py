@@ -37,8 +37,10 @@ scale = 21
 p_space = np.linspace(-1,1,scale)
 
 p_array = np.zeros([scale,scale,scale])
+_,params = build_fish()
+f_opp,opp_params = build_opp(params.copy(),o_eff = [None,0.3]) ## for now, opponent is fixed
 
-f_opp,opp_params = build_opp(o_eff = [None,0.3]) ## for now, opponent is fixed
+DEBUG = False
 for s_ in tqdm(range(scale)):
     s = p_space[s_]
     for f_ in range(scale):
@@ -47,33 +49,37 @@ for s_ in tqdm(range(scale)):
             l = p_space[l_]
             post_estimates = [0,0]
 
-            params = Params()
+            if DEBUG:
+                #s,f,l = [0,0,-0.9]
+                pass
             params.outcome_params = [s,f,l]
             params.set_params()
             f_opp,opp_params = build_opp(params.copy(),o_eff = None) ## flexible opponent
             for o_ in range(len(outcomes)):
                 r1_outcome,r2_outcome = outcomes[o_]
 
-                #print(params.outcome_params)
                 f1,params = build_fish(params)
-                #print('#############')
-                #print(r1_outcome,r2_outcome)
-                #print(f1.estimate)
+                if DEBUG:
+                    print('#############')
+                    print(params.outcome_params)
+                    print(r1_outcome,r2_outcome)
+                    print(f1.estimate)
                 fight1 = Fight(f_opp,f1,params,outcome=r1_outcome)
                 outcome1 = fight1.run_outcome()
                 f1.update(outcome1,fight1)
-                #print(f1.estimate,f1.effort,f_opp.effort)
+                if DEBUG:
+                    print(f1.estimate,f1.effort,f_opp.effort)
 
                 fight2 = Fight(f_opp,f1,params,outcome=r2_outcome)
                 outcome2 = fight2.run_outcome()
                 f1.update(outcome2,fight2)
-                #print(f1.effort)
-
-                #print(f1.estimate,f1.effort,f_opp.effort)
+                if DEBUG:
+                    print(f1.estimate,f1.effort,f_opp.effort)
                 post_estimates[o_] = f1.estimate
 
             e_diff = post_estimates[0] - post_estimates[1]
             p_array[s_,f_,l_] = e_diff
-
+#import pdb; pdb.set_trace()
+#break
 
 np.save('./results/recency_array.npy',p_array)

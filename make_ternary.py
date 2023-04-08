@@ -33,14 +33,15 @@ def np_to_dict(a,p_list,keys=['s','f','l']):
                 p_dict[key] = a[s_,f_,l_]
     return p_dict
 
-def plot_from_dict(p_dict,scale=10,cmap=None):
+def plot_from_dict(p_dict,scale=10,cmap=None,vmax=None,vmin=None):
     fig,tax = ternary.figure(scale=scale)
-    tax.heatmap(p_dict,cmap=cmap)
+    tax.heatmap(p_dict,cmap=cmap,vmax=vmax,vmin=vmin)
     return fig,tax 
 
 if __name__ == '__main__':
     cmap = None
     p_list = [-1,-0.9,-0.8,-0.2,-0.1,0,0.1,0.2,0.8,0.9,1.0]
+    vmax,vmin = None,None
     if False:
         a_0 = np.load('./results/lin_tern_0.npy')
         a_20 = np.load('./results/lin_tern_20.npy')
@@ -58,10 +59,12 @@ if __name__ == '__main__':
         outfile = './figures/figureS2_slf_l20.png'
     elif True:
         a = np.load('./results/recency_array.npy')
-        a = np.flip(a,0)
+        #a = np.flip(a,0)
+        a[np.isnan(a)] = 0
         p_list = np.linspace(-1,1,21)
         outfile = './figures/recency_array.png'
         cmap = 'PiYG'
+        vmax,vmin = 50,-50
     elif True:
         a = np.load('./results/eff_array.npy')
         a = np.flip(a,0)
@@ -94,7 +97,7 @@ if __name__ == '__main__':
     p_dict = np_to_dict(a,p_list)
 
     print('building figure...')
-    fig,tax = plot_from_dict(p_dict,scale,cmap)
+    fig,tax = plot_from_dict(p_dict,scale,cmap,vmax,vmin)
     tax.bottom_axis_label("s")
     tax.right_axis_label("f")
     tax.left_axis_label("l")
