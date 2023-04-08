@@ -738,9 +738,16 @@ class Fish:
         else:
             likelihood = self._use_mutual_likelihood(fight,win)
             #likelihood = self._define_likelihood_mutual(fight,win)
+        if likelihood[0] <= 0 and likelihood[-1] <= 0:
+            likelihood[:] = 0.01
+        elif np.sum(likelihood[0] * self.prior) == 0:
+            likelihood[:] = 0.01
+            # This only really happens if you cheated
         self.likelihood = likelihood
         pre_prior = np.array(self.prior)
         self.prior = self._update(self.prior,likelihood,self.xs) ## this just multiplies prior*likelihood
+        if sum(np.isnan(self.prior)) > 1:
+            import pdb; pdb.set_trace()
         if self.decay_all:
             print('decaying...')
             self.prior = self._decay_flat(self.prior)
