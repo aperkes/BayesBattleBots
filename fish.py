@@ -728,6 +728,10 @@ class Fish:
             else:
                 other_fish = fight.winner
             cost = self.calculate_cost(win,fight,other_fish)
+        if fight.p_win == 0: ## if the impossible happened it's weird
+            self.win_record.append([other_fish.size,win,self.effort,cost])
+            self.est_record.append(self.estimate)
+            return self.prior,self.estimate
 ## Get likelihood function
         self.win_record.append([other_fish.size,win,self.effort,cost])
         if self.effort > other_fish.effort:
@@ -738,16 +742,9 @@ class Fish:
         else:
             likelihood = self._use_mutual_likelihood(fight,win)
             #likelihood = self._define_likelihood_mutual(fight,win)
-        if likelihood[0] <= 0 and likelihood[-1] <= 0:
-            likelihood[:] = 0.01
-        elif np.sum(likelihood[0] * self.prior) == 0:
-            likelihood[:] = 0.01
-            # This only really happens if you cheated
         self.likelihood = likelihood
         pre_prior = np.array(self.prior)
         self.prior = self._update(self.prior,likelihood,self.xs) ## this just multiplies prior*likelihood
-        if sum(np.isnan(self.prior)) > 1:
-            import pdb; pdb.set_trace()
         if self.decay_all:
             print('decaying...')
             self.prior = self._decay_flat(self.prior)
@@ -760,15 +757,17 @@ class Fish:
         #self.estimate_ = np.sum(self.prior * self.xs / np.sum(self.prior))
         self.estimate =  estimate
         self.est_record.append(estimate)
-        self.est_record_.append(estimate_)
+        if False: ## most of the time I shouldn't need this stuff
+            self.est_record_.append(estimate_)
 
-        self.sdest_record.append(prior_std)
+            self.sdest_record.append(prior_std)
 
-        est_5,est_25,est_75,est_95 = self._get_range_prior(self.cdf_prior) 
-        self.range_record.append([est_5,est_25,est_75,est_95])
-        
-        #self.estimate_ = estimate_
-        #self.est_record_.append(estimate_)
+            est_5,est_25,est_75,est_95 = self._get_range_prior(self.cdf_prior) 
+            self.range_record.append([est_5,est_25,est_75,est_95])
+            
+            self.estimate_ = estimate_
+            self.est_record_.append(estimate_)
+
         size_possible_post = self.prior[size_idx] > 0
         if self.idx == 0 and False:
             #plt.cla()
