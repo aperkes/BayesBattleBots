@@ -1,5 +1,23 @@
 ### Add from top:
 
+April 9: 
+Ok, I just needed some scratch paper: 
+What is going on with the bottom right corner? It corresponds to 
+s=16:19, which because it's flipped is probably 2:5, or something like that
+So I guess [-0.9:-0.75] ? 
+Ternary plots this alongside 
+0:2 for luck (so like -1:-0.9) 
+0:3 for effort (so like -1:-0.85)
+
+so what's going on there? 
+
+It's obviously a pretty weird space, there's almost 0 luck, so you're 
+likelihood function is going to be essentially a line, size and effort have extreme gain as well, so your relative wager is going to be extreme (s shouldn't matter though, since they are the same size
+In some cases, your likelihood says that that outcome was impossible, what happens then? nan apparently. Or something very negative. Both are bad
+
+Lots of nans happening when all 3 values are low
+lots of min values happening when effort is 1.0 (where effort is just chance)
+
 Jan 27: 
 I stopped doing these notes for a while, since I set up a google slides that was easier to work with. 
 Remember to copy all that in here for posterity eventually
