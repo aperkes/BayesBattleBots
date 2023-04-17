@@ -157,7 +157,9 @@ class Tank():
         for f in self.fishes:
             print(f.name,':','size=',np.round(f.size,3),'estimate=',np.round(f.estimate,3))
 
-    def run_all(self,progress=True,print_me=False,plot_stuff=False):
+    def run_all(self,progress=True,print_me=False,plot_stuff=False,cutoff=None):
+        if cutoff is None:
+            cutoff = len(self.fight_list)
         if plot_stuff:
             fig,ax = plt.subplots()
         if print_me:
@@ -169,9 +171,9 @@ class Tank():
         else:
             process = self.process_fight
         if progress:
-            iterator = tqdm(range(len(self.fight_list)))
+            iterator = tqdm(range(cutoff))
         else:
-            iterator = range(len(self.fight_list))
+            iterator = range(cutoff)
         for i in iterator:
             c = self.fight_list[i]
             if self.death:
