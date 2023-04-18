@@ -1280,3 +1280,4 @@ if __name__ == '__main__':
     print(f2.idx,f2.size)
     print(f2._choose_effort(f1,fight))
     print(f2.update(True,fight))
+    print(f1.params.L)
