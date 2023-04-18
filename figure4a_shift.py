@@ -36,7 +36,7 @@ params.baseline_effort = 0.3
 
 replicates = 200
 
-opp_sizes = [45,50,55] ## size of staged fight
+opp_sizes = [40,50,60] ## size of staged fight
 tank_sizes = [35,45,65,75] ## size of other fish
 
 params_f0 = params.copy()

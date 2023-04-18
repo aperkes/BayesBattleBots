@@ -34,7 +34,7 @@ params.awareness = 0.5
 params.set_params()
 params.baseline_effort = 0.3
 
-replicates = 200
+replicates = 100
 
 #opp_sizes = [45,50,65] ## size of staged fight
 #tank_sizes = [35,45,65,75] ## size of other fish
@@ -95,7 +95,7 @@ for n_ in range(len(tank_sizes)):
 fig,ax = plt.subplots()
 for s_ in range(len(tank_sizes)):
     est_mean = np.mean(est_array[s_],axis=0)
-    est_sem = np.std(est_array[s_],axis=0) / 2 # np.sqrt(replicates)
+    est_sem = np.std(est_array[s_],axis=0) /  np.sqrt(replicates)
     xs = np.arange(len(est_mean))
     cor = cm.viridis((s_+1) / len(tank_sizes))
     ax.plot(xs,est_mean,color='black')
