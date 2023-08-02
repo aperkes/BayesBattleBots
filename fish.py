@@ -174,6 +174,8 @@ class Fish:
         elif effort_method == 'SmoothPoly':
             #self._choose_effort = self.poly_effort_prob
             self._choose_effort = self.poly_effort_combo
+        elif effort_method == 'LuckyPoly':
+            self._choose_effort = self.poly_effort_lucky
         elif effort_method == 'ExplorePoly':
             self._choose_effort = self.poly_explore
         else:
@@ -995,6 +997,41 @@ class Fish:
             print(self.size,self.estimate,self.awareness,self.params.A)
             print(f_opp.size,self.guess,self.acuity,self.params.C)
         return scaled_effort * self.energy
+
+## The only difference is that here they happen to guess the correct size of their opponent
+    def poly_effort_lucky(self,f_opp,fight):
+        opp_size_guess = f_opp.size
+        self.guess = opp_size_guess
+        s,e,l = self.params.outcome_params
+        S,F = self.params.S,self.params.F
+
+        if opp_size_guess > self.estimate:  ## if you guess you are SMALLER
+            est_ratio = self.estimate / opp_size_guess
+
+            rough_wager = est_ratio ** S * self.energy ** F
+            effort = fight._wager_curve(rough_wager)
+        else: ## if you think you're bigger
+            est_ratio = opp_size_guess / self.estimate
+            rough_wager = est_ratio ** S * self.energy ** F
+            effort = 1- fight._wager_curve(rough_wager)
+
+        if self.params.C == 0 and self.prior_std == 0:
+            confidence_correction = 1
+        else:
+## ideally this would be probabiliy of being wrong, but error will have to do.
+            confidence_correction = 1 - norm.cdf(-0.1 * self.guess,self.estimate - self.guess,self.params.C + self.prior_std)
+        self.correction = confidence_correction
+
+        scaled_effort = (effort * confidence_correction) ** self.params.B
+        scaled_effort = np.clip(scaled_effort,0,1)
+        if self.params.print_me:
+            print('###',self.idx,self.params.effort_method)
+            print(self.params.poly_param_a,rough_wager)
+            print(effort,scaled_effort,confidence_correction)
+            print(self.size,self.estimate,self.awareness,self.params.A)
+            print(f_opp.size,self.guess,self.acuity,self.params.C)
+        return scaled_effort * self.energy
+
 
 
     def poly_effort_prob(self,f_opp,fight,cutoff_prop = 0.1):
