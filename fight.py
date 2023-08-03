@@ -38,6 +38,7 @@ class Fight():
         self.idx = idx
         self.food = params.food
         self.p_win = None
+        self.f_min = None
         
     def run_outcome(self):
         if self.mechanism == 'math':
@@ -212,6 +213,7 @@ class Fight():
                 self.p_win = self._wager_curve(min_normed,l)
         roll = random.random()
         
+        self.f_min = f_min
         if roll < self.p_win: ## probability that the "lower invested" fish wins
             winner = f_min
         else:

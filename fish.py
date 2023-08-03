@@ -179,6 +179,9 @@ class Fish:
         elif effort_method == 'ExplorePoly':
             self._choose_effort = self.poly_explore
         else:
+            print('Warning!! Effort strategy not found')
+            print('Defaulting to choose_effort_energy')
+
             self._choose_effort = self.choose_effort_energy
 
         self.update_method = update_method
@@ -1256,7 +1259,7 @@ class Fish:
             return False
     def get_stats(self):
         if self.awareness == 0:
-            prior_mean = self.estimate
+            prior_mean = self.size
             prior_std = 0
             self.prior_mean = prior_mean
             self.prior_std = prior_std
