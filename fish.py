@@ -78,6 +78,9 @@ class Fish:
         self.params.size = self.size
         if np.isinf(self.params.A):
             self.prior = np.ones_like(self.xs) / len(self.xs)
+        elif self.params.A == 0:
+            self.prior = np.zeros_like(self.xs)
+            self.prior[np.argmax(self.xs >= self.size)] = 1
         elif params.prior is True:
             self.prior = norm.pdf(self.xs,self.size,self.params.A)
             self.prior = self.prior / np.sum(self.prior)

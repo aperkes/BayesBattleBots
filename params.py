@@ -14,7 +14,7 @@ class Params():
                 f_outcome='math',outcome_params=[0.0,0.0,-0.9], ## Fight Params
                 effort_method='SmoothPoly',baseline_effort=.2,update_method='bayes',  ## Fish Params
                 age=50,size=None,prior=None,likelihood=None,likelihood_dict=None,
-                xs=np.linspace(1,100,200),r_rhp=0,a_growth=True,c_aversion=1,
+                xs=np.linspace(1,100,199),r_rhp=0,a_growth=True,c_aversion=1,
                 max_energy=1,start_energy=1,effort_exploration=0.1,
                 acuity=.5,pre_acuity=.5,post_acuity=True,awareness=.5,insight=True,
                 boldness=0,
