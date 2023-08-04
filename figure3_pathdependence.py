@@ -25,7 +25,7 @@ import itertools
 #s,e,l = -0.5,0.5,-0.9
 s= 0.0
 e= 0.7
-l= -0.9
+l= -0.8
 
 params = Params()
 
@@ -44,7 +44,8 @@ params.prior=True
 #params.start_energy = 1
 
 params.iterations = 2000
-params.n_rounds = 5
+params.n_rounds = 6
+
 
 params.n_fish = 5
 #params.f_method = 'balanced'
@@ -144,8 +145,8 @@ for r in range(params.n_rounds):
     r_losers = match_results[loss_key]
     loss_str = str(np.round(np.mean(r_losers),2)) + ' +/- ' + str(np.round(np.std(r_losers) / np.sqrt(len(r_winners)),3))
 
-    ax.text(r+0.01,y_max+1,win_str)
-    ax.text(r+0.01,y_min-1,loss_str)
+    #ax.text(r+0.01,y_max+1,win_str)
+    #ax.text(r+0.01,y_min-1,loss_str)
 
 ax.set_xticks(list(range(params.n_rounds)))
 ax.set_xlim([-0.1,params.n_rounds - 0.5])
@@ -154,7 +155,8 @@ ax.set_xlabel('Repeated Contests')
 
 ax.set_ylim([y_min - 1.5,y_max+1.5])
 ax.set_title('Fish estimates are path dependent and have recency bias')
-fig.savefig('./figures/Fig4b.png',dpi=300)
+fig.savefig('./figures/fig3_pathDep.png',dpi=300)
+fig.savefig('./figures/fig3_pathDep.svg')
 if True:
     fig.show()
     plt.show()
