@@ -49,6 +49,10 @@ params.size = 50
 def build_fish(idx,f0):
     return Fish(idx,f0.params)
 
+## There's a copy method, but it drops the history and estimate
+def clone_fish(f0):
+    return copy.deepcopy(f0)
+
 def check_success(f,f_match,params):
     fight = Fight(f,f_match,params)
     fight.run_outcome()
@@ -66,10 +70,12 @@ def build_results(n_matches=1):
 ## Dict to convert from outcome to letters
 conversion_dict = {0:'w',1:'l'}
 
-s_set = [-1,-0.3,0,0.3,1]
+#s_set = [-1,-0.3,0,0.3,1]
+s_set = list(np.linspace(-1,1,11))
 e_set = list(s_set)
 l_set = list(s_set)
-a_set = [0,0.5,1]
+#a_set = [0,0.5,1]
+a_set = list(np.linspace(0,1,11))
 c_set = list(a_set)
 n_C = len(s_set) ## as in density of dimensionality
 n_A = len(a_set)
@@ -79,19 +85,27 @@ wl_array = np.empty_like(decay_array)
 rec_array = np.empty_like(decay_array)
 late_array = np.empty_like(decay_array)
 
+est_array = np.empty_like(decay_array,dtype=dict)
+prob_array = np.empty_like(decay_array,dtype=dict)
+
 c_indices = range(n_C)
 a_indices = range(n_A)
 base_results = build_results(params.n_rounds)
 n_results = [[] for m in range(params.n_rounds)]
+"""
+NOTE: something is weird here, 
+The p_win is always equal to 0.5, but should obviously change
+need to figure out why, but then it works really well.
+"""
 for k in base_results.keys():
     for m in range(params.n_rounds):
         if len(k) == m:
             n_results[m].append(k)
 
+print('Working on it...better just find something else to work on for now')
 for (s_,e_,l_,a_,c_) in itertools.product(c_indices,c_indices,c_indices,a_indices,a_indices):
     s,e,l = s_set[s_],e_set[e_],l_set[l_]
     a,c = a_set[a_],c_set[c_]
-    print(s,e,l,a,c)
 
     params.awareness = a
     params.acuity = c
@@ -103,6 +117,7 @@ for (s_,e_,l_,a_,c_) in itertools.product(c_indices,c_indices,c_indices,a_indice
     previous_round = ['']
     match_results = dict(base_results)
     match_prob = {}
+    match_est = {}
 ## NOTE: I only actually need as many iterations as 
 # there are permutations, if I were smarter about this
 #for i in tqdm(range(iterations)):
@@ -116,7 +131,10 @@ for (s_,e_,l_,a_,c_) in itertools.product(c_indices,c_indices,c_indices,a_indice
         for exp in previous_round:
             f = fishes[exp]
             for w in [0,1]: ## force one of two conditions
-                f_ = build_fish(1,f)
+                #import pdb;pdb.set_trace()
+                #f_ = build_fish(1,f)
+                #f_ = f.copy()
+                f_ = copy.deepcopy(f)
                 match,_ = check_success(f_,f_match,params)
                 results_str = exp + conversion_dict[w]
                 f_.update(1-w,match) 
@@ -126,11 +144,13 @@ for (s_,e_,l_,a_,c_) in itertools.product(c_indices,c_indices,c_indices,a_indice
             else:
                 p_win = match.p_win
             match_prob[exp] = p_win
+            match_est[exp] = fishes[exp].estimate
             previous_round = this_round
     wl_effect = match_prob['w'] - match_prob['l']
     rec_effect = match_prob['lw'] - match_prob['wl']
     rec_effect_late = match_prob['llw'] - match_prob['wwl']
     rec_decay = np.abs(rec_effect_late) * np.sign(rec_effect) * np.sign(rec_effect_late)
+    #print(s,e,l,a,c,wl_effect)
 
 ## This happens when a certain event never occurs
     #if np.isnan(rec_decay):
@@ -139,5 +159,15 @@ for (s_,e_,l_,a_,c_) in itertools.product(c_indices,c_indices,c_indices,a_indice
     wl_array[s_,e_,l_,a_,c_] = wl_effect
     rec_array[s_,e_,l_,a_,c_] = rec_effect
     late_array[s_,e_,l_,a_,c_] = rec_effect_late
+    est_array[s_,e_,l_,a_,c_] = match_est
+    prob_array[s_,e_,l_,a_,c_] = match_prob
+
+## What do you do with info? I guess save it: 
+np.save('decay_array_dense.npy',decay_array)
+np.save('wl_array_dense.npy',wl_array)
+np.save('rec_array_dense.npy',rec_array)
+np.save('late_array_dense.npy',late_array)
+np.save('est_array_dense.npy',est_array)
+np.save('prob_array_dense.npy',prob_array)
 
 import pdb;pdb.set_trace()
