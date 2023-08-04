@@ -11,6 +11,7 @@ from matplotlib.widgets import Slider, Button, RadioButtons
 est_array = np.load('./est_array.npy',allow_pickle=True)
 prob_array = np.load('./prob_array.npy',allow_pickle=True)
 
+n_f,n_a = est_array.shape[0]-1,est_array.shape[-1]-1
 est_dict = est_array[2,2,2,1,1]
 prob_dict = prob_array[2,2,2,1,1]
 
@@ -81,23 +82,23 @@ axis_color = 'lightgoldenrodyellow'
 
 ## Add 5 slider bars
 s_slider_ax = fig.add_axes([0.25,0.3,0.65,0.03], facecolor=axis_color)
-s_slider = Slider(s_slider_ax,'s',0,4,valstep=1,valinit=2)
+s_slider = Slider(s_slider_ax,'s',0,n_f,valstep=1,valinit=n_f // 2)
 s_slider.on_changed(sliders_on_changed)
 
 f_slider_ax = fig.add_axes([0.25,0.25,0.65,0.03], facecolor=axis_color)
-f_slider = Slider(f_slider_ax,'f',0,4,valstep=1,valinit=2)
+f_slider = Slider(f_slider_ax,'f',0,n_f,valstep=1,valinit=n_f // 2)
 f_slider.on_changed(sliders_on_changed)
 
 l_slider_ax = fig.add_axes([0.25,0.20,0.65,0.03], facecolor=axis_color)
-l_slider = Slider(l_slider_ax,'l',0,4,valstep=1,valinit=2)
+l_slider = Slider(l_slider_ax,'l',0,n_f,valstep=1,valinit=n_f // 2)
 l_slider.on_changed(sliders_on_changed)
 
 a_slider_ax = fig.add_axes([0.25,0.15,0.65,0.03], facecolor=axis_color)
-a_slider = Slider(a_slider_ax,'sigma_a',0,2,valstep=1,valinit=1)
+a_slider = Slider(a_slider_ax,'sigma_a',0,n_a,valstep=1,valinit=n_a // 2)
 a_slider.on_changed(sliders_on_changed)
 
 c_slider_ax = fig.add_axes([0.25,0.1,0.65,0.03], facecolor=axis_color)
-c_slider = Slider(c_slider_ax,'sigma_c',0,2,valstep=1,valinit=1)
+c_slider = Slider(c_slider_ax,'sigma_c',0,n_a,valstep=1,valinit=n_a // 2)
 c_slider.on_changed(sliders_on_changed)
 
 ## add a reset button
