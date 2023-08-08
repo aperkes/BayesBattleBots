@@ -33,7 +33,6 @@ params.effort_method = 'LuckyPoly' ## This gets the average in one line without 
 params.energy_cost = False
 params.prior=True ## Their estimate also starts accurate
 
-params.iterations = 2
 params.n_rounds = 6
 
 params.f_outcome = 'math'
@@ -87,9 +86,11 @@ late_array = np.empty_like(decay_array)
 
 est_array = np.empty_like(decay_array,dtype=dict)
 prob_array = np.empty_like(decay_array,dtype=dict)
+#fish_array = np.empty_like(decay_array,dtype=dict)
 
 c_indices = range(n_C)
 a_indices = range(n_A)
+
 base_results = build_results(params.n_rounds)
 n_results = [[] for m in range(params.n_rounds)]
 """
@@ -107,6 +108,7 @@ for (s_,e_,l_,a_,c_) in itertools.product(c_indices,c_indices,c_indices,a_indice
     s,e,l = s_set[s_],e_set[e_],l_set[l_]
     a,c = a_set[a_],c_set[c_]
 
+    print(s,e,l,a,c)
     params.awareness = a
     params.acuity = c
     params.outcome_params = [s,e,l]
@@ -118,9 +120,8 @@ for (s_,e_,l_,a_,c_) in itertools.product(c_indices,c_indices,c_indices,a_indice
     match_results = dict(base_results)
     match_prob = {}
     match_est = {}
-## NOTE: I only actually need as many iterations as 
-# there are permutations, if I were smarter about this
-#for i in tqdm(range(iterations)):
+    #match_fish = {}
+
     results_str = ''
     f = build_fish(1,f0)
     f_match = build_fish(0,f0)
@@ -131,9 +132,6 @@ for (s_,e_,l_,a_,c_) in itertools.product(c_indices,c_indices,c_indices,a_indice
         for exp in previous_round:
             f = fishes[exp]
             for w in [0,1]: ## force one of two conditions
-                #import pdb;pdb.set_trace()
-                #f_ = build_fish(1,f)
-                #f_ = f.copy()
                 f_ = copy.deepcopy(f)
                 match,_ = check_success(f_,f_match,params)
                 results_str = exp + conversion_dict[w]
@@ -145,12 +143,13 @@ for (s_,e_,l_,a_,c_) in itertools.product(c_indices,c_indices,c_indices,a_indice
                 p_win = match.p_win
             match_prob[exp] = p_win
             match_est[exp] = fishes[exp].estimate
+            #match_fish[exp] = fishes[exp]
             previous_round = this_round
+
     wl_effect = match_prob['w'] - match_prob['l']
     rec_effect = match_prob['lw'] - match_prob['wl']
     rec_effect_late = match_prob['llw'] - match_prob['wwl']
     rec_decay = np.abs(rec_effect_late) * np.sign(rec_effect) * np.sign(rec_effect_late)
-    #print(s,e,l,a,c,wl_effect)
 
 ## This happens when a certain event never occurs
     #if np.isnan(rec_decay):
@@ -161,13 +160,17 @@ for (s_,e_,l_,a_,c_) in itertools.product(c_indices,c_indices,c_indices,a_indice
     late_array[s_,e_,l_,a_,c_] = rec_effect_late
     est_array[s_,e_,l_,a_,c_] = match_est
     prob_array[s_,e_,l_,a_,c_] = match_prob
+    #fish_array[s_,e_,l_,a_,c_] = match_fish
 
 ## What do you do with info? I guess save it: 
-np.save('decay_array_dense.npy',decay_array)
-np.save('wl_array_dense.npy',wl_array)
-np.save('rec_array_dense.npy',rec_array)
-np.save('late_array_dense.npy',late_array)
-np.save('est_array_dense.npy',est_array)
-np.save('prob_array_dense.npy',prob_array)
+print('Done!')
+suffix = '_debug.npy'
+np.save('decay_array' + suffix ,decay_array)
+np.save('wl_array' + suffix,wl_array)
+np.save('rec_array' + suffix,rec_array)
+np.save('late_array' + suffix,late_array)
+np.save('est_array' + suffix,est_array)
+np.save('prob_array' + suffix,prob_array)
+#np.save('fish_array' + suffix,fish_array)
 
-import pdb;pdb.set_trace()
+#import pdb;pdb.set_trace()
