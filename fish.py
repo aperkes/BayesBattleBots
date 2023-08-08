@@ -513,6 +513,7 @@ class Fish:
         return p_win
 
     def _use_mutual_likelihood(self,fight,win=True):
+        #import pdb; pdb.set_trace()
         if self.likelihood_dict is None:
             #likelihood = self._define_likelihood_mutual(fight,win) 
             likelihood = self._define_likelihood_mut_array(fight,win)
@@ -556,6 +557,7 @@ class Fish:
 
 ## Updated likelihood function that *should* be faster
     def _define_likelihood_mut_array(self,fight,win=True):
+
         if fight is None:
             s,e,l = self.naive_params
         else:
@@ -578,13 +580,16 @@ class Fish:
         else:
             x_eff = self.effort
 
-## Define other fish size and effort based on fight
+## Define other fish size and effort
+## I define this based on the win argument, so make sure that is correct
         if win:
-            other_fish = fight.loser
             o_eff = fight.level 
         else:
-            other_fish = fight.winner 
             o_eff = 1 ## this is an assumption of how much the other fish would have fought.
+        if self == fight.fish1:
+            other_fish = fight.fish2
+        else:
+            other_fish = fight.fish1
         if self.insight == True:
             o_eff = other_fish.effort
         xs = self.xs ## for simplicity, although sometimes I forget it exists
