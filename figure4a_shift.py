@@ -73,12 +73,14 @@ for s_ in range(len(opp_sizes)):
         est_array[s_,i] = np.array(f0.est_record)
 
 fig,ax = plt.subplots()
+styles = ['solid','dashed','dashdot']
+
 for s_ in range(len(opp_sizes)):
     est_mean = np.mean(est_array[s_],axis=0)
     est_sem = np.std(est_array[s_],axis=0) / np.sqrt(replicates)
     xs = np.arange(len(est_mean))
     cor = cm.viridis((s_+1) / len(opp_sizes))
-    ax.plot(xs,est_mean,color='black') #,label=opp_sizes[s_])
+    ax.plot(xs,est_mean,color='black',linestyle=styles[s_]) #,label=opp_sizes[s_])
     ax.fill_between(xs,est_mean-est_sem,est_mean+est_sem,alpha=0.5,color=cor,label=opp_sizes[s_])
 
 ax.axhline(65,color='gray',linestyle=':')
