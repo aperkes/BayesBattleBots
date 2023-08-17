@@ -115,6 +115,7 @@ print('...')
 fig,ax = plt.subplots()
 
 loser_estimates, winner_estimates = [],[]
+final_estimates = []
 
 for f in fishes:
     jitter = np.random.randn() * 1
@@ -131,11 +132,16 @@ for f in fishes:
             winner_estimates.append(f.est_record[1])
         else:
             loser_estimates.append(f.est_record[1])
-
+        final_estimates.append(f.est_record[-1])
 [ax.axvline(f,color='black',linestyle=':') for f in range(params.n_rounds)]
 
-y_max = max(winner_estimates)
-y_min = min(loser_estimates)
+if False:
+    y_max = max(winner_estimates)
+    y_min = min(loser_estimates)
+else:
+    y_max = max(final_estimates)
+    y_min = min(final_estimates)
+
 for r in range(params.n_rounds):
     win_key = 'w' * r
     r_winners = match_results[win_key]
@@ -153,6 +159,7 @@ ax.set_xlim([-0.1,params.n_rounds - 0.5])
 ax.set_ylabel('Estimate (mm)')
 ax.set_xlabel('Repeated Contests')
 
+#ax.set_ylim([y_min - 1.5,y_max+1.5])
 ax.set_ylim([y_min - 1.5,y_max+1.5])
 ax.set_title('Fish estimates are path dependent and have recency bias')
 fig.savefig('./figures/fig3_pathDep.png',dpi=300)
