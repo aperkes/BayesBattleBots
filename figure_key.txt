@@ -1,0 +1,50 @@
+Figure 1: That's all me, it's on my laptop
+Figure 2: figure3b_loserstronger.py > ./figures/fig3b_winvloss.png
+Figure 3: figure3_pathdependence.py > ./figures/fig3_pathDep.png
+Figure 4: 
+    a. figure4a_shift.py > ./figures/fig4a_persistance.png 
+    b. figureS_persistence.py > ./figures/fig4S_diff/prob
+figure 5: 
+    a. figureS2a_stability.py > ./figures/figureS2a_stability.png 
+    b. figureS2b_linearity.py > ""
+    c. figureS2c_intensity.py > ""
+figure 6:
+    a. figure6a_discrepency.py > ./figures/fig6a_discrepency.png
+    b. figure6b_experience.py > ./figures/fig6b_experience.png
+figure 7:
+    Top: figure4a_prior.py > ./figures/Fig4b.png
+
+Figure S1:
+    a. figureSX_cotScale.py > ./figures/figureSX_cotScale.png
+    b. make_ternary.py, figureS2_sfl.py > 
+
+Figure S2: All me again
+
+Figure S3: vim figure4b_info.py > ./figures/fig4b_info.png
+
+Figure S4: These are tricky, because it's all make ternary I think. 
+    figuresS2_sfl.py >> make_ternary.py 
+    a. lin_tern_0
+    b. lin_tern_20
+    c. lin_tern_20 - lin_tern_0
+
+figure S5: 
+    make_lineplots
+    figureXX_fight_AC.py > "./results/eff_array_ac.npy"
+
+figure S6:
+    figureS2_ac.py > make_heatmaps.py
+    a. lin_tern_0_ac.npy
+    b. lin_tern_20_ac.npy
+    c. lin_tern_20 - 0
+
+figure S7:
+    figureS2_ac.py > make_ternary.py
+
+Figure S8:
+    figureS2x_linearityByNumber.py > ./figures/figS2x_lienarityByNumer
+
+Figure S9:
+    a. figure4b_exp_clever.py > ./figures/fig6b.png
+    b. figure4b_exp_full.py (just the green part)  
+    c. figure4b_exp_full.py with different params
