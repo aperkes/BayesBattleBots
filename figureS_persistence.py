@@ -192,7 +192,7 @@ for rep in range(r_bins):
 
 ## This loop is just too slow, needed to optimize it
 ## The syntax is weird, but it parallelizes the experiment across CPUs
-        all_results = Parallel(n_jobs=8)(delayed(run_experiment)(params) for _ in range(replicates))
+        all_results = Parallel(n_jobs=12)(delayed(run_experiment)(params) for _ in range(replicates))
         for r in range(replicates):
      
             #results = run_experiment(params)
@@ -344,10 +344,10 @@ ax1.set_ylabel('Mean difference observed (winner vs loser)')
 
 ax.legend()
 
-if True:
+if False:
     fig1.savefig('./figures/fig4S_diff.svg')
     fig.savefig('./figures/fig4S_prob.svg')
-if True:
+if False:
     plt.show()
 
 if np.nanmax(mean_diff_b) > 1:
