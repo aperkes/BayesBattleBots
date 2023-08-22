@@ -18,6 +18,8 @@ from tqdm import tqdm
 import copy
 import cProfile,pstats
 
+from joblib import Parallel, delayed
+
 ## for debugging runtime warnings:
 #np.seterr(all='raise')
 
@@ -108,6 +110,98 @@ def run_experiment(params):
                 winner_r, loser_r]
     return results
 
+def run_simulation(params):
+    winners = [np.nan] * replicates
+    losers = [np.nan] * replicates
+    biggers = [np.nan] * replicates
+    smallers = [np.nan] * replicates
+
+## So for each replicate, we fill in 
+    winner_v_bigger = np.empty(replicates)
+    loser_v_bigger = np.empty_like(winner_v_bigger)
+
+    winner_v_smaller = np.empty_like(winner_v_bigger)
+    loser_v_smaller = np.empty_like(winner_v_bigger)
+
+    winner_record = np.empty_like(winner_v_bigger)
+    loser_record = np.empty_like(winner_v_bigger)
+
+    winner_v_bigger.fill(np.nan)
+    winner_v_smaller.fill(np.nan)
+    loser_v_bigger.fill(np.nan)
+    loser_v_smaller.fill(np.nan)
+    winner_record.fill(np.nan)
+    loser_record.fill(np.nan)
+
+    for r in range(replicates):
+        results = run_experiment(params)
+
+        winner_v_bigger[r],loser_v_bigger[r] = results[0:2]
+        winner_v_smaller[r],loser_v_smaller[r] = results[2:4]
+        winners[r],losers[r] = results[4:]
+
+    win_outcomes = np.empty(replicates)
+    loss_outcomes = np.empty_like(win_outcomes) 
+
+    for f_i in range(len(winners)):
+        f = winners[f_i]
+        check_fish = Fish(0,params,size=f.size)
+        check_fight = Fight(check_fish,f,params)
+        outcome = check_fight.run_outcome()
+        win_outcomes[f_i] = outcome
+
+    for f_i in range(len(losers)):
+        f = losers[f_i]
+
+### Check loser against a size matched fish
+        check_fish = Fish(0,params,size=f.size)
+        check_fight = Fight(check_fish,f,params)
+        outcome = check_fight.run_outcome()
+        loss_outcomes[f_i] = outcome
+       
+    cleaned_wvs = winner_v_smaller[~np.isnan(winner_v_smaller)]
+    cleaned_lvs = loser_v_smaller[~np.isnan(loser_v_smaller)]
+    cleaned_wvb = winner_v_bigger[~np.isnan(winner_v_bigger)]
+    cleaned_lvb = loser_v_bigger[~np.isnan(loser_v_bigger)]
+
+    t_s,p_s = ttest_ind(cleaned_wvs,cleaned_lvs)
+    t_b,p_b = ttest_ind(cleaned_wvb,cleaned_lvb)
+    t_m,p_m = ttest_ind(win_outcomes,loss_outcomes)
+
+    smaller_diff = winner_v_smaller - loser_v_smaller
+    s_diff = np.nanmean(smaller_diff)
+    s_diff_std = np.nanstd(smaller_diff)
+
+    bigger_diff = winner_v_bigger - loser_v_bigger
+    b_diff = np.nanmean(bigger_diff)
+    b_diff_std = np.nanstd(bigger_diff)
+
+    m_diff_array = win_outcomes - loss_outcomes
+    m_diff = np.nanmean(m_diff_array)
+    m_diff_std = np.nanstd(m_diff_array)
+
+    #ps_array[rep,i] = p_s
+    #pb_array[rep,i] = p_b
+    #pm_array[rep,i] = p_m
+
+    #smean_array[rep,i] = s_diff
+    #bmean_array[rep,i] = b_diff
+    #mmean_array[rep,i] = m_diff
+
+    #mstd_array[rep,i] = m_diff_std
+    #sstd_array[rep,i] = s_diff_std
+    #bstd_array[rep,i] = b_diff_std 
+
+    if b_diff > 1 or s_diff > 1 or m_diff > 1:
+        print('uh oh.')
+
+    m_results = [p_m,m_diff,m_diff_std]
+    s_results = [p_s,s_diff,s_diff_std]
+    b_results = [p_b,b_diff,b_diff_std]
+
+    tri_results = [m_results,s_results,b_results]
+    return tri_results
+
 #s,e,l = -.8,-.6,-0.99
 s,e,l=-0.9,-0.5,-0.7
 
@@ -128,7 +222,6 @@ params.set_params()
 ## Let fish duke it out, then pull a fish out, let it win, and put it back in with the rest.
 #replicates = 10
 scale = 1
-
 
 #plt.rcParams.update({'font.size': 18})
 #plt.rcParams.update({'lines.linewidth':5})
@@ -159,19 +252,26 @@ bstd_array = np.empty_like(ps_array)
 
 print('n iterations:',iterations)
 
-from joblib import Parallel, delayed
 
 for rep in range(r_bins):
     replicates = rep_array[rep]
     print('running with',rep_array[rep],'replicates')
-    for i in tqdm(range(iterations)):
+
+## This code was way to slow. This speeds it up by around 10x
+    all_iterations = Parallel(n_jobs=12)(delayed(run_simulation)(params) for _ in tqdm(range(iterations)))
+    for i in range(iterations):
+        #tri_results = run_simulation(params)
+        tri_results = all_iterations[i]
+        m_results,s_results,b_results = tri_results
+        pm_array[rep,i],mmean_array[rep,i],mstd_array[rep,i] = m_results
+        ps_array[rep,i],smean_array[rep,i],sstd_array[rep,i] = s_results
+        pb_array[rep,i],bmean_array[rep,i],bstd_array[rep,i] = b_results
+
+"""
         winners = [np.nan] * replicates
         losers = [np.nan] * replicates
         biggers = [np.nan] * replicates
         smallers = [np.nan] * replicates
-        #losers = copy.deepcopy(winners)
-        #biggers = copy.deepcopy(winners)
-        #smallers = copy.deepcopy(winners)
 
 ## So for each replicate, we fill in 
         winner_v_bigger = np.empty(replicates)
@@ -192,11 +292,10 @@ for rep in range(r_bins):
 
 ## This loop is just too slow, needed to optimize it
 ## The syntax is weird, but it parallelizes the experiment across CPUs
-        all_results = Parallel(n_jobs=12)(delayed(run_experiment)(params) for _ in range(replicates))
+#        all_results = Parallel(n_jobs=12)(delayed(run_experiment)(params) for _ in range(replicates))
         for r in range(replicates):
-     
-            #results = run_experiment(params)
-            results = all_results[r]
+            results = run_experiment(params)
+            #results = all_results[r]
 
             winner_v_bigger[r],loser_v_bigger[r] = results[0:2]
             winner_v_smaller[r],loser_v_smaller[r] = results[2:4]
@@ -253,15 +352,19 @@ for rep in range(r_bins):
         mstd_array[rep,i] = m_diff_std
         sstd_array[rep,i] = s_diff_std
         bstd_array[rep,i] = b_diff_std 
+
+        #m_results = [pm_array,mmean_array,mstd_array]
+        #s_results = [ps_array,smean_array,sstd_array]
+        #b_results = [pb_array,bmean_array,bstd_array]
+
+        #tri_results = [m_results,s_results,b_results]
+
         if b_diff > 1 or s_diff > 1 or m_diff > 1:
             import pdb;pdb.set_trace()
             print('uh oh.')
-    #profile.disable()
-    #ps = pstats.Stats(profile)
-    #ps.sort_stats('tottime','cumtime')
-    #ps.print_stats(3)
-    #import pdb;pdb.set_trace() 
+    """
 
+## Things I needj
 xs = rep_array
 log_xs = np.log(rep_array)
 log_xs = np.emath.logn(5, rep_array)
