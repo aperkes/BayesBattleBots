@@ -66,6 +66,7 @@ if __name__ == '__main__':
 
     cmap = plt.cm.get_cmap('viridis')
     
+    styles = ['solid','dotted','dashed','dashdot']
     for s in range(len(stds)):
         std = stds[s]
         params = build_sim(std)
@@ -74,8 +75,11 @@ if __name__ == '__main__':
         mean_int = np.nanmean(cost_array,axis=(0,1))
         sem_int = np.std(cost_array,axis=(0,1)) / np.sqrt(params.iterations)
         xs = np.arange(len(mean_int))
-        ax.plot(xs,mean_int,color='black')
+        ax.plot(xs,mean_int,color='black',linestyle=styled[s])
         ax.fill_between(xs,mean_int-sem_int,mean_int+sem_int,color=cmap(1-s/len(stds)),label='std: ' + str(std),alpha=0.5)
+
+    handles, labels = ax.get_legend_handles_labels()
+    ax.legend(handles[::-1], labels[::-1], title='Line', loc='upper right')
 
     ax.set_xlabel('Contest number')
     ax.set_ylabel('Mean fight Intensity\n(+/- SEM of iterations')

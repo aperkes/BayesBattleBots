@@ -968,6 +968,7 @@ class Fish:
 
     def poly_effort_combo(self,f_opp,fight):
         #order = 1
+        #print(f_opp.size,self.params.C,self.params.min_size,self.params.max_size)
         opp_size_guess = np.clip(np.random.normal(f_opp.size,self.params.C),self.params.min_size,self.params.max_size)
         self.guess = opp_size_guess
         s,e,l = self.params.outcome_params

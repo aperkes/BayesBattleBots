@@ -39,9 +39,9 @@ def build_sim(sd_size=2,params=Params()):
 
     params.effort_method = 'SmoothPoly'
     params.poly_param_c = 0
-    params.awareness = 15
+    params.awareness = 0.5 
 
-    params.acuity = 10
+    params.acuity = 0.5
     params.post_acuity = True
     params.f_method = 'shuffled'
     #params.n_fights = 40
@@ -72,8 +72,10 @@ if __name__ == '__main__':
     stds = [0,2,4,8]
 
     cmap = plt.cm.get_cmap('viridis')
+    styles = ['solid','dotted','dashed','dashdot']
     for s in range(len(stds)):
         std = stds[s]
+        print(std)
         sim, params = build_sim(std)
         stab_array,n_windows = run_sim(params)
         stabs.append(stab_array)
@@ -82,13 +84,16 @@ if __name__ == '__main__':
         mean_stab = np.nanmean(stab_array[:,:n_windows],axis=0)
 
         sem_stab = np.nanstd(stab_array[:,:n_windows],axis=0) / np.sqrt(params.iterations)
-        ax.plot(xs,mean_stab,color='black')
+        ax.plot(xs,mean_stab,color='black',linestyle=styles[s])
         ax.fill_between(xs,mean_stab - sem_stab, mean_stab + sem_stab,alpha=0.5,color=cmap(1- s/len(stds)),label='std: ' + str(std))
+
+    handles, labels = ax.get_legend_handles_labels()
+    ax.legend(handles[::-1], labels[::-1], loc='lower right')
 
     ax.set_xlabel('n rounds of contests')
     ax.set_ylabel('Stability (prop consistent with mean)')
     ax.set_title('Stability increases over time')
-    ax.legend()
+    #ax.legend()
     fig.savefig('./figures/figS2a_stability.png',dpi=300)
 
     if True:

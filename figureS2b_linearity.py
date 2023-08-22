@@ -75,6 +75,7 @@ if __name__ == '__main__':
 
     cmap = plt.cm.get_cmap('viridis')
 
+    styles = ['solid','dotted','dashed','dashdot']
     for s in range(len(stds)):
         std = stds[s]
         params,sim = build_sim(std)
@@ -85,13 +86,16 @@ if __name__ == '__main__':
         mean_lin = np.nanmean(lin_array[:,:n_windows],axis=0)
         sem_lin = np.nanstd(lin_array[:,:n_windows],axis=0) / np.sqrt(params.iterations)
 
-        ax.plot(xs,mean_lin,color='black')
+        ax.plot(xs,mean_lin,color='black',linestyle=styles[s])
         ax.fill_between(xs,mean_lin - sem_lin, mean_lin + sem_lin,alpha=0.5,color=cmap(1-s/len(stds)),label='Std: ' + str(std))
+
+    handles, labels = ax.get_legend_handles_labels()
+    ax.legend(handles[::-1], labels[::-1], loc='lower right')
 
     ax.set_xlabel('n rounds of contests')
     ax.set_ylabel('Linearity (1-triad ratio)')
     ax.set_title('Linearity increases over time')
-    ax.legend()
+    #ax.legend()
     fig.savefig('./figures/figS2b_linearity.png',dpi=300)
     PLOT = True
     if PLOT:

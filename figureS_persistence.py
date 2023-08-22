@@ -161,17 +161,17 @@ for rep in range(r_bins):
 
             if np.max(tank2.sizes) != f2.size:
                 idx_bigger_l = np.arange(tank.n_fish)[ranks == (l_rank + 1)][0]
-                loser_v_bigger[r] = tank3.win_record[f2.idx,idx_bigger_l]/params.n_fights
+                loser_v_bigger[r] = tank3.win_record[f2.idx,idx_bigger_l]/params.n_rounds
                 #loser_v_bigger.append(tank3.history[-1,f2.idx,idx_bigger_l])
 
             if np.min(tank2.sizes) != f.size:
                 idx_smaller_w = np.arange(tank.n_fish)[ranks == (f_rank - 1)][0]
-                winner_v_smaller[r] = tank2.win_record[f.idx,idx_smaller_w]/params.n_fights
+                winner_v_smaller[r] = tank2.win_record[f.idx,idx_smaller_w]/params.n_rounds
                 #winner_v_smaller.append(tank2.history[-1,f.idx,idx_smaller_w])
             
             if np.max(tank2.sizes) != f.size:
                 idx_bigger = np.arange(tank.n_fish)[ranks == (f_rank + 1)][0]
-                winner_v_bigger[r] = tank2.win_record[f.idx,idx_bigger]/params.n_fights
+                winner_v_bigger[r] = tank2.win_record[f.idx,idx_bigger]/params.n_rounds ## should this be rounds or fights.
                 #winner_v_bigger.append(tank2.history[-1,f.idx,idx_bigger])
 
             else:
@@ -294,16 +294,17 @@ m_color = 'black'
 s_color = 'darkblue'
 b_color = 'gold'
 ## Plot the probability of detecting a significant difference (with std across 1000 iterations)
+
 fig,ax = plt.subplots()
 ax.plot(log_xs,mean_prob_m,color=m_color,label='Size matched')
 ax.plot(log_xs,np.clip(mean_prob_m - 2*std_prob_m,0,1),linestyle=':',color=m_color)
 ax.plot(log_xs,np.clip(mean_prob_m + 2*std_prob_m,0,1),linestyle=':',color=m_color)
 
-ax.plot(log_xs,mean_prob_s,color=s_color,label='Vs. smaller')
+ax.plot(log_xs,mean_prob_s,color=s_color,label='Vs. smaller',linestyle='dashed')
 ax.plot(log_xs,np.clip(mean_prob_s - 2*std_prob_s,0,1),linestyle=':',color=s_color)
 ax.plot(log_xs,np.clip(mean_prob_s + 2*std_prob_s,0,1),linestyle=':',color=s_color)
 
-ax.plot(log_xs,mean_prob_b,color=b_color,label='Vs. bigger')
+ax.plot(log_xs,mean_prob_b,color=b_color,label='Vs. bigger',linestyle='dashdot')
 ax.plot(log_xs,np.clip(mean_prob_b - 2*std_prob_b,0,1),linestyle=':',color=b_color)
 ax.plot(log_xs,np.clip(mean_prob_b + 2*std_prob_b,0,1),linestyle=':',color=b_color)
 
@@ -337,7 +338,7 @@ ax1.set_xticklabels(xs)
 ax1.set_xlabel('n Replicates')
 ax1.set_ylabel('Mean difference observed (winner vs loser)')
 
-fig1.legend()
+ax.legend()
 
 if True:
     fig1.savefig('./figures/fig4S_diff.svg')
