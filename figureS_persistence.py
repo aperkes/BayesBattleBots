@@ -258,7 +258,7 @@ for rep in range(r_bins):
     print('running with',rep_array[rep],'replicates')
 
 ## This code was way to slow. This speeds it up by around 10x
-    all_iterations = Parallel(n_jobs=12)(delayed(run_simulation)(params) for _ in tqdm(range(iterations)))
+    all_iterations = Parallel(n_jobs=-1)(delayed(run_simulation)(params) for _ in tqdm(range(iterations)))
     for i in range(iterations):
         #tri_results = run_simulation(params)
         tri_results = all_iterations[i]
