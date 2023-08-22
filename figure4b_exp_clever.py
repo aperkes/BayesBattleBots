@@ -46,7 +46,7 @@ params_linear.poly_param_m = 0.1
 
 params_linear.update_method = 'linear'
 
-params_bayes.plot_me = True
+params_bayes.plot_me = False
 params_bayes.save_me = False
 
 
