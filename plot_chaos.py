@@ -8,8 +8,8 @@ import numpy as np
 from matplotlib.widgets import Slider, Button, RadioButtons
 
 
-est_array = np.load('./est_array.npy',allow_pickle=True)
-prob_array = np.load('./prob_array.npy',allow_pickle=True)
+est_array = np.load('./est_array_debug.npy',allow_pickle=True)
+prob_array = np.load('./prob_array_debug.npy',allow_pickle=True)
 
 n_f,n_a = est_array.shape[0]-1,est_array.shape[-1]-1
 est_dict = est_array[2,2,2,1,1]
@@ -22,6 +22,7 @@ def plot_dict(est_dict,prob_dict = None):
     #fig,ax = plt.subplots()
     fig = plt.figure()
     ax = fig.add_subplot(111)
+    ax.set_ylim([25,75])
     fig.subplots_adjust(left=0.25,bottom=0.45)
 
     line_dict = {}
