@@ -24,6 +24,90 @@ import cProfile,pstats
 #profile = cProfile.Profile()
 #profile.enable()
 
+def run_experiment(params):
+    fishes = [Fish(f,params) for f in range(params.n_fish)]
+    tank = Tank(fishes,params)
+    if INIT:
+        tank._initialize_likelihood()
+    tank.run_all(False)
+
+    f = tank.fishes[0].copy()
+    f2 = tank.fishes[1].copy()
+    opp = Fish(size = f.size*scale)
+    opp2 = Fish(size = f2.size/scale)
+    f_win = Fight(f,opp,params,outcome=0)
+    f_loss = Fight(f2,opp2,params,outcome=1) 
+    f_win.winner = f
+    f_win.loser = opp
+    f_loss.winner = opp2
+    f_loss.loser = f2
+
+    ## Because this fight is never actually run, it never asks about effort, so you have to provide it
+    f_win.winner.effort = 0.5
+    f_win.loser.effort = 0.5
+    f_loss.loser.effort = 0.5
+    f_loss.winner.effort = 0.5
+
+    f.update(True,f_win)    
+    f2.update(False,f_loss)
+
+    fishes2 = [fishy.copy() for fishy in fishes]
+    fishes2[0] = f
+    tank2 = Tank(fishes2,params)
+
+    fishes3 = [fishy.copy() for fishy in fishes]
+    fishes3[1] = f2
+    tank3 = Tank(fishes3,params)
+
+    tank2.run_all(False)
+    tank3.run_all(False)
+
+    winner_r = f
+    rank_order= np.argsort(np.array(tank2.sizes))
+    ranks = np.empty_like(rank_order)
+    ranks[rank_order] = np.arange(tank2.n_fish) ## This took me an embarrasingly long time to get right. 
+    f_rank = ranks[f.idx]
+    l_rank = ranks[f2.idx]
+
+    winner_record_r = np.sum(tank2.history[-1,f.idx]) / (params.n_fish - 1)
+    loser_record_r = np.sum(tank3.history[-1,f2.idx]) / (params.n_fish - 1)
+
+    if np.max(tank2.sizes) != f2.size:
+        idx_bigger_l = np.arange(tank.n_fish)[ranks == (l_rank + 1)][0]
+        loser_v_bigger_r = tank3.win_record[f2.idx,idx_bigger_l]/params.n_rounds
+    else:
+        loser_v_bigger_r = np.nan
+    if np.min(tank2.sizes) != f.size:
+        idx_smaller_w = np.arange(tank.n_fish)[ranks == (f_rank - 1)][0]
+        winner_v_smaller_r = tank2.win_record[f.idx,idx_smaller_w]/params.n_rounds
+    else:
+        winner_v_smaller_r = np.nan
+    
+    if np.max(tank2.sizes) != f.size:
+        idx_bigger = np.arange(tank.n_fish)[ranks == (f_rank + 1)][0]
+        winner_v_bigger_r = tank2.win_record[f.idx,idx_bigger]/params.n_rounds ## should this be rounds or fights.
+
+    else:
+        idx_bigger = f.idx 
+        winner_v_bigger_r = np.nan
+
+    biggers_r = tank.fishes[idx_bigger]
+
+    if np.min(tank3.sizes) != f2.size:
+        idx_smaller = np.arange(tank.n_fish)[ranks == (l_rank - 1)][0]
+        loser_v_smaller_r = tank3.win_record[f2.idx,idx_smaller]/params.n_fights
+    else:
+        idx_smaller = f2.idx
+        loser_v_smaller_r = np.nan
+
+    smaller_r = tank2.fishes[idx_smaller]
+    loser_r = f2
+
+    results = [winner_v_bigger_r, loser_v_bigger_r,
+                winner_v_smaller_r, loser_v_smaller_r,
+                winner_r, loser_r]
+    return results
+
 #s,e,l = -.8,-.6,-0.99
 s,e,l=-0.9,-0.5,-0.7
 
@@ -74,18 +158,13 @@ sstd_array = np.empty_like(ps_array)
 bstd_array = np.empty_like(ps_array)
 
 print('n iterations:',iterations)
+
+from joblib import Parallel, delayed
+
 for rep in range(r_bins):
     replicates = rep_array[rep]
     print('running with',rep_array[rep],'replicates')
     for i in tqdm(range(iterations)):
-        #winners,losers = [],[]
-        #biggers,smallers = [],[]
-
-        #winner_v_bigger,loser_v_bigger = [],[]
-        #winner_v_smaller,loser_v_smaller = [],[]
-        #winner_record,loser_record = [],[]
-        #final_win,final_loss = [],[]
-
         winners = [np.nan] * replicates
         losers = [np.nan] * replicates
         biggers = [np.nan] * replicates
@@ -94,110 +173,35 @@ for rep in range(r_bins):
         #biggers = copy.deepcopy(winners)
         #smallers = copy.deepcopy(winners)
 
+## So for each replicate, we fill in 
         winner_v_bigger = np.empty(replicates)
         loser_v_bigger = np.empty_like(winner_v_bigger)
+
         winner_v_smaller = np.empty_like(winner_v_bigger)
-        loser_v_bigger = np.empty_like(winner_v_bigger)
         loser_v_smaller = np.empty_like(winner_v_bigger)
+
         winner_record = np.empty_like(winner_v_bigger)
         loser_record = np.empty_like(winner_v_bigger)
+
         winner_v_bigger.fill(np.nan)
         winner_v_smaller.fill(np.nan)
         loser_v_bigger.fill(np.nan)
         loser_v_smaller.fill(np.nan)
         winner_record.fill(np.nan)
-        winner_record.fill(np.nan)
+        loser_record.fill(np.nan)
+
+## This loop is just too slow, needed to optimize it
+## The syntax is weird, but it parallelizes the experiment across CPUs
+        all_results = Parallel(n_jobs=8)(delayed(run_experiment)(params) for _ in range(replicates))
         for r in range(replicates):
-            fishes = [Fish(f,params) for f in range(params.n_fish)]
-            tank = Tank(fishes,params)
-            if INIT:
-                tank._initialize_likelihood()
-            tank.run_all(False)
+     
+            #results = run_experiment(params)
+            results = all_results[r]
 
-            #f = copy.deepcopy(tank.fishes[0])
-            #f2 = copy.deepcopy(tank.fishes[1])
-            f = tank.fishes[0].copy()
-            f2 = tank.fishes[1].copy()
-            opp = Fish(size = f.size*scale)
-            opp2 = Fish(size = f2.size/scale)
-            f_win = Fight(f,opp,params,outcome=0)
-            f_loss = Fight(f2,opp2,params,outcome=1) 
-            f_win.winner = f
-            f_win.loser = opp
-            f_loss.winner = opp2
-            f_loss.loser = f2
-            ## Because this fight is never actually run, it never asks about effort, so you have to provide it
-            f_win.winner.effort = 0.5
-            f_win.loser.effort = 0.5
-            f_loss.loser.effort = 0.5
-            f_loss.winner.effort = 0.5
+            winner_v_bigger[r],loser_v_bigger[r] = results[0:2]
+            winner_v_smaller[r],loser_v_smaller[r] = results[2:4]
+            winners[r],losers[r] = results[4:]
 
-            f.update(True,f_win)    
-            f2.update(False,f_loss)
-            #print(f.estimate)
-            #fishes2 = copy.deepcopy(fishes)
-            fishes2 = [fishy.copy() for fishy in fishes]
-            fishes2[0] = f
-            tank2 = Tank(fishes2,params)
-            #fishes3 = copy.deepcopy(fishes)
-            fishes3 = [fishy.copy() for fishy in fishes]
-            fishes3[1] = f2
-            tank3 = Tank(fishes3,params)
-
-            tank2.run_all(False)
-            tank3.run_all(False)
-
-            winners[r] = f
-            rank_order= np.argsort(np.array(tank2.sizes))
-            ranks = np.empty_like(rank_order)
-            ranks[rank_order] = np.arange(tank2.n_fish) ## This took me an embarrasingly long time to get right. 
-            f_rank = ranks[f.idx]
-            l_rank = ranks[f2.idx]
-
-            #winner_record.append(np.sum(tank2.history[-1,f.idx]) / (params.n_fish - 1))
-            #loser_record.append(np.sum(tank3.history[-1,f2.idx]) / (params.n_fish - 1))
-            winner_record[r] = np.sum(tank2.history[-1,f.idx]) / (params.n_fish - 1)
-            loser_record[r] = np.sum(tank3.history[-1,f2.idx]) / (params.n_fish - 1)
-
-            if np.max(tank2.sizes) != f2.size:
-                idx_bigger_l = np.arange(tank.n_fish)[ranks == (l_rank + 1)][0]
-                loser_v_bigger[r] = tank3.win_record[f2.idx,idx_bigger_l]/params.n_rounds
-                #loser_v_bigger.append(tank3.history[-1,f2.idx,idx_bigger_l])
-
-            if np.min(tank2.sizes) != f.size:
-                idx_smaller_w = np.arange(tank.n_fish)[ranks == (f_rank - 1)][0]
-                winner_v_smaller[r] = tank2.win_record[f.idx,idx_smaller_w]/params.n_rounds
-                #winner_v_smaller.append(tank2.history[-1,f.idx,idx_smaller_w])
-            
-            if np.max(tank2.sizes) != f.size:
-                idx_bigger = np.arange(tank.n_fish)[ranks == (f_rank + 1)][0]
-                winner_v_bigger[r] = tank2.win_record[f.idx,idx_bigger]/params.n_rounds ## should this be rounds or fights.
-                #winner_v_bigger.append(tank2.history[-1,f.idx,idx_bigger])
-
-            else:
-                idx_bigger = f.idx 
-            biggers[r] = tank.fishes[idx_bigger]
-
-            if np.min(tank3.sizes) != f2.size:
-                idx_smaller = np.arange(tank.n_fish)[ranks == (l_rank - 1)][0]
-                loser_v_smaller[r] = tank3.win_record[f2.idx,idx_smaller]/params.n_fights
-                #loser_v_smaller.append(tank3.history[-1,f2.idx,idx_smaller])
-            else:
-                idx_smaller = f2.idx
-            smallers[r] = tank2.fishes[idx_smaller]
-            losers[r] = f2
-
-            match1 = Fish(1,params,size = f.size)
-            match2 = Fish(2,params,size = f2.size)
-            fight1 = Fight(f,match1,params)
-            fight2 = Fight(f2,match2,params)
-            fight1.run_outcome()
-            #ew_pairs.append([f.effort,f.wager])
-            fight2.run_outcome()
-
-            #final_win.append(1-fight1.outcome)
-            #final_loss.append(1-fight2.outcome)
-         
         win_outcomes = np.empty(replicates)
         loss_outcomes = np.empty_like(win_outcomes) 
 
@@ -343,7 +347,7 @@ ax.legend()
 if True:
     fig1.savefig('./figures/fig4S_diff.svg')
     fig.savefig('./figures/fig4S_prob.svg')
-if False:
+if True:
     plt.show()
 
 if np.nanmax(mean_diff_b) > 1:
