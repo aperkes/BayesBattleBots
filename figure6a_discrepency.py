@@ -49,14 +49,19 @@ for o_ in tqdm(range(len(sizes))):
 
 fig,ax = plt.subplots()
 
+cors = ['tab:blue','tab:green','grey']
+styles = ['solid','dashed','dashdot']
+
 for s_ in range(len(strategies)):
     mean_outcome = np.mean(outcome_array[:,s_],axis=1)
     sem_outcome = np.std(outcome_array[:,s_],axis=1) / np.sqrt(iterations)
-    ax.plot(sizes,mean_outcome,label=strategies[s_])            
-    ax.fill_between(sizes,mean_outcome - sem_outcome,mean_outcome+sem_outcome,alpha=0.5,color='grey')
+    ax.plot(sizes,mean_outcome,label=strategies[s_],color='black',linestyle=styles[s_])            
+    ax.fill_between(sizes,mean_outcome - sem_outcome,mean_outcome+sem_outcome,alpha=0.5,color=cors[s_])
 
 ax.set_xlabel('Size of opponent for staged win')
 ax.set_ylabel('Probability of winning vs. size-matched opponent')
+ax.axhline(0.5,color='black')
+
 ax.legend()
 
 fig.savefig('./figures/fig6a_discrepency.png',dpi=300)

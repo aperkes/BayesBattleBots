@@ -125,7 +125,8 @@ for s_ in range(len(strategies)):
     ax.plot(n_fight_list,mean_outcome,label=strategies[s_],color='black',linestyle=styles[s_])            
     ax.fill_between(n_fight_list,mean_outcome - sem_outcome,mean_outcome+sem_outcome,alpha=0.5,color=cors[s_])
 
-ax.axhline(0.5,color='black')
+ax.set_ylim([0.45,1.0])
+ax.axhline(0.5,color='black',linestyle=':')
 
 ax.set_xlabel('Number of fights prior to assay')
 ax.set_ylabel('Probability of winning vs. size-matched opponent')
