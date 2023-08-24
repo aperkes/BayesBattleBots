@@ -450,7 +450,7 @@ ax.legend()
 if False:
     fig1.savefig('./figures/fig4S_diff.svg')
     fig.savefig('./figures/fig4S_prob.svg')
-if False:
+if True:
     plt.show()
 
 if np.nanmax(mean_diff_b) > 1:
