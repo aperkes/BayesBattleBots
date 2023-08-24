@@ -40,9 +40,9 @@ sim = Simulation()
 #params.effort_method = 'ExplorePoly'
 params.effort_method = 'SmoothPoly'
 params.poly_param_c = 0
-params.awareness = 15
+#params.awareness = 15
 
-params.acuity = 10
+#params.acuity = 10
 params.post_acuity = True
 params.f_method = 'shuffled'
 params.n_rounds = 25

@@ -23,7 +23,7 @@ PLOT = True
 SAVE = False
 
 def build_sim(sd_size=2,params=Params()):
-    params.outcome_params = [0.5,-0.5,-.99]
+    #params.outcome_params = [0.5,-0.5,-.99]
     params.set_params()
     if sd_size == 0:
         params.size=50
@@ -33,10 +33,10 @@ def build_sim(sd_size=2,params=Params()):
         params.sd_size=sd_size
 
     params.effort_method = 'SmoothPoly'
-    params.poly_param_c = 0
-    params.awareness = 15
+    #params.poly_param_c = 0
+    #params.awareness = 0.5
 
-    params.acuity = 2
+    #params.acuity = 0.5
     params.post_acuity = True
     params.f_method = 'shuffled'
 
@@ -75,7 +75,7 @@ if __name__ == '__main__':
         mean_int = np.nanmean(cost_array,axis=(0,1))
         sem_int = np.std(cost_array,axis=(0,1)) / np.sqrt(params.iterations)
         xs = np.arange(len(mean_int))
-        ax.plot(xs,mean_int,color='black',linestyle=styled[s])
+        ax.plot(xs,mean_int,color='black',linestyle=styles[s])
         ax.fill_between(xs,mean_int-sem_int,mean_int+sem_int,color=cmap(1-s/len(stds)),label='std: ' + str(std),alpha=0.5)
 
     handles, labels = ax.get_legend_handles_labels()

@@ -23,7 +23,7 @@ PLOT = True
 SAVE = False
 
 def build_sim(sd_size=2,params=Params()):
-    params.outcome_params = [0.5,-0.5,-0.99]
+    params.outcome_params = [0.5,-0.5,-0.7]
     params.set_params()
     params.n_fish = 5
     if sd_size == 0:
@@ -39,14 +39,14 @@ def build_sim(sd_size=2,params=Params()):
 #params.effort_method = [None,'!']
 #params.effort_method = 'ExplorePoly'
     params.effort_method = 'SmoothPoly'
-    params.poly_param_c = 0
-    params.awareness = 15
+    #params.poly_param_c = 0
+    params.awareness = 0.5 
 
-    params.acuity = 2
+    params.acuity = 0.5
     params.post_acuity = True
     params.f_method = 'shuffled'
     params.n_rounds = 30
-    params.iterations = 500
+    params.iterations = 100
     return params,sim
 ## Set up a tank
       

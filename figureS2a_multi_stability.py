@@ -23,7 +23,7 @@ PLOT = True
 SAVE = False
 
 def build_sim(sd_size=2,params=Params()):
-    params.outcome_params = [0.5,-0.5,-0.9]
+    params.outcome_params = [0.5,-0.5,-0.7]
     params.n_fish = 5
     params.set_params()
 
@@ -46,7 +46,7 @@ def build_sim(sd_size=2,params=Params()):
     params.f_method = 'shuffled'
     #params.n_fights = 40
     params.n_rounds = 30
-    params.iterations = 500
+    params.iterations = 100
  
     return sim, params
 
@@ -70,6 +70,7 @@ if __name__ == '__main__':
     stabs = []
     fig,ax = plt.subplots()
     stds = [0,2,4,8]
+    #stds = [0]
 
     cmap = plt.cm.get_cmap('viridis')
     styles = ['solid','dotted','dashed','dashdot']

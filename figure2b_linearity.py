@@ -23,7 +23,7 @@ PLOT = True
 SAVE = False
 
 params = Params()
-params.outcome_params = [0.5,-0.5,-0.99]
+params.outcome_params = [0.5,-0.5,-0.7]
 params.set_params()
 if True:
     params.size=50
