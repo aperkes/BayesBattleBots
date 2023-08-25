@@ -157,11 +157,11 @@ for r in range(params.n_rounds):
 ax.set_xticks(list(range(params.n_rounds)))
 ax.set_xlim([-0.1,params.n_rounds - 0.5])
 ax.set_ylabel('Estimate (mm)')
-ax.set_xlabel('Repeated Contests')
+ax.set_xlabel('Repeated contests')
 
 #ax.set_ylim([y_min - 1.5,y_max+1.5])
 ax.set_ylim([y_min - 1.5,y_max+1.5])
-ax.set_title('Fish estimates are path dependent and have recency bias')
+#ax.set_title('Fish estimates are path dependent and have recency bias')
 fig.savefig('./figures/fig3_pathDep.png',dpi=300)
 fig.savefig('./figures/fig3_pathDep.svg')
 if True:
