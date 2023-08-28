@@ -6,17 +6,17 @@ import copy
 class Params():
     __slots__ = ('n_iterations', 'iterations', 'print_me', 'mutant_effort', 'mutant_update', 'mutant_prior', 'n_fish', 'n_npcs', 'n_rounds', 'f_method', 'mean_age', 'min_size', 'max_size', 'mean_size', 'sd_size', 'energy_refill', 'energy_cost', 'n_fights', 'fitness_ratio', 'death', 'food', 'free_food', 'f_outcome', 'outcome_params', 'scaled_params', 'S', 'F', 'L', 'L_set', 'outcome', 'effort_method', 'effort_exploration', 'baseline_effort', 'update_method', 'age', 'size', 'prior', 'likelihood', 'likelihood_dict', 'xs', 'r_rhp', 'a_growth', 'c_aversion', 'max_energy', 'start_energy', 'acuity', 'pre_acuity', 'post_acuity', 'awareness', 'insight', 'poly_param_a', 'poly_param_b', 'poly_param_c','boldness','A','B','C','poly_param_m', 'poly_step', 'verbose', 'mutant','S_set','F_set','A_set','B_set','C_set')
     def __init__(self,iterations=1000,print_me=False,     ## Sim Params
-                n_fish=4,n_rounds=20,f_method='random',    ## Tank params
+                n_fish=5,n_rounds=20,f_method='random',    ## Tank params
                 energy_refill=0.5,energy_cost=False,n_fights=10,
                 fitness_ratio=None,death=False,food=0.5,free_food=0,
                 mean_age=None,mean_size=None,sd_size=None,
                 min_size = 1,max_size = 99,
-                f_outcome='math',outcome_params=[0.0,0.0,-0.9], ## Fight Params
+                f_outcome='math',outcome_params=[0.5,0.5,-0.8], ## Fight Params
                 effort_method='SmoothPoly',baseline_effort=.2,update_method='bayes',  ## Fish Params
                 age=50,size=None,prior=None,likelihood=None,likelihood_dict=None,
                 xs=np.linspace(1,100,199),r_rhp=0,a_growth=True,c_aversion=1,
                 max_energy=1,start_energy=1,effort_exploration=0.1,
-                acuity=.5,pre_acuity=.5,post_acuity=True,awareness=.5,insight=True,
+                acuity=.6,pre_acuity=.6,post_acuity=True,awareness=.6,insight=True,
                 boldness=0,
                 #poly_param_a = 3,poly_param_b=-2.4,poly_param_c=0.1,
                 poly_param_a = 5,poly_param_b=0,poly_param_c=0.3,poly_param_m=0.1,
