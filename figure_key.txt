@@ -1,5 +1,5 @@
 Figure 1: That's all me, it's on my laptop
-Figure 2: figure3b_loserstronger.py > ./figures/fig3b_winvloss.png
+Figure 2: figure2_loserstronger.py > ./figures/fig3b_winvloss.png
 Figure 3: figure3_pathdependence.py > ./figures/fig3_pathDep.png
 Figure 4: 
     a. figure4a_shift.py > ./figures/fig4a_persistance.png 
