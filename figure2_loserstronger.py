@@ -13,6 +13,9 @@ from tqdm import tqdm
 
 iterations = 1000
 params = Params()
+params.outcome_params = [-0.5,0,-0.4]
+params.set_params()
+print(params.outcome_params)
 #params.size = 50
 #assay_fish = Fish(1,params)
 
@@ -21,6 +24,9 @@ assay_params = params.copy()
 outcome_array = np.empty([iterations,2])
 outcome_array.fill(np.nan)
 
+win_info_array = np.array(outcome_array)
+loss_info_array = np.array(outcome_array)
+iterations = 1000
 for i in tqdm(range(iterations)):
     focal_winner = Fish(i+2,params)
     focal_loser = focal_winner.copy() 
@@ -28,6 +34,7 @@ for i in tqdm(range(iterations)):
 
     #assay_params.size = focal_winner.size
     staged_opp = FishNPC(0,assay_params)
+    staged_opp.size = focal_winner.size
 
     staged_win = Fight(staged_opp,focal_winner,params,outcome=1)
     staged_win.run_outcome()
@@ -38,6 +45,7 @@ for i in tqdm(range(iterations)):
     focal_loser.update(False,staged_loss)
 
 ## Assay against size matched fish
+    assay_params.size = focal_winner.size
     assay_fish = Fish(1,assay_params)
 
     assay_winner = Fight(assay_fish,focal_winner,params)
@@ -48,7 +56,8 @@ for i in tqdm(range(iterations)):
     assay_loser = Fight(assay_fish,focal_loser,params)
     loser_output = assay_loser.run_outcome()
     outcome_array[i,0] = loser_output
-    
+    win_info_array[i] = focal_winner.effort,focal_winner.estimate 
+    loss_info_array[i] = focal_loser.effort,focal_loser.estimate 
     #print('loss:',assay_fish.effort,focal_loser.effort,loser_output)
     #break
 print(np.mean(outcome_array,axis=0))
@@ -68,6 +77,9 @@ ax.set_xticks([0,1])
 ax.set_xticklabels(['Loser','Winner'])
 ax.set_ylabel('Probability of win vs size-matched fish')
 
-fig.savefig('./figures/fig3b_winvloss.png',dpi=300)
+#fig.savefig('./figures/fig3b_winvloss.png',dpi=300)
+print('win effort, win estimate')
+print(np.mean(win_info_array,axis=0))
+print(np.mean(loss_info_array,axis=0))
 if True:
     plt.show()
