@@ -279,9 +279,20 @@ class Fish:
         #post = np.exp(post)
         #post = np.round(prior,4) * np.round(likelihood * 4)
         #post = prior * 1000 * likelihood * 1000
+        #import pdb;pdb.set_trace()
+        #fig,ax = plt.subplots()
+        #ax.plot(prior * 100)
+        #ax.plot(likelihood)
+        #print(prior.round(2))
+        #print(likelihood.round(2))
         post = prior * likelihood
+        #ax.plot(post * 1000)
+        #print(post.round(2),np.sum(post))
         #post = post / auc(xs,post)
         post = post / np.sum(post)
+        #ax.plot(post * 100)
+        #print(post.round(2))
+        #plt.show()
         return post
     
     def _decay_flat(self,prior,xs = None,decay=.001):
