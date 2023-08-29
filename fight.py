@@ -18,7 +18,7 @@ from params import Params
 
 ## Simple-ish object to keep track of matchups (and decide outcome if necessary)
 class Fight():
-    __slots__ = ('fish1', 'fish2', 'fishes', 'params', 'mechanism', 'level', 'outcome', 'outcome_params', 'scale', 'idx', 'food', 'p_win','f_min','min_normed', 'roll', 'winner', 'loser')
+    __slots__ = ('fish1', 'fish2', 'fishes', 'params', 'mechanism', 'level', 'outcome', 'outcome_params','_SE_func', 'scale', 'idx', 'food', 'p_win','f_min','min_normed', 'roll', 'winner', 'loser')
     def __init__(self,fish1,fish2,params=None,
                 idx=0,outcome=None,level=None):
         self.fish1 = fish1
@@ -40,10 +40,15 @@ class Fight():
         self.p_win = None
         self.f_min = None
         
+        #self._SE_func = self._SE_product
+        self._SE_func = self._SE_sum
+
     def run_outcome(self):
         if self.mechanism == 'math':
             #self.outcome,self.level = self.mathy(self.outcome_params)
-            self.outcome,self.level = self.mathy()
+            #self.outcome,self.level = self.mathy()
+            self.outcome,self.level = self.mathy_redux()
+            #self.outcome,self.level = self.compare_math()
         elif self.mechanism == 'chance':
             self.outcome = self.chance_outcome()
         elif self.mechanism == 'escalate':
@@ -130,6 +135,106 @@ class Fight():
             prob_win = (w**L) / 2
         return prob_win
 
+    def _wager_curve_smart(self,w,L=np.tan((np.pi - np.pi*-0.5)/2)):
+        return (w ** L) / 2
+## Maybe misguided plan to make this SE combo modular
+    def _wager_curve_sig(self,w,L):
+        
+        return ## some sigmoid function
+
+    def _SE_product(self,rel_size,effort):
+        S = self.params.scaled_params[0]
+        F = self.params.scaled_params[1]
+
+        s = self.params.outcome_params[0]
+        f = self.params.outcome_params[1]
+## Now have to handle stupid edge cases here.
+        if s == -1:
+            if rel_size == 1:
+                wager = 1
+            else:
+                wager = 0
+            return wager
+        elif f == -1:
+            if effort == 1:
+                wager = rel_size ** S
+            elif effort == max([self.fish1.effort,self.fish2.effort]):
+                wager = 1
+            else:
+                wager = 0
+                
+        else:
+            wager = (rel_size ** S) * (effort ** F)
+        return wager
+
+    def _SE_sum(self,rel_size,effort):
+        s = self.params.scaled_params[0]
+        f = self.params.scaled_params[1]
+        s = 0.8
+        f = 0.2
+        wager = s * rel_size + f * effort
+        return wager
+
+## Cleaning this up, hopefully it stil works
+    def mathy_redux(self,params=None):
+        #import pdb;pdb.set_trace()
+        f1_wager,f2_wager = 0,0
+        min_normed = 0
+        if params is None:
+            S,F,L = self.params.scaled_params
+            s,f,l = self.params.outcome_params
+            #S,F,l = self.params.S,self.params.F,self.outcome_params[2]
+        else:
+            s,f,l = params
+            scaled_params = (np.array(params) + 1) /2
+            S,F,L = np.tan(np.pi/2 - scaled_params*np.pi/2)
+        f1_size = self.fish1.size
+        f2_size = self.fish2.size
+        max_size = max([f1_size,f2_size])
+        f1_rel_size = f1_size / max_size
+        f2_rel_size = f2_size / max_size
+
+        f1_effort = self.fish1._choose_effort(self.fish2,self)
+        f2_effort = self.fish2._choose_effort(self.fish1,self)
+        self.fish1.effort = f1_effort
+        self.fish2.effort = f2_effort
+
+        f1_wager = self._SE_product(f1_rel_size,f1_effort)
+        f2_wager = self._SE_product(f2_rel_size,f2_effort)
+        self.fish2.wager = f2_wager
+
+        min_normed = min([f1_wager,f2_wager])/max([f1_wager,f2_wager])
+        p_win = self._wager_curve(min_normed,l)
+        if p_win == 0.5:
+            import pdb;pdb.set_trace()
+        if p_win == 0.5:
+            f_min = np.random.randint(2)
+        else:
+            f_min = 1 - np.argmax([f1_wager,f2_wager])
+        self.p_win = p_win
+        self.f_min = f_min
+        self.min_normed = min_normed
+
+        if False:
+            print('### MATHY REDUX ##')
+            print(f1_effort,f2_effort)
+            print(f1_wager,f2_wager)
+            print(self.fish2.guess)
+            print(p_win)
+
+        self.fish1.wager = f1_wager
+        roll = random.random()
+        
+        if roll < self.p_win: ## probability that the "lower invested" fish wins
+            winner = f_min
+        else:
+            winner = 1-f_min
+        self.roll = roll
+        loser = 1-winner
+        level = min([f1_wager,f2_wager])
+
+        return winner,level
+ 
     ## This is useful because it paramaterizes the relative impact of size, effort, and luck
     def mathy(self,params=None):
         #print(params)
@@ -213,6 +318,13 @@ class Fight():
                 self.p_win = self._wager_curve(min_normed,l)
         roll = random.random()
         
+        if False:
+            print('## Mathy ##')
+            print(self.fish2.guess)
+            print(f1_effort,f2_effort)
+            print(f1_wager,f2_wager)
+            print(self.p_win)
+
         self.f_min = f_min
         if roll < self.p_win: ## probability that the "lower invested" fish wins
             winner = f_min
@@ -237,6 +349,18 @@ class Fight():
                 print(self.fish1.effort,self.fish2.effort) 
         self.f_min = f_min
         return winner,level
+
+    def compare_math(self):
+        o1,l1 = self.mathy()
+        mathy_pwin = self.p_win
+        o2,l2 = self.mathy_redux()
+        redux_pwin = self.p_win
+        if mathy_pwin != redux_pwin:
+            import pdb;pdb.set_trace()
+        else:
+            print('good')
+        print(o1,o2,self.p_win)
+        return o1,l1
      
     def hock_huber(self,scale=.1,params=[.5,.5,.5]):
         f1_effort = self.fish1.hock_estimate

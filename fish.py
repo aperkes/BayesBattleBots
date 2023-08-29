@@ -563,7 +563,7 @@ class Fish:
         return likelihood
    
 ## Wager function optimized for array multiplication
-    def _wager_curve_smart(self,w,L=np.tan((np.pi - np.pi*-0.9)/2)):
+    def _wager_curve_smart(self,w,L=np.tan((np.pi/2 - np.pi*-0.9)/2)):
         return (w ** L) / 2
 
 ## Updated likelihood function that *should* be faster
@@ -614,9 +614,12 @@ class Fish:
         rel_xs[:size_index] = self.xs[:size_index] / other_fish.size
         rel_os[size_index:] = other_fish.size / self.xs[size_index:] 
 ## Get wager arrays based on relative sizes
-        x_wager = rel_xs ** S * x_eff ** F ## Wager of focal fish
-        o_wager = rel_os ** S * o_eff ** F ## Wager of opponent
+        #x_wager = rel_xs ** S * x_eff ** F ## Wager of focal fish
+        #o_wager = rel_os ** S * o_eff ** F ## Wager of opponent
 
+        x_wager = fight._SE_func(rel_xs,x_eff)
+        o_wager = fight._SE_func(rel_os,o_eff)
+        #import pdb;pdb.set_trace()
 ## Build relative wager array
         wager_array = np.empty_like(xs)
         if x_wager[-1] <= o_wager[-1]:
@@ -629,7 +632,9 @@ class Fish:
 
         #L = np.tan((np.pi - l)/2) ## calculate this once to speed things up
         L = self.params.L
-        likelihood = self._wager_curve_smart(wager_array,L)
+        likelihood = fight._wager_curve_smart(wager_array,L)
+
+        #likelihood = self._wager_curve_smart(wager_array,L)
         if win: ## since likelihood is the probability of what happened, and wager_array was p(upset)
             likelihood[wager_index:] = 1 - likelihood[wager_index:]
         else:
@@ -990,12 +995,16 @@ class Fish:
         if opp_size_guess > self.estimate:  ## if you guess you are SMALLER
             est_ratio = self.estimate / opp_size_guess
 
-            rough_wager = est_ratio ** S * self.energy ** F
+            #rough_wager = est_ratio ** S * self.energy ** F
+            rough_wager = fight._SE_func(est_ratio,self.energy)
+            #import pdb;pdb.set_trace()
             effort = fight._wager_curve(rough_wager)
             #effort = (rough_wager ** self.params.poly_param_a)/2
         else: ## if you think you're bigger
             est_ratio = opp_size_guess / self.estimate
-            rough_wager = est_ratio ** S * self.energy ** F
+
+            #rough_wager = est_ratio ** S * self.energy ** F
+            rough_wager = fight._SE_func(est_ratio,self.energy)
             #effort = 1 - (rough_wager ** self.params.poly_param_a)/2
             effort = 1- fight._wager_curve(rough_wager)
         #est_ratio = self.estimate / opp_size_guess
