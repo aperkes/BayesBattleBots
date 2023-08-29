@@ -138,9 +138,10 @@ class Fight():
     def _wager_curve_smart(self,w,L=np.tan((np.pi - np.pi*-0.5)/2)):
         return (w ** L) / 2
 ## Maybe misguided plan to make this SE combo modular
+
     def _wager_curve_sig(self,w,L):
-        
-        return ## some sigmoid function
+         
+        return 0 ## some sigmoid function
 
     def _SE_product(self,rel_size,effort):
         S = self.params.scaled_params[0]
