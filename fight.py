@@ -140,8 +140,13 @@ class Fight():
 ## Maybe misguided plan to make this SE combo modular
 
     def _wager_curve_sig(self,w,L):
-         
-        return 0 ## some sigmoid function
+## These need to go into params
+        k = 5
+        m = 0.5
+        K = 1 + np.exp(-k*(1-m)) # This too...
+
+## Then it can just be this
+        return K / (1 + np.exp(-k * (x-m)))
 
     def _SE_product(self,rel_size,effort):
         S = self.params.scaled_params[0]
