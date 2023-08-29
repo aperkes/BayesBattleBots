@@ -14,6 +14,7 @@ from tqdm import tqdm
 iterations = 1000
 params = Params()
 params.outcome_params = [-0.5,0,-0.4]
+params.acuity = 0
 params.set_params()
 print(params.outcome_params)
 #params.size = 50
