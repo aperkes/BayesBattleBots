@@ -18,7 +18,7 @@ from params import Params
 
 ## Simple-ish object to keep track of matchups (and decide outcome if necessary)
 class Fight():
-    __slots__ = ('fish1', 'fish2', 'fishes', 'params', 'mechanism', 'level', 'outcome', 'outcome_params','_SE_func', 'scale', 'idx', 'food', 'p_win','f_min','min_normed', 'roll', 'winner', 'loser')
+    __slots__ = ('fish1', 'fish2', 'fishes', 'params', 'mechanism', 'level', 'outcome', 'outcome_params','_SE_func','_wager_func', 'scale', 'idx', 'food', 'p_win','f_min','min_normed', 'roll', 'winner', 'loser')
     def __init__(self,fish1,fish2,params=None,
                 idx=0,outcome=None,level=None):
         self.fish1 = fish1
@@ -42,6 +42,7 @@ class Fight():
         
         #self._SE_func = self._SE_product
         self._SE_func = self._SE_sum
+        self._wager_func = self._wager_curve_sig
 
     def run_outcome(self):
         if self.mechanism == 'math':
@@ -205,7 +206,8 @@ class Fight():
         self.fish2.wager = f2_wager
 
         min_normed = min([f1_wager,f2_wager])/max([f1_wager,f2_wager])
-        p_win = self._wager_curve(min_normed,l)
+        #p_win = self._wager_curve(min_normed,l)
+        p_win = self._wager_func(min_normed,l)
         if p_win == 0.5:
             import pdb;pdb.set_trace()
         if p_win == 0.5:
