@@ -40,11 +40,11 @@ class Fight():
         self.p_win = None
         self.f_min = None
         
-        self._SE_func = self._SE_product
-        #self._SE_func = self._SE_sum
-        #self._wager_func = self._wager_curve_sig
+        #self._SE_func = self._SE_product
+        self._SE_func = self._SE_sum
+        self._wager_func = self._wager_curve_sig
         #self._wager_func = self._wager_curve_smart
-        self._wager_func = self._wager_curve
+        #self._wager_func = self._wager_curve
 
     def run_outcome(self):
         if self.mechanism == 'math':
@@ -178,7 +178,7 @@ class Fight():
                 
         else:
             wager = (rel_size ** S) * (effort ** F)
-        print(S,F)
+        print('product:',S,F)
         return wager
 
     def _SE_sum(self,rel_size,effort):
@@ -213,8 +213,8 @@ class Fight():
         self.fish1.effort = f1_effort
         self.fish2.effort = f2_effort
 
-        f1_wager = self._SE_product(f1_rel_size,f1_effort)
-        f2_wager = self._SE_product(f2_rel_size,f2_effort)
+        f1_wager = self._SE_func(f1_rel_size,f1_effort)
+        f2_wager = self._SE_func(f2_rel_size,f2_effort)
         self.fish2.wager = f2_wager
 
         min_normed = min([f1_wager,f2_wager])/max([f1_wager,f2_wager])
