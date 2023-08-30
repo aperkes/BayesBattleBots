@@ -1026,7 +1026,8 @@ class Fish:
             confidence_correction = 1 - norm.cdf(-0.1 * self.guess,self.estimate - self.guess,self.params.C + self.prior_std)
         self.correction = confidence_correction
         #boldness = 1 - self.params.poly_param_c
-        scaled_effort = (effort * confidence_correction) ** self.params.B
+        #scaled_effort = (effort * confidence_correction) ** self.params.B
+        scaled_effort = effort
         scaled_effort = np.clip(scaled_effort,0,1)
         if self.params.print_me:
             print('###',self.idx,self.params.effort_method)
