@@ -110,10 +110,10 @@ class Tank():
                 fight_list[i].food = False
         return fight_list
 
-    def get_matchups(self,f_method='balanced',f_outcome='chance',n_fights=10):
+    def get_matchups(self,f_method='shuffled',f_outcome='chance',n_fights=10):
 ## N fights for balanced and shuffled is actually the number of rounds
         fight_list = []
-
+        #import pdb;pdb.set_trace()
         if f_method == 'balanced' or f_method == 'shuffled':
             short_list = []
             for i in range(n_fights):

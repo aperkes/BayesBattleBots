@@ -40,9 +40,11 @@ class Fight():
         self.p_win = None
         self.f_min = None
         
-        #self._SE_func = self._SE_product
-        self._SE_func = self._SE_sum
-        self._wager_func = self._wager_curve_sig
+        self._SE_func = self._SE_product
+        #self._SE_func = self._SE_sum
+        #self._wager_func = self._wager_curve_sig
+        #self._wager_func = self._wager_curve_smart
+        self._wager_func = self._wager_curve
 
     def run_outcome(self):
         if self.mechanism == 'math':
@@ -134,20 +136,24 @@ class Fight():
             L = self.params.L
             #prob_win = (np.round(w,8)**L) / 2
             prob_win = (w**L) / 2
+        print(self.params.L)
         return prob_win
 
-    def _wager_curve_smart(self,w,L=np.tan((np.pi - np.pi*-0.5)/2)):
-        return (w ** L) / 2
+    def _wager_curve_smart(self,w,L=None): #L=np.tan(np.pi/2 -  ((-0.9 + 1)/2)*np.pi*0.5)):
+        print(self.params.L)
+        return (w ** self.params.L) / 2
 ## Maybe misguided plan to make this SE combo modular
 
-    def _wager_curve_sig(self,w,L):
+    def _wager_curve_sig(self,w,L=None):
 ## These need to go into params
-        k = 5
-        m = 0.5
-        K = 1 + np.exp(-k*(1-m)) # This too...
-
+        #k = self.params.k
+        #m = self.params.m
+        #a = self.params.a
+        #K = self.params.K
+        #y =  K / (1 + np.exp(k * (m-x**a)))
 ## Then it can just be this
-        return K / (1 + np.exp(-k * (x-m)))
+        #print(self.params.K,self.params.k,self.params
+        return self.params.K / (1 + np.exp(self.params.k * (self.params.m - w**self.params.a))) / 2
 
     def _SE_product(self,rel_size,effort):
         S = self.params.scaled_params[0]
@@ -172,13 +178,14 @@ class Fight():
                 
         else:
             wager = (rel_size ** S) * (effort ** F)
+        print(S,F)
         return wager
 
     def _SE_sum(self,rel_size,effort):
         s = self.params.scaled_params[0]
         f = self.params.scaled_params[1]
-        s = 0.8
-        f = 0.2
+        s = 0.5
+        f = 1-s
         wager = s * rel_size + f * effort
         return wager
 
@@ -213,8 +220,8 @@ class Fight():
         min_normed = min([f1_wager,f2_wager])/max([f1_wager,f2_wager])
         #p_win = self._wager_curve(min_normed,l)
         p_win = self._wager_func(min_normed,l)
-        if p_win == 0.5:
-            import pdb;pdb.set_trace()
+        #if p_win == 0.5:
+        #    import pdb;pdb.set_trace()
         if p_win == 0.5:
             f_min = np.random.randint(2)
         else:

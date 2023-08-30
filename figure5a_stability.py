@@ -24,9 +24,9 @@ SAVE = False
 
 params = Params()
 params.n_fish = 5
-params.outcome_params = [0.5,-0.5,-0.9]
+#params.outcome_params = [0.5,-0.5,-0.9]
 params.set_params()
-if True:
+if False:
     params.size=50
 else:
     params.size=None
