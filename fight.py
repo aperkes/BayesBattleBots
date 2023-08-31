@@ -42,9 +42,10 @@ class Fight():
         
         #self._SE_func = self._SE_product
         self._SE_func = self._SE_sum
-        self._wager_func = self._wager_curve_sig
+        #self._wager_func = self._wager_curve_sig
         #self._wager_func = self._wager_curve_smart
         #self._wager_func = self._wager_curve
+        self._wager_func = self._wager_curve_staty
 
     def run_outcome(self):
         if self.mechanism == 'math':
@@ -70,7 +71,7 @@ class Fight():
             self.outcome,self.level = self.hock_huber(scale=scale,params = self.outcome_params)
             
         else:
-            real_outcome,real_level = self.mathy(self.outcome_params)
+            real_outcome,real_level = self.mathy_redux(self.outcome_params)
             self.outcome = self.mechanism
             if self.level is None:
                 self.level = real_level
@@ -136,13 +137,26 @@ class Fight():
             L = self.params.L
             #prob_win = (np.round(w,8)**L) / 2
             prob_win = (w**L) / 2
-        print(self.params.L)
+        print('_wager_curve,',self.params.L)
+        import pdb;pdb.set_trace()
         return prob_win
 
     def _wager_curve_smart(self,w,L=None): #L=np.tan(np.pi/2 -  ((-0.9 + 1)/2)*np.pi*0.5)):
         print(self.params.L)
         return (w ** self.params.L) / 2
 ## Maybe misguided plan to make this SE combo modular
+
+    def _wager_curve_logsig(self,w,L=None):
+
+        return 0
+
+## Staty gave me this, but it's an L_B system apparently
+    def _wager_curve_staty(self,w,L=None):
+        p = self.params.m
+        d = self.params.a
+        B = (p/(1-p))**d
+        X = (w/(1-w))**d
+        return X / (X+B)
 
     def _wager_curve_sig(self,w,L=None):
 ## These need to go into params
@@ -187,6 +201,7 @@ class Fight():
         s = 0.5
         f = 1-s
         wager = s * rel_size + f * effort
+        #print(rel_size,effort,s,f)
         return wager
 
 ## Cleaning this up, hopefully it stil works
