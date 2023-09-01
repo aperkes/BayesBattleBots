@@ -25,6 +25,9 @@ SAVE = False
 params = Params()
 params.outcome_params = [0.5,-0.5,-0.99]
 #params.set_L()
+params.awareness = 0.5
+params.acuity = 0.1
+
 params.set_params()
 #params.size=50
 #params.prior = True
@@ -33,9 +36,7 @@ params.set_params()
 #params.effort_method = 'ExplorePoly'
 params.effort_method = 'SmoothPoly'
 params.poly_param_c = 0
-params.awareness = 15
 
-params.acuity = 2
 params.post_acuity = True
 params.f_method = 'shuffled'
 

@@ -40,12 +40,12 @@ class Fight():
         self.p_win = None
         self.f_min = None
         
-        #self._SE_func = self._SE_product
-        self._SE_func = self._SE_sum
+        self._SE_func = self._SE_product
+        #self._SE_func = self._SE_sum
         #self._wager_func = self._wager_curve_sig
-        #self._wager_func = self._wager_curve_smart
+        self._wager_func = self._wager_curve_smart
         #self._wager_func = self._wager_curve
-        self._wager_func = self._wager_curve_staty
+        #self._wager_func = self._wager_curve_staty
 
     def run_outcome(self):
         if self.mechanism == 'math':
@@ -142,7 +142,7 @@ class Fight():
         return prob_win
 
     def _wager_curve_smart(self,w,L=None): #L=np.tan(np.pi/2 -  ((-0.9 + 1)/2)*np.pi*0.5)):
-        print(self.params.L)
+        #print(self.params.L)
         return (w ** self.params.L) / 2
 ## Maybe misguided plan to make this SE combo modular
 
@@ -156,7 +156,7 @@ class Fight():
         d = self.params.a
         B = (p/(1-p))**d
         X = (w/(1-w))**d
-        return X / (X+B)
+        return X / (X+B) /2
 
     def _wager_curve_sig(self,w,L=None):
 ## These need to go into params
@@ -192,13 +192,14 @@ class Fight():
                 
         else:
             wager = (rel_size ** S) * (effort ** F)
-        print('product:',S,F)
+        #print('product:',S,F)
         return wager
 
     def _SE_sum(self,rel_size,effort):
         s = self.params.scaled_params[0]
         f = self.params.scaled_params[1]
-        s = 0.5
+        s = self.params.outcome_params[0]
+        #s = 0.5
         f = 1-s
         wager = s * rel_size + f * effort
         #print(rel_size,effort,s,f)
@@ -234,7 +235,13 @@ class Fight():
 
         min_normed = min([f1_wager,f2_wager])/max([f1_wager,f2_wager])
         #p_win = self._wager_curve(min_normed,l)
-        p_win = self._wager_func(min_normed,l)
+        #print(min_normed)
+        if np.isnan(min_normed):
+            import pdb;pdb.set_trace()
+        if min_normed == 1:
+            p_win = 0.5
+        else:
+            p_win = self._wager_func(min_normed,l)
         #if p_win == 0.5:
         #    import pdb;pdb.set_trace()
         if p_win == 0.5:

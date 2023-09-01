@@ -164,6 +164,7 @@ class Simulation():
 ## Stability the proportion of interactions consistent with the overall mean. 
     def _calc_stability(self,tank,idx = None):
 ## A nicer metric would be the proportion of bins where mean heirarchy == overall hierarchy, 
+        #import pdb;pdb.set_trace()
         if tank.f_method == 'balanced' or tank.f_method == 'shuffled':
             binned_history = tank.history
         else: ## Something feels wrong here... 
@@ -188,14 +189,16 @@ class Simulation():
             mean_history = np.mean(tank.history,0)
         binary_bins = np.sign(binned_history - np.transpose(binned_history,axes=[0,2,1]))
         binary_final = np.sign(mean_history - np.transpose(mean_history))
-
+        binary_mean = np.mean(binary_bins,0)
+        proportion_consistent = np.sum(np.abs(binary_mean) == 1) / (tank.n_fish * (tank.n_fish - 1))
 ## Use nCr formulat to get the total number of possible interactions
         total_interactions = len(binary_bins) * tank.n_fish * (tank.n_fish-1) 
         #binary_difference = np.clip(np.abs(binary_bins - binary_final),0,1)
         binary_difference = np.abs(binary_bins - binary_final) == 2
         number_consistent = total_interactions - np.sum(binary_difference)
-        proportion_consistent = number_consistent / total_interactions 
+        #proportion_consistent = number_consistent / total_interactions 
         #stability = np.mean(np.std(binned_history,axis=0))
+        #import pdb;pdb.set_trace()
         return proportion_consistent, binary_final
     
 ## Calculate dominance using some metric...ELO? 

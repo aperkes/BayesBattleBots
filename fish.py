@@ -634,6 +634,9 @@ class Fish:
         L = self.params.L
         #likelihood = fight._wager_curve_smart(wager_array,L)
         likelihood = fight._wager_func(wager_array,L)
+        if np.isnan(likelihood[wager_index-1]):
+            #import pdb;pdb.set_trace()
+            likelihood[wager_index-1] = 0.5            
 
         #likelihood = self._wager_curve_smart(wager_array,L)
         if win: ## since likelihood is the probability of what happened, and wager_array was p(upset)
@@ -788,6 +791,8 @@ class Fish:
         #self.estimate_ = np.sum(self.prior * self.xs / np.sum(self.prior))
         self.estimate =  estimate
         self.est_record.append(estimate)
+        if np.isnan(self.estimate):
+            import pdb;pdb.set_trace()
         if True: ## most of the time I shouldn't need this stuff
             self.est_record_.append(estimate_)
 
@@ -1003,7 +1008,10 @@ class Fish:
             rough_wager = fight._SE_func(est_ratio,self.energy)
             #import pdb;pdb.set_trace()
             #effort = fight._wager_curve(rough_wager)
-            effort = fight._wager_func(rough_wager)
+            if rough_wager == 1:
+                effort = 0.5
+            else:
+                effort = fight._wager_func(rough_wager)
             #effort = (rough_wager ** self.params.poly_param_a)/2
         else: ## if you think you're bigger
             est_ratio = opp_size_guess / self.estimate
@@ -1012,7 +1020,10 @@ class Fish:
             rough_wager = fight._SE_func(est_ratio,self.energy)
             #effort = 1 - (rough_wager ** self.params.poly_param_a)/2
             #effort = 1- fight._wager_curve(rough_wager)
-            effort = 1 - fight._wager_func(rough_wager)
+            if rough_wager == 1:
+                effort = 0.5
+            else:
+                effort = 1 - fight._wager_func(rough_wager)
         #est_ratio = self.estimate / opp_size_guess
         #rough_wager = est_ratio ** s * self.energy ** e
         #effort = self.params.poly_param_a * rough_wager ** order + self.params.poly_param_b
@@ -1026,8 +1037,11 @@ class Fish:
             confidence_correction = 1 - norm.cdf(-0.1 * self.guess,self.estimate - self.guess,self.params.C + self.prior_std)
         self.correction = confidence_correction
         #boldness = 1 - self.params.poly_param_c
-        #scaled_effort = (effort * confidence_correction) ** self.params.B
         scaled_effort = effort
+        scaled_effort = (effort * confidence_correction) ** self.params.B
+        if np.isnan(effort):
+            import pdb;pdb.set_trace()
+
         scaled_effort = np.clip(scaled_effort,0,1)
         if self.params.print_me:
             print('###',self.idx,self.params.effort_method)

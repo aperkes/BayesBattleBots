@@ -12,7 +12,7 @@ class Params():
                 mean_age=None,mean_size=None,sd_size=None,
                 min_size = 1,max_size = 99,
                 f_outcome='math',outcome_params=[0.5,0.5,-0.8], ## Fight Params
-                sigmoid_params = [10,4,0.5], #k,a,m, where m doesn't change
+                sigmoid_params = [10,4,0.9], #k,a,m
                 effort_method='SmoothPoly',baseline_effort=.2,update_method='bayes',  ## Fish Params
                 age=50,size=None,prior=None,likelihood=None,likelihood_dict=None,
                 xs=np.linspace(1,100,199),r_rhp=0,a_growth=True,c_aversion=1,

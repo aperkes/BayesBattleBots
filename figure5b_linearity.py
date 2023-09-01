@@ -24,24 +24,27 @@ SAVE = False
 
 params = Params()
 params.outcome_params = [0.5,-0.5,-0.7]
+
+params.awareness = 0.5
+params.acuity = 0.5
+
 params.set_params()
-if True:
+
+if False:
     params.size=50
 else:
     params.size=None
     params.mean_size = 50
     params.sd_size = 2
 
-params.prior = True
+#params.prior = True
 sim = Simulation()
 
 #params.effort_method = [None,'!']
 #params.effort_method = 'ExplorePoly'
 params.effort_method = 'SmoothPoly'
 params.poly_param_c = 0
-params.awareness = 15
 
-params.acuity = 2
 params.post_acuity = True
 params.f_method = 'shuffled'
 #params.n_fights = 40

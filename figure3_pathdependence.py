@@ -23,7 +23,7 @@ import itertools
 #s,e,l = .6,.3,.1
 
 #s,e,l = -0.5,0.5,-0.9
-s= 0.0
+s= 0.5
 e= 0.7
 l= -0.8
 
@@ -39,7 +39,7 @@ else:
 #params.poly_param_a = 2
 #params.n_fights = 50 
 params.energy_cost = False
-params.awareness = 0.25
+params.awareness = 0.5
 params.prior=True
 #params.start_energy = 1
 

@@ -24,16 +24,22 @@ SAVE = False
 
 params = Params()
 params.n_fish = 5
-#params.outcome_params = [0.5,-0.5,-0.9]
+params.outcome_params = [0.5,-0.5,-0.8]
+params.outcome_params = [-0.5,0.5,-0.8]
+params.acuity = 0.1
+params.awareness = 0.5
+
 params.set_params()
+
+
 if False:
     params.size=50
 else:
     params.size=None
     params.mean_size = 50
-    params.sd_size = 2
+    params.sd_size = 8
 
-params.prior = True
+#params.prior = True
 sim = Simulation()
 
 #params.effort_method = [None,'!']
