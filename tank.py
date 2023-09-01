@@ -258,7 +258,8 @@ class Tank():
                 color=cm.tab10(i)
             f = fish_list[i]
             effort_record = np.array(f.win_record)[:,-1] ## note that there are fish win records and tank win records. yikes.
-            smooth_effort = gaussian_filter1d(effort_record,3)
+            smooth_effort = effort_record
+            #smooth_effort = gaussian_filter1d(effort_record,3)
             ax.plot(smooth_effort,color=color,alpha=.5,label=str(i))
         ax.legend()
         fig.show()
