@@ -13,18 +13,18 @@ from tqdm import tqdm
 
 iterations = 1000
 params = Params()
-params.outcome_params = [0.5,0,-0.8]
+params.outcome_params = [0.7,0,-0.8]
 params.awareness = 0.5
-params.acuity = 0.1
+params.acuity = 0.0
 print(params.awareness)
 params.set_params()
 print(params.outcome_params)
-#params.size = 50
+params.size = 50
 #assay_fish = Fish(1,params)
 
 
 assay_params = params.copy()
-assay_params.prior = True
+#assay_params.prior = True
 
 outcome_array = np.empty([iterations,2])
 outcome_array.fill(np.nan)
@@ -34,15 +34,18 @@ loss_info_array = np.array(outcome_array)
 iterations = 1000
 w_probs,l_probs = [],[]
 
+f_sizes = []
+
 for i in tqdm(range(iterations)):
     focal_winner = Fish(i+2,params)
+    f_sizes.append(focal_winner.size)
     focal_loser = focal_winner.copy() 
 ## Stage a bunch of wins and losses against size-matched fish
 
     #assay_params.size = focal_winner.size
     staged_opp = FishNPC(0,assay_params)
     staged_opp.size = focal_winner.size
-
+    
     staged_win = Fight(staged_opp,focal_winner,params,outcome=1)
     staged_win.run_outcome()
     focal_winner.update(True,staged_win)
