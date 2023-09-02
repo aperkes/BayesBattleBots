@@ -40,8 +40,8 @@ class Fight():
         self.p_win = None
         self.f_min = None
         
-        self._SE_func = self._SE_product
-        #self._SE_func = self._SE_sum
+        #self._SE_func = self._SE_product
+        self._SE_func = self._SE_sum
         #self._wager_func = self._wager_curve_sig
         self._wager_func = self._wager_curve_smart
         #self._wager_func = self._wager_curve
