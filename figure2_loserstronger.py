@@ -14,6 +14,7 @@ from tqdm import tqdm
 iterations = 1000
 params = Params()
 params.outcome_params = [0.7,0,-0.8]
+params.prior = True
 params.awareness = 0.5
 params.acuity = 0.0
 print(params.awareness)
@@ -24,7 +25,8 @@ params.size = 50
 
 
 assay_params = params.copy()
-#assay_params.prior = True
+assay_params.baseline_effort = 0.535
+assay_params.prior = True
 
 outcome_array = np.empty([iterations,2])
 outcome_array.fill(np.nan)
@@ -53,6 +55,9 @@ for i in tqdm(range(iterations)):
     staged_loss = Fight(staged_opp,focal_loser,params,outcome=0)
     staged_loss.run_outcome()
     focal_loser.update(False,staged_loss)
+    #print(focal_winner.effort,focal_loser.effort)
+    #print(focal_winner.estimate,focal_loser.estimate)
+    #import pdb;pdb.set_trace()
     #if focal_loser.estimate > 50:
     #    import pdb;pdb.set_trace()
     #print('## staged opp size:',staged_opp.size)
