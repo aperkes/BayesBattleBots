@@ -563,8 +563,8 @@ class Fish:
         return likelihood
    
 ## Wager function optimized for array multiplication
-    def _wager_curve_smart(self,w,L=np.tan((np.pi/2 - np.pi*-0.9)/2)):
-        return (w ** L) / 2
+    def _wager_curve_smart(self,w,L=None): #L=np.tan((np.pi/2 - np.pi*-0.9)/2)):
+        return (w ** self.params.L) / 2
 
 ## Updated likelihood function that *should* be faster
     def _define_likelihood_mut_array(self,fight,win=True):
@@ -617,19 +617,33 @@ class Fish:
         #x_wager = rel_xs ** S * x_eff ** F ## Wager of focal fish
         #o_wager = rel_os ** S * o_eff ** F ## Wager of opponent
 
-        x_wager = fight._SE_func(rel_xs,x_eff)
-        o_wager = fight._SE_func(rel_os,o_eff)
+        x_eff_rel = x_eff / max([x_eff,o_eff])
+        o_eff_rel = o_eff / max([x_eff,o_eff])
+
+        #print('in fish:',x_eff_rel,o_eff_rel)
+        #import pdb;pdb.set_trace()
+        #x_wager = fight._SE_func(rel_xs,x_eff)
+        #o_wager = fight._SE_func(rel_os,o_eff)
+        #x_wager = fight._SE_func(rel_xs,x_eff_rel)
+        #o_wager = fight._SE_func(rel_os,o_eff_rel)
+        x_wager = fight._SE_func(self.xs / 100,x_eff)
+        o_wager = fight._SE_func(other_fish.size / 100,o_eff)
         #import pdb;pdb.set_trace()
 ## Build relative wager array
         wager_array = np.empty_like(xs)
-        if x_wager[-1] <= o_wager[-1]:
-            wager_index = len(o_wager) ## this deals with the case where x_wager is never bigger
+        if x_wager[-1] <= o_wager:
+            wager_index = len(x_wager) ## this deals with the case where x_wager is never bigger
+## NOTE: 
             wager_array = x_wager / o_wager
         else:
             wager_index = np.argmax(x_wager > o_wager) ## the point x_wager becomes bigger
-            wager_array[:wager_index] = x_wager[:wager_index] / o_wager[:wager_index]
-            wager_array[wager_index:] = o_wager[wager_index:] / x_wager[wager_index:]
-
+            #wager_array[:wager_index] = x_wager[:wager_index] / o_wager[:wager_index]
+            #wager_array[wager_index:] = o_wager[wager_index:] / x_wager[wager_index:]
+        if True:
+            wager_array[:wager_index] = x_wager[:wager_index] / o_wager
+            wager_array[wager_index:] = o_wager / x_wager[wager_index:]
+            #wager_array[:size_index] = x_wager[:size_index]
+            #wager_array[size_index:] = o_wager[size_index:]
         #L = np.tan((np.pi - l)/2) ## calculate this once to speed things up
         L = self.params.L
         #likelihood = fight._wager_curve_smart(wager_array,L)
@@ -640,9 +654,13 @@ class Fish:
 
         #likelihood = self._wager_curve_smart(wager_array,L)
         if win: ## since likelihood is the probability of what happened, and wager_array was p(upset)
+#NOTE::
             likelihood[wager_index:] = 1 - likelihood[wager_index:]
+            #likelihood[size_index:] = 1 - likelihood[size_index:]
+             
         else:
             likelihood[:wager_index] = 1 - likelihood[:wager_index]
+            #likelihood[:size_index] = 1 - likelihood[:size_index]
 ## PDB
 
         return likelihood
@@ -766,6 +784,7 @@ class Fish:
             self.est_record.append(self.estimate)
             return self.prior,self.estimate
 ## Get likelihood function
+        #import pdb;pdb.set_trace()
         self.win_record.append([other_fish.size,win,self.effort,cost])
         if self.effort > other_fish.effort:
             pass
@@ -1001,12 +1020,14 @@ class Fish:
         S,F = self.params.S,self.params.F
         L = self.params.L
 
+        #import pdb;pdb.set_trace()
         if opp_size_guess > self.estimate:  ## if you guess you are SMALLER
             est_ratio = self.estimate / opp_size_guess
 
             #rough_wager = est_ratio ** S * self.energy ** F
-            rough_wager = fight._SE_func(est_ratio,self.energy)
-            #import pdb;pdb.set_trace()
+            #rough_wager = fight._SE_func(est_ratio,self.energy)
+            rough_wager = fight._SE_func(self.estimate / 100,self.energy) / fight._SE_func(opp_size_guess / 100,self.energy)
+            #print(self.estimate,opp_size_guess,rough_wager)
             #effort = fight._wager_curve(rough_wager)
             if rough_wager == 1:
                 effort = 0.5
@@ -1017,10 +1038,11 @@ class Fish:
             est_ratio = opp_size_guess / self.estimate
 
             #rough_wager = est_ratio ** S * self.energy ** F
-            rough_wager = fight._SE_func(est_ratio,self.energy)
+            #rough_wager = fight._SE_func(est_ratio,self.energy)
+            rough_wager = fight._SE_func(opp_size_guess / 100,self.energy) / fight._SE_func(self.estimate/100,self.energy)
             #effort = 1 - (rough_wager ** self.params.poly_param_a)/2
             #effort = 1- fight._wager_curve(rough_wager)
-            if rough_wager == 1:
+            if rough_wager >= 1:
                 effort = 0.5
             else:
                 effort = 1 - fight._wager_func(rough_wager)
@@ -1038,7 +1060,7 @@ class Fish:
         self.correction = confidence_correction
         #boldness = 1 - self.params.poly_param_c
         scaled_effort = effort
-        scaled_effort = (effort * confidence_correction) ** self.params.B
+        #scaled_effort = (effort * confidence_correction) ** self.params.B
         if np.isnan(effort):
             import pdb;pdb.set_trace()
 

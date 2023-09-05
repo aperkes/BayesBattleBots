@@ -229,11 +229,24 @@ class Fight():
         self.fish1.effort = f1_effort
         self.fish2.effort = f2_effort
 
-        f1_wager = self._SE_func(f1_rel_size,f1_effort)
-        f2_wager = self._SE_func(f2_rel_size,f2_effort)
+        f1_rel_effort = f1_effort / max([f1_effort,f2_effort])
+        f2_rel_effort = f2_effort / max([f1_effort,f2_effort])
+
+        #print('in fight:',f1_rel_effort,f2_rel_effort)
+        #f1_wager = self._SE_func(f1_rel_size,f1_rel_effort)
+        #f2_wager = self._SE_func(f2_rel_size,f2_rel_effort)
+
+        #f1_wager = self._SE_func(f1_rel_size,f1_effort)
+        #f2_wager = self._SE_func(f2_rel_size,f2_effort)
+
+        f1_wager = self._SE_func(f1_size / 100,f1_effort)
+        f2_wager = self._SE_func(f2_size / 100,f2_effort)
+
         self.fish2.wager = f2_wager
 
+        #import pdb;pdb.set_trace()
         min_normed = min([f1_wager,f2_wager])/max([f1_wager,f2_wager])
+        #min_normed = min([f1_wager,f2_wager]) 
         #p_win = self._wager_curve(min_normed,l)
         #print(min_normed)
         if np.isnan(min_normed):
