@@ -24,7 +24,7 @@ SAVE = False
 
 params = Params()
 params.n_fish = 5
-params.outcome_params = [0.7,-0.5,-0.88]
+params.outcome_params = [0.7,-0.5,-0.8]
 #params.outcome_params = [-0.5,0.5,-0.8]
 params.acuity = 0.0
 params.awareness = 0.5

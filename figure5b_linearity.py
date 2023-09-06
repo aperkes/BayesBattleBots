@@ -23,10 +23,10 @@ PLOT = True
 SAVE = False
 
 params = Params()
-params.outcome_params = [0.5,-0.5,-0.7]
+params.outcome_params = [0.7,-0.5,-0.8]
 
 params.awareness = 0.5
-params.acuity = 0.5
+params.acuity = 0.0
 
 params.set_params()
 
@@ -35,7 +35,7 @@ if False:
 else:
     params.size=None
     params.mean_size = 50
-    params.sd_size = 2
+    params.sd_size = 15
 
 #params.prior = True
 sim = Simulation()
@@ -60,16 +60,20 @@ window = 6
 n_windows = tank.n_rounds - window + 1
 
 lin_array = np.zeros([params.iterations,n_windows])
+acc_array = np.zeros([params.iterations,n_windows])
+
 #import pdb;pdb.set_trace()
 for i in tqdm(range(params.iterations)):
     fishes = [Fish(f,params) for f in range(5)]
     tank = Tank(fishes,params)
+    import pdb;pdb.set_trace()
     tank.run_all(print_me=False,progress=False)
-    lin_list = []
+    #lin_list = []
     for w in range(n_windows):
         #idx = slice(int(w*window/2),int(w*window/2 + window))
         idx = slice(w,w+window)
         linearity,[d,p] = sim._calc_linearity(tank,idx)
+        #accuracy = sim._ca
         lin_array[i,w] = linearity
         #print(linearity)
 fig,ax = plt.subplots()
