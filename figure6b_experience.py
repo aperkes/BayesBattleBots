@@ -21,11 +21,11 @@ opp_params = Params()
 
 #params.prior = True
 #params.size = 50
-params.poly_param_m = 0.2
+#params.poly_param_m = 0.2
 ## Make lots of naive fish of random sizes
 npcs = [Fish(s,opp_params) for s in range(int(max(n_fight_list) * 2))]
 
-staged_opp = FishNPC(0,params) ## NPCs by default always invest 0.2 effort
+staged_opp = FishNPC(0,params) ## NPCs by default always invest 0.5 effort
 staged_opp.size = 51
 iterations = 1000
 strategies = ['bayes','linear','no update']
@@ -73,6 +73,7 @@ def run_simulation(n_fights,print_me=False):
             #print(n_,s_,i,'pre,post:',pre_est,focal_fish.estimate)
 ## ASsay against naive size matched fish (with accuractely centered prior)
             assay_opp = Fish(1,f_params) 
+            assay_opp.size = focal_fish.size
             assay_fight = Fight(assay_opp,focal_fish,f_params)
             outcome = assay_fight.run_outcome()
             outcome_array_n[s_,i] = outcome

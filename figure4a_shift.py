@@ -22,17 +22,17 @@ import copy
 
 params = Params()
 params.mean_size = 50
-params.sd_size = 20
+params.sd_size = 10
 #params.poly_param_c = 0
 #params.effort_method = [1,1]
 params.f_method = 'shuffled'
 params.n_rounds = 25
 params.n_fish = 5
-params.acuity = 0.5 
+params.acuity = 0.1 
 params.awareness = 0.5
 #params.outcome_params = [s,e,l]
 params.set_params()
-params.baseline_effort = 0.3
+#params.baseline_effort = 0.3
 
 replicates = 200
 
