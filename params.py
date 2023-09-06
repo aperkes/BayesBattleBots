@@ -13,11 +13,11 @@ class Params():
                 min_size = 1,max_size = 99,
                 f_outcome='math',outcome_params=[0.5,0.5,-0.8], ## Fight Params
                 sigmoid_params = [10,4,0.9], #k,a,m
-                effort_method='SmoothPoly',baseline_effort=.2,update_method='bayes',  ## Fish Params
+                effort_method='SmoothPoly',baseline_effort=.5,update_method='bayes',  ## Fish Params
                 age=50,size=None,prior=None,likelihood=None,likelihood_dict=None,
                 xs=np.linspace(1,100,199),r_rhp=0,a_growth=True,c_aversion=1,
                 max_energy=1,start_energy=1,effort_exploration=0.1,
-                acuity=.6,pre_acuity=.6,post_acuity=True,awareness=.6,insight=True,
+                acuity=.1,pre_acuity=.1,post_acuity=True,awareness=.5,insight=True,
                 boldness=0,
                 #poly_param_a = 3,poly_param_b=-2.4,poly_param_c=0.1,
                 poly_param_a = 5,poly_param_b=0,poly_param_c=0.3,poly_param_m=0.1,
