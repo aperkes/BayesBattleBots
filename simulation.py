@@ -231,6 +231,19 @@ class Simulation():
         effort_record = [f.level for f in tank.fight_list]
         return np.mean(effort_record)
 
+    def _calc_error(self,tank):
+        n_fishes = len(tank.fishes)
+        n_fights = len(tank.fishes[0].range_record)
+        e_array = np.empty([n_fishes,n_fights])
+        for f_ in range(n_fishes):
+            fish_f = tank.fishes[f_]
+            for r_ in range(n_fights):
+                fight_r = fish_f.range_record[r_]
+                e1,e2 = fight_r[1:3]
+                f_error = (e1 - fish_f.size)**2 + (e2 - fish_f.size)**2
+                e_array[f_,r_] = f_error
+        return e_array
+
     def get_timed_means(self):
         ## Maybe this is a bad idea actually...It's really just binned history.
         return linearity_history,stability_history,accuracy_history

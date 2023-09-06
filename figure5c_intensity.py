@@ -17,13 +17,15 @@ from tank import Tank
 from simulation import Simulation,SimParams
 from matplotlib import cm
 from params import Params
+from simulation import Simulation
 
 ## Define some global variables to determine if you will plot and save figures.
 PLOT = True
 SAVE = False
 
+sim = Simulation()
 params = Params()
-params.outcome_params = [0.5,-0.5,-0.99]
+params.outcome_params = [0.5,-0.5,-0.8]
 #params.set_L()
 params.awareness = 0.5
 params.acuity = 0.1
@@ -47,17 +49,21 @@ params.iterations = 500
 
 ## Set up a tank
 cost_array = np.empty([params.iterations,params.n_fish,params.n_rounds * (params.n_fish-1)])
+error_array = np.empty([params.iterations,params.n_fish,params.n_rounds * (params.n_fish - 1) + 1])
+
 for i in tqdm(range(params.iterations)):
     fishes = [Fish(f,params) for f in range(5)]
 
     tank = Tank(fishes,params)
     tank.run_all(progress=False)
 
+    error_array[i] = sim._calc_error(tank)
     for f in range(len(fishes)):
         cost_array[i,f] = np.array(tank.fishes[f].win_record)[:,3]
+    
 
+fig,(ax,ax1) = plt.subplots(2)
 
-fig,ax = plt.subplots()
 mean_int = np.nanmean(cost_array,axis=(0,1))
 sem_int = np.nanstd(cost_array,axis=(0,1)) / np.sqrt(params.iterations)
 ax.plot(mean_int,color='black')
@@ -66,6 +72,17 @@ ax.set_xlabel('Contest number')
 ax.set_ylabel('Mean fight Intensity\n(+/- SEM of iterations')
 ax.set_title('Fight intensity decreases over repeated contests')
 
-fig.savefig('./figures/figure2c_intensity.png',dpi=300)
+
+## Plot error
+mean_err = np.mean(error_array,axis=(0,1))
+sem_err = np.std(error_array,axis=(0,1)) / np.sqrt(params.iterations)
+ax1.plot(mean_err,color='black')
+ax1.fill_between(range(len(mean_err)),mean_err-sem_err,mean_err+sem_err,color='gray',alpha=0.5)
+ax1.set_xlabel('Contest number')
+ax1.set_ylabel('Mean error \n(+/- SEM of iterations')
+ax1.set_title('Estimate error decreases over repeated contests')
+
+#fig.savefig('./figures/figure2c_intensity.png',dpi=300)
+
 if PLOT:
     plt.show()
