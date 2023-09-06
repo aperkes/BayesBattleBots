@@ -25,8 +25,10 @@ SAVE = False
 def build_sim(sd_size=2,params=Params()):
     #params.outcome_params = [-0.5,-0.5,-0.7]
     #params.outcome_params = [0.0,0.0,-0.9]
-    params.outcome_params = [0.7,-0.5,-0.9]
+    params.outcome_params = [0.1,0.0,-0.99]
     params.n_fish = 5
+    params.awareness = 0.3 
+    params.acuity = 0
     params.set_params()
 
     if sd_size == 0:
@@ -41,9 +43,7 @@ def build_sim(sd_size=2,params=Params()):
 
     params.effort_method = 'SmoothPoly'
     params.poly_param_c = 0
-    params.awareness = 0.5 
 
-    params.acuity = 0.0
     params.post_acuity = True
     params.f_method = 'shuffled'
     #params.n_fights = 40
