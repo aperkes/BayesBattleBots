@@ -33,7 +33,7 @@ outcome_array.fill(np.nan)
 
 win_info_array = np.array(outcome_array)
 loss_info_array = np.array(outcome_array)
-iterations = 1000
+#iterations = 1000
 w_probs,l_probs = [],[]
 
 f_sizes = []
