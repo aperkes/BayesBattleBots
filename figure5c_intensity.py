@@ -62,7 +62,7 @@ for i in tqdm(range(params.iterations)):
         cost_array[i,f] = np.array(tank.fishes[f].win_record)[:,3]
     
 
-fig,(ax,ax1) = plt.subplots(2)
+fig,(ax,ax1) = plt.subplots(1,2)
 
 mean_int = np.nanmean(cost_array,axis=(0,1))
 sem_int = np.nanstd(cost_array,axis=(0,1)) / np.sqrt(params.iterations)
