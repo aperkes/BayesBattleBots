@@ -18,6 +18,7 @@ n_fight_list = np.arange(0,50,5)
 
 params = Params()
 opp_params = Params()
+opp_params.baseline_effort = 0.5
 
 #params.prior = True
 #params.size = 50
@@ -47,6 +48,7 @@ outcome_array.fill(np.nan)
 
 def run_simulation(n_fights,print_me=False):
     outcome_array_n = np.empty([len(strategies),iterations])
+    staged_opp_ = copy.deepcopy(staged_opp)
     for s_ in range(len(strategies)):
         #f_params = strat_params[s_]
         f_params = params.copy()
@@ -65,9 +67,9 @@ def run_simulation(n_fights,print_me=False):
                 #print(i,len(focal_fish.est_record),o.effort,focal_fish.effort)
 ## Run a staged fight
             pre_est = focal_fish.estimate
-            staged_opp.size = focal_fish.size
-            staged_opp.params.size = focal_fish.size
-            staged_fight = Fight(staged_opp,focal_fish,outcome=1)
+            staged_opp_.size = focal_fish.size
+            staged_opp_.params.size = focal_fish.size
+            staged_fight = Fight(staged_opp_,focal_fish,outcome=1)
             staged_fight.run_outcome()
             focal_fish.update(True,staged_fight)
             #print(n_,s_,i,'pre,post:',pre_est,focal_fish.estimate)
