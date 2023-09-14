@@ -190,7 +190,7 @@ est_acim = axes[0,1].imshow(est_diff_ac,vmin = -1*es_ac_max,vmax=es_ac_max,cmap=
 eff_slim = axes[1,0].imshow(eff_diff_sl,vmin = -1*ef_sl_max,vmax=ef_sl_max,cmap='RdBu')
 eff_acim = axes[1,1].imshow(eff_diff_ac,vmin = -1*ef_ac_max,vmax=ef_ac_max,cmap='RdBu')
 
-out_slim = out_im = axes[2,0].imshow(out_diff_sl,vmin = -1*ot_sl_max,vmax=ot_sl_max,cmap='RdBu')
+out_slim = axes[2,0].imshow(out_diff_sl,vmin = -1*ot_sl_max,vmax=ot_sl_max,cmap='RdBu')
 out_acim = axes[2,1].imshow(out_diff_ac,vmin = -1*ot_ac_max,vmax=ot_ac_max,cmap='RdBu')
 
 fig.colorbar(est_slim,ax=axes[0,0])
