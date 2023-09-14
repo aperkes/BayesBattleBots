@@ -813,7 +813,7 @@ class Fish:
         if np.isnan(self.estimate):
             import pdb;pdb.set_trace()
         if True: ## most of the time I shouldn't need this stuff
-            self.est_record_.append(estimate_)
+            #self.est_record_.append(estimate_)
 
             self.sdest_record.append(prior_std)
 
