@@ -85,11 +85,11 @@ class Fish:
             self.prior = norm.pdf(self.xs,self.size,self.params.A)
             self.prior = self.prior / np.sum(self.prior)
         elif isinstance(params.prior,int):
-            self.estimate = np.clip(np.random.normal(self.size,self.params.A),self.params.min_size,self.params.max_size)
+            self.estimate = np.clip(np.random.normal(params.prior,self.params.A),self.params.min_size,self.params.max_size)
             if params.prior == -1:
                 self.prior = np.ones_like(self.xs) / len(self.xs)
             else:
-                self.prior = norm.pdf(self.xs,self.estimate,params.prior)
+                self.prior = norm.pdf(self.xs,self.estimate,self.params.A)
                 self.prior = self.prior / np.sum(self.prior)
         elif params.prior is not None:
             self.prior = params.prior
