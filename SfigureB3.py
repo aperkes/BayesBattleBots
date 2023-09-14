@@ -15,11 +15,65 @@ def mean_sem(a):
     sem_a = np.nanstd(a) / np.sqrt(len(a))
     return mean_a,sem_a
 
+## Stupid little function to extract blocks of true values from an array
+def get_chunks(x_bool):
+    start = None 
+    i_list = []
+    all_is = []
+    for i_ in range(len(x_bool)):
+        if x_bool[i_] == False:
+            if start is not None:
+                all_is.append(i_list)
+                i_list = []
+                start = None
+        else:
+            if start is None:
+                start = i_
+            i_list.append(i_)
+    if start is not None:
+        all_is.append(i_list)
+    return all_is
+
 def plot_fill(xs,a,fig=None,ax=None,color='grey',alpha=0.5):
     if ax is None:
         fig,ax = plt.subplots()
     ax.plot(xs,a[:,0],color='black')
-    ax.fill_between(xs,a[:,0] - a[:,1],a[:,0] + a[:,1],color=color,alpha=alpha)
+    top_line = a[:,0] + a[:,1]
+    bottom_line = a[:,0] - a[:,1]
+    if 'STAT' in color:
+        #import pdb;pdb.set_trace()
+        gold_points = bottom_line > 0
+        blue_points = top_line < 0
+
+        new_xs = np.linspace(min(xs),max(xs),len(xs) * 20)
+        new_bottom = np.interp(new_xs,xs,bottom_line)
+        new_top = np.interp(new_xs,xs,top_line)
+
+        xs = new_xs
+        if color == 'STAT':
+
+            gray_bool = (new_bottom <= 0) & (new_top >= 0)
+            gold_bits = get_chunks(new_bottom > 0)
+            blue_bits = get_chunks(new_top < 0)
+            gray_bits = get_chunks(gray_bool)
+            for c in gray_bits:
+                ax.fill_between(xs[c],new_bottom[c],new_top[c],color='gray',alpha=alpha)
+            for c in gold_bits:
+                ax.fill_between(xs[c],new_bottom[c],new_top[c],color='gold',alpha=alpha)
+            for c in blue_bits:
+                ax.fill_between(xs[c],new_bottom[c],new_top[c],color='darkblue',alpha=alpha)
+        elif color == 'STAT_SIMPLE':
+            gold_bits = get_chunks(new_top > 0)
+            blue_bits = get_chunks(new_bottom < 0)
+            for c in gold_bits:
+                ax.fill_between(xs[c],np.clip(new_bottom[c],0,a_max=None),new_top[c],color='gold',alpha=alpha)
+            for c in blue_bits:
+                ax.fill_between(xs[c],new_bottom[c],np.clip(new_top[c],None,0),color='darkblue',alpha=alpha)
+    else:
+        ax.fill_between(xs,a[:,0] - a[:,1],a[:,0] + a[:,1],facecolor=color,alpha=alpha)
+    y_max = max([np.max(np.abs(a[:,0] - a[:,1])),np.max(np.abs(a[:,0] + a[:,1]))])
+    ax.set_ylim([y_max*-1.1,y_max*1.1])
+   
     return fig,ax
 
 def run_sim(params):
@@ -174,9 +228,11 @@ for p_ in range(len(param_list)):
     effort_array[:,1] = win_efforts[p_,:,1] + loss_efforts[p_,:,1]
     output_array[:,1] = win_outputs[p_,:,1] + loss_outputs[p_,:,1]
 
-    plot_fill(xs_params,est_array,ax=axes[0,p_],color='gray')
-    plot_fill(xs_params,effort_array,ax=axes[1,p_],color='gray')
-    plot_fill(xs_params,output_array,ax=axes[2,p_],color='gray')
+    #plot_fill(xs_params,est_array,ax=axes[0,p_],color='STAT')
+    plot_fill(xs_params,est_array,ax=axes[0,p_],color='STAT_SIMPLE')
+    plot_fill(xs_params,effort_array,ax=axes[1,p_],color='STAT_SIMPLE')
+    plot_fill(xs_params,output_array,ax=axes[2,p_],color='STAT_SIMPLE')
+    #plot_fill(xs_params,output_array,ax=axes[2,p_],color='gray')
 
     '''
     plot_fill(xs_params[est_array > 0],est_array[est_array > 0],ax=axes[0,p_],color='gold')
@@ -200,6 +256,7 @@ axes[2,0].set_ylabel('Assay win rate')
 for c_ in range(4):
     for r_ in range(3):
         ax = axes[r_,c_]
+        y_max = 0
         ax.axvline(default_params[c_],color='red',linestyle=':')
         ax.axhline(0,color='black',alpha=0.2,linestyle=':')
 
