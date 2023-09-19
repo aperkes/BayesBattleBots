@@ -156,7 +156,9 @@ mean_winners = mean_results[:,:,:,:,0]
 sem_winners = sem_results[:,:,:,:,0]
 
 mean_losers = mean_results[:,:,:,:,1]
-sem_losers = mean_results[:,:,:,:,1]
+sem_losers = sem_results[:,:,:,:,1]
+
+#import pdb;pdb.set_trace()
 
 ## Plot stuff
 
@@ -164,16 +166,39 @@ sem_losers = mean_results[:,:,:,:,1]
 fig,axes = plt.subplots(2,2,sharey=True,sharex=True)
 
 styles = ['solid','dotted','dashdot']
+
 for i_ in range(len(mu_slist)):
     mu_s = mu_slist[i_]
     mu_e = mu_elist[i_]
     style = styles[i_]
+
+    mean_00 = mean_winners[:,i_,0,5]
+    sem_00 = sem_winners[:,i_,0,5]
+    up_00,down_00 = mean_00 + sem_00, mean_00 - sem_00
+
+    mean_10 = mean_losers[:,i_,2,5]
+    sem_10 = sem_losers[:,i_,2,5]
+    up_10,down_10 = mean_10 + sem_10, mean_10 - sem_10
+
+    mean_01 = mean_winners[5,0,i_,:]
+    sem_01 = sem_winners[5,0,i_,:]
+    up_01,down_01 = mean_01 + sem_01, mean_01 - sem_01
+
+    mean_11 = mean_losers[5,2,i_,:]
+    sem_11 = sem_losers[5,2,i_,:]
+    up_11,down_11 = mean_11 + sem_11, mean_11 - sem_11
+
     axes[0,0].plot(std_xs,mean_winners[:,i_,0,5],label='mu_s = ' + str(mu_s),linestyle=style,color='black')
+    axes[0,0].fill_between(std_xs,down_00,up_00,alpha=0.3)
 
     axes[1,0].plot(std_xs,mean_losers[:,i_,2,5],label='mu_s = ' + str(mu_s),linestyle=style,color='black')
+    axes[1,0].fill_between(std_xs,down_10,up_10,alpha=0.3)
 
     axes[0,1].plot(std_xs,mean_winners[5,0,i_,:],label='mu_e = ' + str(mu_e),linestyle=style,color='black')
+    axes[0,1].fill_between(std_xs,down_01,up_01,alpha=0.3)
+
     axes[1,1].plot(std_xs,mean_losers[5,2,i_,:],label='mu_e = ' + str(mu_e),linestyle=style,color='black')
+    axes[1,1].fill_between(std_xs,down_11,up_11,alpha=0.3)
 
 axes[0,0].legend()
 axes[0,1].legend()
