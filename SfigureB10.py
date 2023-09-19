@@ -61,7 +61,7 @@ def run_sim(params,opp_params,npc_size_list = [50],npc_effort_list = [0.5]):
             if ~np.isnan(w_rounds) and ~np.isnan(l_rounds):
                 break
             npc = random_opp
-            npc.baseline_effort = npc_efforts[n]
+            npc.params.baseline_effort = npc_efforts[n]
             npc.size = npc_sizes[n]
             if np.isnan(w_rounds):
                 if focal_W.estimate <= W_thresh:
@@ -140,17 +140,23 @@ def run_many_sims(std_s):
                 mu_s = mu_slist[us_]
                 X_size = build_trunc(mu_s,std_s,lower_s,upper_s)
                 npc_size_list = X_size.rvs(100)
-
                 some_results[us_,ue_,se_] = run_sim(params,opp_params,npc_size_list,npc_effort_list)
     return some_results
 
 stdx_set = [2**n for n in np.arange(-1,10).astype(float)]
+std_xs = [n for n in np.arange(-1,10).astype(int)]
+
 all_results = Parallel(n_jobs=11)(delayed(run_many_sims)(std_x) for std_x in stdx_set)
 all_results = np.array(all_results)
 
 mean_results = np.nanmean(all_results,axis=4)
+sem_results = np.nanstd(all_results,axis=4) / np.sqrt(iterations)
+
 mean_winners = mean_results[:,:,:,:,0]
+sem_winners = sem_results[:,:,:,:,0]
+
 mean_losers = mean_results[:,:,:,:,1]
+sem_losers = mean_results[:,:,:,:,1]
 
 ## Plot stuff
 
@@ -162,10 +168,12 @@ for i_ in range(len(mu_slist)):
     mu_s = mu_slist[i_]
     mu_e = mu_elist[i_]
     style = styles[i_]
-    axes[0,0].plot(mean_winners[:,i_,1,5],label='mu_s = ' + str(mu_s),linestyle=style,color='black')
-    axes[1,0].plot(mean_losers[:,i_,1,5],label='mu_s = ' + str(mu_s),linestyle=style,color='black')
-    axes[0,1].plot(mean_losers[5,0,i_,:],label='mu_e = ' + str(mu_e),linestyle=style,color='black')
-    axes[1,1].plot(mean_losers[5,2,i_,:],label='mu_e = ' + str(mu_e),linestyle=style,color='black')
+    axes[0,0].plot(std_xs,mean_winners[:,i_,0,5],label='mu_s = ' + str(mu_s),linestyle=style,color='black')
+
+    axes[1,0].plot(std_xs,mean_losers[:,i_,2,5],label='mu_s = ' + str(mu_s),linestyle=style,color='black')
+
+    axes[0,1].plot(std_xs,mean_winners[5,0,i_,:],label='mu_e = ' + str(mu_e),linestyle=style,color='black')
+    axes[1,1].plot(std_xs,mean_losers[5,2,i_,:],label='mu_e = ' + str(mu_e),linestyle=style,color='black')
 
 axes[0,0].legend()
 axes[0,1].legend()
@@ -173,7 +181,7 @@ axes[0,1].legend()
 axes[0,0].set_ylabel('n rounds to recover')
 axes[1,0].set_ylabel('n rounds to recover')
 axes[1,0].set_xlabel('STD of opp sizes')
-axes[1,1].set_xlabel('STD of opp sizes')
+axes[1,1].set_xlabel('STD of opp effort')
 
 plt.show()
 
