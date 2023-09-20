@@ -201,5 +201,6 @@ axes2[3].set_xlabel('opp assessment error')
 axes2[0].set_ylabel('Mean cost of round')
 
 
+## NOTE: Next thing to do is add linearity calculation in here too
 
 plt.show()
