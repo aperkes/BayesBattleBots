@@ -35,12 +35,12 @@ class Tank():
         self.f_method = params.f_method
         self.f_outcome = params.f_outcome
         self.f_params = params.outcome_params
-        if not self.params.L_set:
-            self.params.set_L() ## confirm that the L is right
-            for f in fishes:
-                if not f.params.L_set:
-                    print('Warning!! Tank just set L and fish Ls are not set!!!')
-                    break
+        #if not self.params.L_set:
+        #    self.params.set_L() ## confirm that the L is right
+            #for f in fishes:
+            #    if not f.params.L_set:
+            #        print('Warning!! Tank just set L and fish Ls are not set!!!')
+            #        break
         self.u_method = params.update_method
         #self.scale = params.scale
         self.win_record = np.zeros([len(fishes),len(fishes)])
