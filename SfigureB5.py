@@ -224,5 +224,5 @@ axes[2,1].set_xlabel('acuity value')
 plt.show()
 print('all done, do you want to check anything?')
 
-import pdb;pdb.set_trace()
+#import pdb;pdb.set_trace()
 print('Done.')
