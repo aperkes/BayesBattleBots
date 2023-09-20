@@ -12,6 +12,7 @@ from fight import Fight
 import copy
 
 from tqdm import tqdm
+from joblib import Parallel, delayed
 
 #sizes = np.linspace(1,100)
 sizes = [40,60]
@@ -25,7 +26,7 @@ npcs = [FishNPC() for s in sizes]
 for n_ in range(len(npcs)):
     npcs[n_].size = sizes[n_]
 
-iterations = 10
+iterations = 3
 #strategies = ['bayes','linear','no update']
 
 def mean_sem(a):
@@ -77,8 +78,8 @@ c_list = np.linspace(0,1,c_res)
 
 ## The last two are winners/losers x mean/sem
 all_results = np.empty([s_res,l_res,a_res,c_res,2,2])
-for s_ in tqdm(range(s_res)):
-    s = s_list[s_]
+def run_many_sims(s):
+    many_results = np.empty([l_res,a_res,c_res,2,2])
     params = Params()
     for l_ in range(l_res):
         l = l_list[l_]
@@ -93,9 +94,17 @@ for s_ in tqdm(range(s_res)):
                 params.set_params()
                 some_results = run_sim(params)
                 some_diff = np.abs(some_results[:,:,0] - some_results[:,:,1])
-                all_results[s_,l_,a_,c_] = mean_sem(some_diff)
+                many_results[l_,a_,c_] = mean_sem(some_diff)
+    return many_results
 
-import pdb;pdb.set_trace()
+if True:
+    for s_ in tqdm(range(s_res)):
+        s = s_list[s_]
+        all_results[s_] = run_many_sims(s)
+else:
+    all_results = Parallel(n_jobs=11)(delayed(run_many_sims)(s) for s in s_list)
+    all_results = np.array(all_results)
+#import pdb;pdb.set_trace()
 
 mean_winners = all_results[:,:,:,:,1,0]
 sem_winners = all_results[:,:,:,:,1,1]
@@ -103,10 +112,12 @@ mean_losers = all_results[:,:,:,:,0,0]
 sem_losers = all_results[:,:,:,:,0,1]
 
 fig,axes = plt.subplots(2,2,sharey = 'row',sharex = 'col')
-axes[0,0].imshow(mean_winners[:,:,5,1])
-axes[0,1].imshow(mean_winners[7,1,:,:])
-axes[1,0].imshow(mean_losers[:,:,5,1])
-axes[1,1].imshow(mean_losers[7,1,:,:])
+vmin =0
+vmax = 1
+axes[0,0].imshow(mean_winners[:,:,5,1],vmin=vmin,vmax=vmax)
+axes[0,1].imshow(mean_winners[7,1,:,:],vmin=vmin,vmax=vmax)
+axes[1,0].imshow(mean_losers[:,:,5,1],vmin=vmin,vmax=vmax)
+axes[1,1].imshow(mean_losers[7,1,:,:],vmin=vmin,vmax=vmax)
 
 plt.show()
 
