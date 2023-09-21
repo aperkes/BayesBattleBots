@@ -776,13 +776,23 @@ class Fish:
         else:
             if win:
                 other_fish = fight.loser
+                #if self.wager < other_fish.wager and fight.p_win == 0: ## this is p(upset). If you're bigger, this is info
+                    #print('Fish.py 783: Check p_win, that should not have happened...')
+                    #import pdb;pdb.set_trace()
+                    #self.win_record.append([other_fish.size,win,self.effort,cost])
+                    #self.est_record.append(self.estimate)
+                    #return self.prior,self.estimate
             else:
                 other_fish = fight.winner
+                #if self.wager > other_fish.wager and fight.p_win == 0: ## this is p(upset). If you're bigger, this is info
+                    #pass
+                    #print('Fish.py 783: Check p_win, that should not have happened...')
+                    #import pdb;pdb.set_trace()
+                    #self.win_record.append([other_fish.size,win,self.effort,cost])
+                    #self.est_record.append(self.estimate)
+                    #return self.prior,self.estimate
+
             cost = self.calculate_cost(win,fight,other_fish)
-        if fight.p_win == 0: ## if the impossible happened it's weird
-            self.win_record.append([other_fish.size,win,self.effort,cost])
-            self.est_record.append(self.estimate)
-            return self.prior,self.estimate
 ## Get likelihood function
         #import pdb;pdb.set_trace()
         self.win_record.append([other_fish.size,win,self.effort,cost])
@@ -797,7 +807,12 @@ class Fish:
         self.likelihood = likelihood
         #print(likelihood[size_idx],fight.p_win)
         pre_prior = np.array(self.prior)
-        self.prior = self._update(self.prior,likelihood,self.xs) ## this just multiplies prior*likelihood
+        likelihood_sum = np.sum(likelihood)
+        if likelihood_sum == 0 or likelihood_sum == len(likelihood):
+            ## If there's no information, don't update
+            pass
+        else:
+            self.prior = self._update(self.prior,likelihood,self.xs) ## this just multiplies prior*likelihood
         if self.decay_all:
             print('decaying...')
             self.prior = self._decay_flat(self.prior)
