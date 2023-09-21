@@ -68,6 +68,48 @@ class Tank():
             self.n_rounds = len(self.fight_list)
         self.history = np.zeros([self.n_rounds,len(fishes),len(fishes)])
         #self.history.fill(np.nan)
+## Frustratingly long table to calculate linearity
+        self._applebys = {
+            3:{0:0.750},
+            4:{0:0.375},
+            5:{0:0.117},
+            6:{0:0.022,
+                1:0.051,
+                2:0.120},
+            7:{1:0.006,
+                2:0.017,
+                3:0.033,
+                4:0.069,
+                5:0.112},
+            8:{4:0.006,
+                5:0.011,
+                6:0.023,
+                7:0.037,
+                8:0.063,
+                9:0.094,
+                10:0.153
+            },
+            9:{9:0.007,
+                10:0.012,
+                11:0.019,
+                12:0.030,
+                13:0.045,
+                14:0.067,
+                15:0.095,
+                16:0.138
+            },
+            10:{16:0.008,
+                17:0.012,
+                18:0.018,
+                19:0.026,
+                20:0.038,
+                21:0.052,
+                22:0.073,
+                23:0.097,
+                24:0.131
+            }
+            }
+
 
 
 ## Define a likelihood dict
@@ -285,7 +327,79 @@ class Tank():
             mean_by_fish.append(mean_record)
             size_by_fish.append(f.size)
         return we_by_fish,le_by_fish,mean_by_fish,size_by_fish
+     
+    def _calc_linearity(self,idx=None): ## idx is a slice object
+        n_fish = len(self.fishes)
+        h_matrix = np.zeros([n_fish,n_fish])
+        if idx is not None:
+            win_record = np.nansum(self.history[idx],axis=0)
+        else:
+            win_record = self.win_record
+        win_record_dif = win_record - np.transpose(win_record)
+        h_matrix[win_record_dif > 0] = 1
+        self.h_matrix = h_matrix
+        ## DO THE MATHY THING HERE
+        N = n_fish
 
+        D = N * (N-1) * (N-2) / 6 ## Total number of possible triads
+## Calculate the number of triads: 
+        d = N * (N-1) * (2*N-1) / 12 - 1/2 * np.sum(np.sum(h_matrix,1) ** 2) ## From Appleby, 1983
+        if N <= 10:
+            if d in self._applebys[N].keys():
+                p = self._applebys[N][round(d)]
+            elif d < min(self._applebys[N].keys()):
+                p = min(self._applebys[N].values())
+            else:
+                p = max(self._applebys[N].values())
+        else:
+            df = N*(N-1)*(N-2)/(N-4)**2
+            chi_stat = (8/(N-4)) * ((N*(N-1)*(N-2)/24) - d + 0.5) + df
+            p = 1 - chi2.cdf(chi_stat,df)
+        linearity = 1 - (d / D) ## Percentage of non triadic interactions
+        #import pdb;pdb.set_trace()
+        return linearity,[d,p]
+         
+## Stability the proportion of interactions consistent with the overall mean. 
+    def _calc_stability(self,idx = None):
+## A nicer metric would be the proportion of bins where mean heirarchy == overall hierarchy, 
+        #import pdb;pdb.set_trace()
+        if self.f_method == 'balanced' or self.f_method == 'shuffled':
+            binned_history = self.history
+        else: ## Something feels wrong here... 
+            ## First calculate a sliding window bigger than 2*n^2. We're going to have some missing values
+            min_slide = 2*self.n_fish*(self.n_fish-1)
+            n_points = len(self.history)
+            stagger = 2 # determines the degree to which windows overlap
+            n_bins = int(n_points / min_slide * stagger)
+            win_size = int(n_points / n_bins)
+            binned_history = np.zeros([n_bins,self.n_fish,self.n_fish])
+## There might be a more efficient way to do this, but this shoudl work.
+            for w in np.arange(n_bins):
+                h0 = w*win_size
+                h1 = (w+1)*win_size
+                binned_history[w] = np.sum(self.history[h0:h1],0)
+
+# Instead, calculate the proportion of binned interactions that = overall interactions
+        if idx is not None:
+            binned_history = binned_history[idx]
+            mean_history = np.mean(self.history[idx],0)
+        else:
+            mean_history = np.mean(self.history,0)
+        binary_bins = np.sign(binned_history - np.transpose(binned_history,axes=[0,2,1]))
+        binary_final = np.sign(mean_history - np.transpose(mean_history))
+        binary_mean = np.mean(binary_bins,0)
+        proportion_consistent = np.sum(np.abs(binary_mean) == 1) / (self.n_fish * (self.n_fish - 1))
+## Use nCr formulat to get the total number of possible interactions
+        total_interactions = len(binary_bins) * self.n_fish * (self.n_fish-1) 
+        #binary_difference = np.clip(np.abs(binary_bins - binary_final),0,1)
+        binary_difference = np.abs(binary_bins - binary_final) == 2
+        number_consistent = total_interactions - np.sum(binary_difference)
+        #proportion_consistent = number_consistent / total_interactions 
+        #stability = np.mean(np.std(binned_history,axis=0))
+        #import pdb;pdb.set_trace()
+        return proportion_consistent, binary_final
+ 
+    
     def __getitem__(self,idx):
         return self.fishes[idx]
     
