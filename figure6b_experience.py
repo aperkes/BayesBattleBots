@@ -18,16 +18,18 @@ n_fight_list = np.arange(0,50,5)
 
 params = Params()
 opp_params = Params()
-opp_params.baseline_effort = 0.5
+#opp_params.baseline_effort = 0.5
 
-#params.prior = True
-#params.size = 50
+params.prior = True
+params.size = 50
 #params.poly_param_m = 0.2
 ## Make lots of naive fish of random sizes
 npcs = [Fish(s,opp_params) for s in range(int(max(n_fight_list) * 2))]
+npc_sizes = [npc.size for npc in npcs]
+print('Median npc size:',np.mean(npc_sizes))
 
 staged_opp = FishNPC(0,params) ## NPCs by default always invest 0.5 effort
-staged_opp.size = 51
+staged_opp.size = 50
 iterations = 1000
 strategies = ['bayes','linear','no update']
 ## Make lots of focal fish with different strategies
