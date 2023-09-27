@@ -31,7 +31,7 @@ print('Median npc size:',np.mean(npc_sizes))
 
 staged_opp = FishNPC(0,params) ## NPCs by default always invest 0.5 effort
 staged_opp.size = 50
-iterations = 10
+iterations = 100
 ## Make lots of focal fish with different strategies
 
 s_res = 11
@@ -109,7 +109,7 @@ def run_simulation(n_fights,params):
     return outcome_array_n
 
   
-if True:
+if False:
     outcome_arrays = np.empty([s_res,l_res,a_res,c_res,2,iterations,2])
     for s_ in range(s_res):
         s = s_list[s_]
