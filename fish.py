@@ -764,6 +764,12 @@ class Fish:
                 print('calculated p_win:',fight.p_win,'\n')
         if self.energy_cost:
             self.update_energy(win,fight)
+        if win:
+            other_fish = fight.loser
+        else:
+            other_fish = fight.winner
+        cost = self.calculate_cost(win,fight,other_fish)
+        self.win_record.append([other_fish.size,win,self.effort,cost])
         return self.prior,self.estimate
 
 # Updates the prior and handles food and cost. Should probably be rebuilt eventually
