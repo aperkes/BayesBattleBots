@@ -97,7 +97,7 @@ c_list = np.linspace(0,1,a_res)
 
 
 params = Params()
-params.n_rounds = 10
+params.n_rounds = 10 
 params.n_iterations = 100
 
 def run_many_sims(s,params):
@@ -131,6 +131,7 @@ def run_many_sims(s,params):
                 some_errors[l_,a_,c_,14:16] = mean_sem(init_stab)
     return some_errors
 
+print('Running bayesian simulation')
 if False: ## Handy for debug
     all_results = np.empty([s_res,l_res,a_res,a_res,16])
     for s_ in tqdm(range(s_res)):
@@ -141,27 +142,42 @@ else:
     all_results = Parallel(n_jobs=11)(delayed(run_many_sims)(s,params) for s in s_list)
     all_results = np.array(all_results)
 
-all_errors = all_results[:,:,:,:,0:4]
-all_costs = all_results[:,:,:,:,4:8]
-all_lins = all_results[:,:,:,:,8:12]
-all_stabs = all_results[:,:,:,:,12:16]
+print('Running no-update simulation')
+null_params = params.copy()
+null_params.update_method = None
+if False: ## Handy for debug
+    null_results = np.empty([s_res,l_res,a_res,a_res,16])
+    for s_ in tqdm(range(s_res)):
+        s = s_list[s_]
+        null_results[s_] = run_many_sims(s,null_params)
 
-mean_errors = all_errors[:,:,:,:,0]
-sem_errors = all_errors[:,:,:,:,1]
-mean_init = all_errors[:,:,:,:,2]
+else:
+    null_results = Parallel(n_jobs=11)(delayed(run_many_sims)(s,null_params) for s in s_list)
+    null_results = np.array(null_results)
+
+def parse_results(all_results):
+    all_errors = all_results[:,:,:,:,0:4]
+    all_costs = all_results[:,:,:,:,4:8]
+    all_lins = all_results[:,:,:,:,8:12]
+    all_stabs = all_results[:,:,:,:,12:16]
+
+    mean_errors = all_errors[:,:,:,:,0]
+    sem_errors = all_errors[:,:,:,:,1]
+    mean_init = all_errors[:,:,:,:,2]
 #sem_init = all_errors[:,:,:,:,3]
 
-mean_costs = all_costs[:,:,:,:,0]
-sem_costs = all_costs[:,:,:,:,1]
-init_costs = all_costs[:,:,:,:,2]
+    mean_costs = all_costs[:,:,:,:,0]
+    sem_costs = all_costs[:,:,:,:,1]
+    init_costs = all_costs[:,:,:,:,2]
 
-mean_lins = all_lins[:,:,:,:,0]
-sem_lins = all_lins[:,:,:,:,1]
-init_lins = all_lins[:,:,:,:,2]
+    mean_lins = all_lins[:,:,:,:,0]
+    sem_lins = all_lins[:,:,:,:,1]
+    init_lins = all_lins[:,:,:,:,2]
 
-mean_stabs = all_stabs[:,:,:,:,0]
-sem_stabs = all_stabs[:,:,:,:,1]
-init_stabs = all_stabs[:,:,:,:,2]
+    mean_stabs = all_stabs[:,:,:,:,0]
+    sem_stabs = all_stabs[:,:,:,:,1]
+    init_stabs = all_stabs[:,:,:,:,2]
+    return [mean_errors,sem_errors,mean_init],[mean_costs,sem_costs,init_costs],[mean_lins,sem_lins,init_lins],[mean_stabs,sem_stabs,init_stabs]
 
 
 def build_inputs(mean_array,sem_array,init_array):
@@ -186,7 +202,7 @@ def build_inputs(mean_array,sem_array,init_array):
     c_data = [c_mean,c_sem,c_init]
     return s_data,l_data,a_data,c_data
 
-def make_plots(s_data,l_data,a_data,c_data,ylabel='None',fax=None):
+def make_plots(s_data,l_data,a_data,c_data,ylabel='None',fill_color='gray',l_style=':',fax=None):
     if fax is None:
         fig,axes = plt.subplots(1,4,sharey=True)
     else:
@@ -197,112 +213,57 @@ def make_plots(s_data,l_data,a_data,c_data,ylabel='None',fax=None):
     c_mean,c_sem,c_init = c_data
 
     axes[0].plot(s_list,s_mean,color='black')
-    axes[0].plot(s_list,s_init,color='black',linestyle=':')
+    axes[0].plot(s_list,s_init,color='black',linestyle=l_style)
 
-    axes[0].fill_between(s_list,s_mean-s_sem,s_mean+s_sem,alpha=0.5,color='gray')
+    axes[0].fill_between(s_list,s_mean-s_sem,s_mean+s_sem,alpha=0.5,color=fill_color)
     axes[0].set_xlabel('s value')
 
     axes[1].plot(l_list,l_mean,color='black')
-    axes[1].plot(l_list,l_init,color='black',linestyle=':')
-    axes[1].fill_between(l_list,l_mean-l_sem,l_mean+l_sem,alpha=0.5,color='gray')
+    axes[1].plot(l_list,l_init,color='black',linestyle=l_style)
+    axes[1].fill_between(l_list,l_mean-l_sem,l_mean+l_sem,alpha=0.5,color=fill_color)
     axes[1].set_xlabel('l value')
 
     axes[2].plot(a_list,a_mean,color='black')
-    axes[2].plot(a_list,a_init,color='black',linestyle=':')
-    axes[2].fill_between(a_list,a_mean-a_sem,a_mean+a_sem,alpha=0.5,color='gray')
+    axes[2].plot(a_list,a_init,color='black',linestyle=l_style)
+    axes[2].fill_between(a_list,a_mean-a_sem,a_mean+a_sem,alpha=0.5,color=fill_color)
     axes[2].set_xlabel('self assessment error')
 
     axes[3].plot(c_list,c_mean,color='black')
-    axes[3].plot(c_list,c_init,color='black',linestyle=':')
-    axes[3].fill_between(c_list,c_mean-c_sem,c_mean+c_sem,alpha=0.5,color='gray')
+    axes[3].plot(c_list,c_init,color='black',linestyle=l_style)
+    axes[3].fill_between(c_list,c_mean-c_sem,c_mean+c_sem,alpha=0.5,color=fill_color)
     axes[3].set_xlabel('opp assessment error')
 
     axes[0].set_ylabel(ylabel)
 
     return fig,axes
 
-error_inputs = build_inputs(mean_errors,sem_errors,mean_init)
-cost_inputs = build_inputs(mean_costs,sem_costs,init_costs)
-lin_inputs = build_inputs(mean_lins,sem_lins,init_lins)
-stab_inputs = build_inputs(mean_stabs,sem_stabs,init_stabs)
+error_info,cost_info,lin_info,stab_info = parse_results(all_results)
+null_error_info,null_cost_info,null_lin_info,null_stab_info = parse_results(null_results)
+
+error_inputs = build_inputs(*error_info)
+cost_inputs = build_inputs(*cost_info)
+lin_inputs = build_inputs(*lin_info)
+stab_inputs = build_inputs(*stab_info)
+
+null_error_inputs = build_inputs(*null_error_info)
+null_cost_inputs = build_inputs(*null_cost_info)
+null_lin_inputs = build_inputs(*null_lin_info)
+null_stab_inputs = build_inputs(*null_stab_info)
+
+
+#error_inputs = build_inputs(mean_errors,sem_errors,mean_init)
+#cost_inputs = build_inputs(mean_costs,sem_costs,init_costs)
+#lin_inputs = build_inputs(mean_lins,sem_lins,init_lins)
+#stab_inputs = build_inputs(mean_stabs,sem_stabs,init_stabs)
 
 fig1,axes1 = make_plots(*error_inputs,ylabel='Estimate Error')
 fig2,axes2 = make_plots(*cost_inputs,ylabel='Mean Contest Cost')
 fig3,axes3 = make_plots(*lin_inputs,ylabel='Linearity')
 fig4,axes4 = make_plots(*stab_inputs,ylabel='Stability')
 
-if False:
-    fig,axes = plt.subplots(1,4,sharey=True)
-    axes[0].plot(s_list,mean_errors[:,1,5,1])
-    axes[0].plot(s_list,mean_init[:,1,5,1],color='black',linestyle=':')
-
-    axes[0].fill_between(s_list,s_mean-s_sem,s_mean+s_sem,alpha=0.5,color='gray')
-    axes[0].set_xlabel('s value')
-
-    axes[1].plot(l_list,mean_errors[7,:,5,1])
-    axes[1].plot(l_list,mean_init[7,:,5,1],color='black',linestyle=':')
-    axes[1].fill_between(l_list,l_mean-l_sem,l_mean+l_sem,alpha=0.5,color='gray')
-
-    axes[1].set_xlabel('l value')
-
-    axes[2].plot(a_list,mean_errors[7,1,:,1])
-    axes[2].plot(a_list,mean_init[7,1,:,1],color='black',linestyle=':')
-    axes[2].fill_between(a_list,a_mean-a_sem,a_mean+a_sem,alpha=0.5,color='gray')
-
-    axes[2].set_xlabel('self assessment error')
-
-
-    axes[3].plot(c_list,mean_errors[7,1,5,:])
-    axes[3].plot(c_list,mean_init[7,1,5,:],color='black',linestyle=':')
-    axes[3].fill_between(c_list,c_mean-c_sem,c_mean+c_sem,alpha=0.5,color='gray')
-
-    axes[3].set_xlabel('opp assessment error')
-
-    axes[0].set_ylabel('Accuracy \n(std of estimate)')
-
-    fig2,axes2 = plt.subplots(1,4,sharey=True)
-
-    s_mean = mean_costs[:,1,5,1]
-    s_sem = sem_costs[:,1,5,1]
-    s_init = init_costs[:,1,5,1]
-
-    axes2[0].plot(s_list,s_mean)
-    axes2[0].plot(s_list,s_init,color='black',linestyle=':')
-
-    axes2[0].fill_between(s_list,s_mean-s_sem,s_mean+s_sem,alpha=0.5,color='gray')
-    axes2[0].set_xlabel('s value')
-
-    l_mean = mean_costs[7,:,5,1]
-    l_sem = sem_costs[7,:,5,1]
-    l_init = init_costs[7,:,5,1]
-
-    axes2[1].plot(l_list,l_mean)
-    axes2[1].plot(l_list,l_init,color='black',linestyle=':')
-    axes2[1].fill_between(l_list,l_mean-l_sem,l_mean+l_sem,alpha=0.5,color='gray')
-
-    axes2[1].set_xlabel('l value')
-
-    a_mean = mean_costs[7,1,:,1]
-    a_sem = sem_costs[7,1,:,1]
-    a_init = init_costs[7,1,:,1]
-
-    axes2[2].plot(a_list,a_mean)
-    axes2[2].plot(a_list,a_init,color='black',linestyle=':')
-    axes2[2].fill_between(a_list,a_mean-a_sem,a_mean+a_sem,alpha=0.5,color='gray')
-
-    axes2[2].set_xlabel('self assessment error')
-
-    c_mean = mean_costs[7,1,5,:]
-    c_sem = sem_costs[7,1,5,:]
-    c_init = init_costs[7,1,5,:]
-
-    axes2[3].plot(c_list,c_mean)
-    axes2[3].plot(c_list,c_init,color='black',linestyle=':')
-    axes2[3].fill_between(c_list,c_mean-c_sem,c_mean+c_sem,alpha=0.5,color='gray')
-
-    axes2[3].set_xlabel('opp assessment error')
-
-## NOTE: Next thing to do is add linearity calculation in here too
-    axes2[0].set_ylabel('Mean cost of round')
+fig1,axes1 = make_plots(*null_error_inputs,fax=(fig1,axes1),fill_color='green',l_style=None,ylabel='Estimate Error')
+fig2,axes2 = make_plots(*null_cost_inputs,fax=(fig2,axes2),fill_color='green',l_style=None,ylabel='Mean Contest Cost')
+fig3,axes3 = make_plots(*null_lin_inputs,fax=(fig3,axes3),fill_color='green',l_style=None,ylabel='Linearity')
+fig4,axes4 = make_plots(*null_stab_inputs,fax=(fig4,axes4),fill_color='green',l_style=None,ylabel='Stability')
 
 plt.show()
