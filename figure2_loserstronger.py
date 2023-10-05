@@ -13,10 +13,10 @@ from tqdm import tqdm
 
 iterations = 1000
 params = Params()
-params.outcome_params = [0.7,0,-0.8]
-params.prior = True
-params.awareness = 0.5
-params.acuity = 0.0
+#params.outcome_params = [0.7,0,-0.8]
+#params.prior = True
+#params.awareness = 0.5
+#params.acuity = 0.0
 print(params.awareness)
 params.set_params()
 print(params.outcome_params)
@@ -98,7 +98,7 @@ sems = np.std(outcome_array,axis=0) / np.sqrt(iterations)
 fig,ax = plt.subplots()
 
 ax.bar([0,1],means,yerr = sems,bottom = 0.5,color = ['darkblue','gold'])
-ax.bar([0,1],means_,yerr = sems,bottom = 0.5,color = ['darkblue','gold'],alpha=0.1)
+#ax.bar([0,1],means_,yerr = sems,bottom = 0.5,color = ['darkblue','gold'],alpha=0.1)
 ax.axhline(0.5,color='black',linestyle=':')
 
 ax.set_xticks([0,1])
