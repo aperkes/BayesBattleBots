@@ -18,7 +18,7 @@ params.prior = True
 params.size = 50
 
 ## Make lots of NPC fish of different size
-npcs = [FishNPC() for s in sizes]
+npcs = [FishNPC(0,params) for s in sizes]
 for n_ in range(len(npcs)):
     npcs[n_].size = sizes[n_]
 
