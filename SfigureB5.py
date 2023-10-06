@@ -183,15 +183,15 @@ out_max = max(ot_sl_max,ot_ac_max)
 
 fig,axes = plt.subplots(3,2,sharex='col',sharey='col')
 
-est_slim = axes[0,0].imshow(est_diff_sl,vmin = -1*es_sl_max,vmax=es_sl_max,cmap='RdBu')
-est_acim = axes[0,1].imshow(est_diff_ac,vmin = -1*es_ac_max,vmax=es_ac_max,cmap='RdBu')
+est_slim = axes[0,0].imshow(est_diff_sl,vmin = -1*es_sl_max,vmax=es_sl_max,cmap='RdBu_r')
+est_acim = axes[0,1].imshow(est_diff_ac,vmin = -1*es_ac_max,vmax=es_ac_max,cmap='RdBu_r')
 #plt.colorbar(ax=axes[:,1])
 
-eff_slim = axes[1,0].imshow(eff_diff_sl,vmin = -1*ef_sl_max,vmax=ef_sl_max,cmap='RdBu')
-eff_acim = axes[1,1].imshow(eff_diff_ac,vmin = -1*ef_ac_max,vmax=ef_ac_max,cmap='RdBu')
+eff_slim = axes[1,0].imshow(eff_diff_sl,vmin = -1*ef_sl_max,vmax=ef_sl_max,cmap='RdBu_r')
+eff_acim = axes[1,1].imshow(eff_diff_ac,vmin = -1*ef_ac_max,vmax=ef_ac_max,cmap='RdBu_r')
 
-out_slim = axes[2,0].imshow(out_diff_sl,vmin = -1*ot_sl_max,vmax=ot_sl_max,cmap='RdBu')
-out_acim = axes[2,1].imshow(out_diff_ac,vmin = -1*ot_ac_max,vmax=ot_ac_max,cmap='RdBu')
+out_slim = axes[2,0].imshow(out_diff_sl,vmin = -1*ot_sl_max,vmax=ot_sl_max,cmap='RdBu_r')
+out_acim = axes[2,1].imshow(out_diff_ac,vmin = -1*ot_ac_max,vmax=ot_ac_max,cmap='RdBu_r')
 
 fig.colorbar(est_slim,ax=axes[0,0])
 fig.colorbar(eff_slim,ax=axes[1,0])
