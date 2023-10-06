@@ -7,6 +7,7 @@ import itertools,random
 from scipy.special import rel_entr, logit
 from scipy.stats import mode
 from scipy.stats import norm
+from scipy.stats import truncnorm
 
 from sklearn.metrics import auc
 
@@ -24,7 +25,7 @@ from params import Params
 #               True: in which is uses a true mean with mean/5 as the std
 #               an int: in which case it uses the int as the std (10 would be average)
 class Fish:
-    __slots__ = ('idx', 'name', 'params', 'prior', 'likelihood', 'likelihood_dict', 'age', 'xs', 'r_rhp', 'a_growth', 'c_aversion', 'acuity', 'awareness', 'insight', 'size', 'estimate', 'cdf_prior', 'estimate_', 'prior_mean', 'prior_std', 'win_record', 'est_record', 'est_record_', 'sdest_record', 'range_record', 'effort', 'decay', 'decay_all', 'discrete', 'update', '_choose_effort', 'update_method', 'wager', 'boost', 'energy', 'max_energy', 'energy_cost', 'size_record', 'energy_record', 'fitness_record', 'alive', 's_max', 'naive_params', 'naive_prior', 'naive_estimate', 'naive_likelihood', 'guess', 'correction')
+    __slots__ = ('idx', 'name', 'params', 'prior', 'likelihood', 'likelihood_dict', 'age', 'xs', 'r_rhp', 'a_growth', 'c_aversion', 'acuity', 'awareness', 'insight', 'size', 'estimate', 'cdf_prior', 'estimate_', 'prior_mean', 'prior_std', 'win_record', 'est_record', 'est_record_', 'sdest_record', 'range_record', 'effort', 'decay', 'decay_all', 'discrete', 'update', '_choose_effort', 'update_method', 'wager', 'boost', 'energy', 'max_energy', 'energy_cost', 'size_record', 'energy_record', 'fitness_record', 'alive', 's_max', 'naive_params', 'naive_prior', 'naive_estimate', 'naive_likelihood', 'guess', 'correction','trunced')
     def __init__(self,idx=0,params=None,
                  age=None,size=None,
                  prior=None,likelihood=None,likelihood_dict=None,
@@ -76,6 +77,13 @@ class Fish:
             self.size = np.random.normal(self.params.mean_size,self.params.sd_size)
         self.size = np.clip(self.size,self.params.min_size,self.params.max_size)
         self.params.size = self.size
+
+        #mu,scale = self.size,self.params.C
+        #a_min,b_max = self.params.min_size,self.params.max_size
+        #a,b = (a_min - mu) / scale,(b_max - mu) / scale
+        #self.trunced = truncnorm(a,b,loc=mu,scale=scale)
+
+
         if np.isinf(self.params.A):
             self.prior = np.ones_like(self.xs) / len(self.xs)
         elif self.params.A == 0:
@@ -578,14 +586,17 @@ class Fish:
         S,F,L = fight.params.scaled_params
         #print(S,F,L)
         if l == -1: ## several weird edge cases here where you can't learn anything
+            pass 
             #import pdb;pdb.set_trace()
-            return np.ones_like(self.xs)
+            #return np.ones_like(self.xs)
         elif s == -1:
             return np.ones_like(self.xs)
         elif e == -1:
             return np.ones_like(self.xs)
         if self.effort == 0:
-            return np.ones_like(self.xs)
+            pass
+            x_eff = self.effort
+            #return np.ones_like(self.xs)
         if self.effort == None:
             x_eff = 1
         else:
@@ -1033,7 +1044,20 @@ class Fish:
         #order = 1
         #print(f_opp.size,self.params.C,self.params.min_size,self.params.max_size)
         #import pdb;pdb.set_trace()
-        opp_size_guess = np.clip(np.random.normal(f_opp.size,self.params.C),self.params.min_size,self.params.max_size)
+        if self.params.acuity == -1 or self.params.acuity == 0:
+            if self.params.acuity == 0:
+                opp_size_guess = f_opp.size
+            else:
+                opp_size_guess = np.random.random() * 100
+        else:
+            #opp_size_guess = np.clip(np.random.normal(f_opp.size,self.params.C),self.params.min_size,self.params.max_size)
+            mu,scale = f_opp.size,self.params.C
+            a_min,b_max = self.params.min_size,self.params.max_size
+            a,b = (a_min - mu) / scale,(b_max - mu) / scale
+            opp_size_guess = truncnorm(a,b,loc=mu,scale=scale).rvs()
+
+            #opp_size_guess = f_opp.trunced.rvs()
+
         self.guess = opp_size_guess
         s,e,l = self.params.outcome_params
         #shifted_params = (np.array([s,e,l]) + 1) / 2
@@ -1073,12 +1097,12 @@ class Fish:
 
         #confidence_correction = 1/(1+(self.params.poly_param_c)*np.sqrt(self.acuity**2 + self.prior_std**2))
         #confidence_correction = np.sum(self.prior[self.xs > opp_size_guess])
-        if self.params.C == 0 and self.prior_std == 0:
-            confidence_correction = 1
-        else:
+        #if self.params.C == 0 and self.prior_std == 0:
+        #    confidence_correction = 1
+        #else:
 ## ideally this would be probabiliy of being wrong, but error will have to do.
-            confidence_correction = 1 - norm.cdf(-0.1 * self.guess,self.estimate - self.guess,self.params.C + self.prior_std)
-        self.correction = confidence_correction
+        #    confidence_correction = 1 - norm.cdf(-0.1 * self.guess,self.estimate - self.guess,self.params.C + self.prior_std)
+        #self.correction = confidence_correction
         #boldness = 1 - self.params.poly_param_c
         scaled_effort = effort
         #scaled_effort = (effort * confidence_correction) ** self.params.B
@@ -1396,6 +1420,14 @@ class FishNPC(Fish):
             self.size = np.random.normal(self.params.mean_size,self.params.sd_size)
         self.size = np.clip(self.size,self.params.min_size,self.params.max_size)
         self.params.size = self.size
+
+## NOTE, this only works if we assume all agents have the same acuity. 
+# If you change that, focal agents have to do it. 
+# Also, if you reset the size, it breaks. Probably not worth the speed.
+        #mu,scale = self.size,self.params.C
+        #a_min,b_max = self.params.min_size,self.params.max_size
+        #a,b = (a_min - mu) / scale,(b_max - mu) / scale
+        #self.trunced = truncnorm(a,b,loc=mu,scale=scale)
 
         if self.params.baseline_effort == 0 or self.params.baseline_effort is None:
             self.params.baseline_effort = np.random.random()
