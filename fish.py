@@ -86,6 +86,7 @@ class Fish:
 
         if np.isinf(self.params.A):
             self.prior = np.ones_like(self.xs) / len(self.xs)
+            self.estimate = 0.5
         elif self.params.A == 0:
             self.prior = np.zeros_like(self.xs)
             self.prior[np.argmax(self.xs >= self.size)] = 1
@@ -102,13 +103,27 @@ class Fish:
         elif params.prior is not None:
             self.prior = params.prior
         else:
-            self.estimate = np.clip(np.random.normal(self.size,self.params.A),self.params.min_size,self.params.max_size)
-            if self.params.A == 0:
+           # self.estimate = np.clip(np.random.normal(self.size,self.params.A),self.params.min_size,self.params.max_size)
+
+            
+            if self.params.awareness == 0:
+                self.estimate = self.size
                 self.prior = np.zeros_like(self.xs)
                 self.prior[np.argmax(self.xs >= self.estimate)] = 1
+            elif self.params.awareness == 1:
+                self.estimate = (self.params.max_size + self.params.min_size ) / 2
+                self.prior = np.ones_like(self.xs) / len(self.xs)
             else:
-                prior = norm.pdf(self.xs,self.estimate,self.params.A)
-                self.prior = prior/ np.sum(prior)
+                mu,scale = self.size,self.params.A
+                a_min,b_max = self.params.min_size,self.params.max_size
+                a,b = (a_min - mu) / scale,(b_max - mu) / scale
+                trunc_prior = truncnorm(a,b,loc=mu,scale=scale)
+                self.estimate = trunc_prior.rvs()
+                prior = trunc_prior.pdf(self.xs)
+                self.prior = prior / np.sum(prior)
+
+                #prior = norm.pdf(self.xs,self.estimate,self.params.A)
+                #self.prior = prior/ np.sum(prior)
             #prior = self._prior_size(self.age,xs=self.xs)
             #self.prior = prior / np.sum(prior)
         ## Define the rules one when to escalate, based on confidence
