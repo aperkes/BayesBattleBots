@@ -1072,10 +1072,12 @@ class Fish:
                 opp_size_guess = np.random.random() * 100
         else:
             #opp_size_guess = np.clip(np.random.normal(f_opp.size,self.params.C),self.params.min_size,self.params.max_size)
-            mu,scale = f_opp.size,self.params.C
-            a_min,b_max = self.params.min_size,self.params.max_size
-            a,b = (a_min - mu) / scale,(b_max - mu) / scale
-            opp_size_guess = truncnorm(a,b,loc=mu,scale=scale).rvs()
+            opp_size_guess = f_opp.assess_me(self)
+
+            #mu,scale = f_opp.size,self.params.C
+            #a_min,b_max = self.params.min_size,self.params.max_size
+            #a,b = (a_min - mu) / scale,(b_max - mu) / scale
+            #opp_size_guess = truncnorm(a,b,loc=mu,scale=scale).rvs()
 
             #opp_size_guess = f_opp.trunced.rvs()
 
