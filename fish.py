@@ -298,24 +298,12 @@ class Fish:
         return self.xs[cdf_5],self.xs[cdf_25],self.xs[cdf_75],self.xs[cdf_95]
 
     def _update(self,prior,likelihood,xs = None):
-        #post = np.log(prior) * np.log(likelihood)
-        #post = np.exp(post)
-        #post = np.round(prior,4) * np.round(likelihood * 4)
-        #post = prior * 1000 * likelihood * 1000
-        #import pdb;pdb.set_trace()
-        #fig,ax = plt.subplots()
-        #ax.plot(prior * 100)
-        #ax.plot(likelihood)
-        #print(prior.round(2))
-        #print(likelihood.round(2))
         post = prior * likelihood
-        #ax.plot(post * 1000)
-        #print(post.round(2),np.sum(post))
-        #post = post / auc(xs,post)
-        post = post / np.sum(post)
-        #ax.plot(post * 100)
-        #print(post.round(2))
-        #plt.show()
+        post_sum = np.sum(post)
+        if post_sum == 0: ## handles impossible cases
+            post = np.ones_like(post) / len(post)
+        else:
+            post = post / post_sum
         return post
     
     def _decay_flat(self,prior,xs = None,decay=.001):
