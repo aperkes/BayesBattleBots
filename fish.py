@@ -248,7 +248,7 @@ class Fish:
         mu = size
         a = (self.params.min_size - size) / C
         b = (self.params.max_size - size) / C
-        X = stats.truncnorm(a,b,loc=mu,scale=C)
+        X = truncnorm(a,b,loc=mu,scale=C)
         return X
 
     def assess_me(self,opp):
@@ -1427,6 +1427,8 @@ class FishNPC(Fish):
         self.idx = idx
         self.name = 'NPC '+str(idx) 
         self.alive = True
+        self.trunced = None
+
         if params is not None:
             self.params = params.copy()
         else:
@@ -1465,7 +1467,7 @@ class FishNPC(Fish):
         mu = size
         a = (self.params.min_size - size) / C
         b = (self.params.max_size - size) / C
-        X = stats.truncnorm(a,b,loc=mu,scale=C)
+        X = truncnorm(a,b,loc=mu,scale=C)
         return X
 
     def assess_me(self,opp):
@@ -1487,8 +1489,12 @@ if __name__ == '__main__':
     f1 = Fish() 
     f2 = FishNPC()
     fight = Fight(f1,f2)
+    fight.run_outcome()
+
     print(f1.idx,f1.size,len(f1.prior))
     print(f2.idx,f2.size)
     print(f2._choose_effort(f1,fight))
     print(f2.update(True,fight))
-    print(f1.params.L)
+    print(f1._choose_effort(f1,fight))
+    f1.update(True,fight)
+    print(f1.estimate)
