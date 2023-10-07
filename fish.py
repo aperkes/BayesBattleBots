@@ -25,7 +25,7 @@ from params import Params
 #               True: in which is uses a true mean with mean/5 as the std
 #               an int: in which case it uses the int as the std (10 would be average)
 class Fish:
-    __slots__ = ('idx', 'name', 'params', 'prior', 'likelihood', 'likelihood_dict', 'age', 'xs', 'r_rhp', 'a_growth', 'c_aversion', 'acuity', 'awareness', 'insight', 'size', 'estimate', 'cdf_prior', 'estimate_', 'prior_mean', 'prior_std', 'win_record', 'est_record', 'est_record_', 'sdest_record', 'range_record', 'effort', 'decay', 'decay_all', 'discrete', 'update', '_choose_effort', 'update_method', 'wager', 'boost', 'energy', 'max_energy', 'energy_cost', 'size_record', 'energy_record', 'fitness_record', 'alive', 's_max', 'naive_params', 'naive_prior', 'naive_estimate', 'naive_likelihood', 'guess', 'correction','trunced','build_trunc','assess_me')
+    __slots__ = ('idx', 'name', 'params', 'prior', 'likelihood', 'likelihood_dict', 'age', 'xs', 'r_rhp', 'a_growth', 'c_aversion', 'acuity', 'awareness', 'insight', 'size', 'estimate', 'cdf_prior', 'estimate_', 'prior_mean', 'prior_std', 'win_record', 'est_record', 'est_record_', 'sdest_record', 'range_record', 'effort', 'decay', 'decay_all', 'discrete', 'update', '_choose_effort', 'update_method', 'wager', 'boost', 'energy', 'max_energy', 'energy_cost', 'size_record', 'energy_record', 'fitness_record', 'alive', 's_max', 'naive_params', 'naive_prior', 'naive_estimate', 'naive_likelihood', 'guess', 'correction','trunced')
     def __init__(self,idx=0,params=None,
                  age=None,size=None,
                  prior=None,likelihood=None,likelihood_dict=None,
