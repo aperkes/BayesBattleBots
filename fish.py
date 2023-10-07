@@ -25,7 +25,7 @@ from params import Params
 #               True: in which is uses a true mean with mean/5 as the std
 #               an int: in which case it uses the int as the std (10 would be average)
 class Fish:
-    __slots__ = ('idx', 'name', 'params', 'prior', 'likelihood', 'likelihood_dict', 'age', 'xs', 'r_rhp', 'a_growth', 'c_aversion', 'acuity', 'awareness', 'insight', 'size', 'estimate', 'cdf_prior', 'estimate_', 'prior_mean', 'prior_std', 'win_record', 'est_record', 'est_record_', 'sdest_record', 'range_record', 'effort', 'decay', 'decay_all', 'discrete', 'update', '_choose_effort', 'update_method', 'wager', 'boost', 'energy', 'max_energy', 'energy_cost', 'size_record', 'energy_record', 'fitness_record', 'alive', 's_max', 'naive_params', 'naive_prior', 'naive_estimate', 'naive_likelihood', 'guess', 'correction','trunced')
+    __slots__ = ('idx', 'name', 'params', 'prior', 'likelihood', 'likelihood_dict', 'age', 'xs', 'r_rhp', 'a_growth', 'c_aversion', 'acuity', 'awareness', 'insight', 'size', 'estimate', 'cdf_prior', 'estimate_', 'prior_mean', 'prior_std', 'win_record', 'est_record', 'est_record_', 'sdest_record', 'range_record', 'effort', 'decay', 'decay_all', 'discrete', 'update', '_choose_effort', 'update_method', 'wager', 'boost', 'energy', 'max_energy', 'energy_cost', 'size_record', 'energy_record', 'fitness_record', 'alive', 's_max', 'naive_params', 'naive_prior', 'naive_estimate', 'naive_likelihood', 'guess', 'correction','trunced','build_trunc','assess_me')
     def __init__(self,idx=0,params=None,
                  age=None,size=None,
                  prior=None,likelihood=None,likelihood_dict=None,
@@ -77,6 +77,7 @@ class Fish:
             self.size = np.random.normal(self.params.mean_size,self.params.sd_size)
         self.size = np.clip(self.size,self.params.min_size,self.params.max_size)
         self.params.size = self.size
+        self.trunced = None
 
         #mu,scale = self.size,self.params.C
         #a_min,b_max = self.params.min_size,self.params.max_size
@@ -243,6 +244,23 @@ class Fish:
         self.likelihood_dict = params.likelihood_dict
 ## Apply winner/loser effect. This could be more nuanced, eventually should be parameterized.
         
+    def build_trunc(self,size,C):
+        mu = size
+        a = (self.params.min_size - size) / C
+        b = (self.params.max_size - size) / C
+        X = stats.truncnorm(a,b,loc=mu,scale=C)
+        return X
+
+    def assess_me(self,opp):
+        if opp.params.C != self.params.C:
+            temp_trunc = self.build_trunc(self.size,opp.params.C)
+        elif self.trunced == None:
+            self.trunced = self.build_trunc(self.size,self.params.C)
+            temp_trunc = self.trunced
+        else:
+            temp_trunc = self.trunced
+        return temp_trunc.rvs()
+
     def coin(self):
         if random.random() < 0.5:
             return 1
@@ -1440,6 +1458,23 @@ class FishNPC(Fish):
         self._choose_effort = self.float_jenkins
         self.update = self.empty_func
         self.no_update = self.empty_func
+    
+    def build_trunc(self,size,C):
+        mu = size
+        a = (self.params.min_size - size) / C
+        b = (self.params.max_size - size) / C
+        X = stats.truncnorm(a,b,loc=mu,scale=C)
+        return X
+
+    def assess_me(self,opp):
+        if opp.params.C != self.params.C:
+            temp_trunc = self.build_trunc(self.size,opp.params.C)
+        elif self.trunced == None:
+            self.trunced = self.build_trunc(self.size,self.params.C)
+            temp_trunc = self.trunced
+        else:
+            temp_trunc = self.trunced
+        return temp_trunc.rvs()
 
     def empty_func(self,*args):
         return None
