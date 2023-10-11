@@ -14,6 +14,9 @@ from tqdm import tqdm
 iterations = 1000
 params = Params()
 #params.outcome_params = [0.7,0,-0.8]
+#params.outcome_params = [0.9,0,-0.8]
+#params.awareness =  0.8
+
 #params.prior = True
 #params.awareness = 0.5
 #params.acuity = 0.0
@@ -21,6 +24,7 @@ print(params.awareness)
 params.set_params()
 print(params.outcome_params)
 params.size = 50
+
 #assay_fish = Fish(1,params)
 
 
