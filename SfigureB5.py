@@ -74,7 +74,6 @@ def run_sim(params,assay_params):
     return outcome_array,WL_info_array,LW_info_array
 
 
-iterations = 2
 iterations = 1000
 params = Params()
 params.iterations = iterations
@@ -100,9 +99,19 @@ l_res = s_res
 a_res = s_res
 
 s_set = np.linspace(0,1,s_res)
-l_set = np.linspace(-1,1,l_res)
+l_set = np.linspace(-1,0,l_res)
 a_set = np.linspace(0,1,a_res)
 c_set = np.linspace(0,1,a_res)
+
+
+np.set_printoptions(formatter={'all':lambda x: str(x)})
+shifted_l = (l_set + 1)/2
+l_labels = np.round(np.tan(np.array(np.pi/2 - shifted_l*np.pi/2)),1).astype('str')
+l_labels[0] = 'inf' 
+
+a_labels = np.round(np.tan(np.array(a_set)*np.pi/2) * 20,1).astype('str')
+a_labels[-1] = 'inf'
+
 
 default_params = [params.outcome_params[0],params.outcome_params[2],params.awareness,params.acuity]
 
@@ -146,7 +155,13 @@ def run_many_sims(s):
    
     return wl_outputs_s,wl_estimates_s,wl_efforts_s,lw_outputs_s,lw_estimates_s,lw_efforts_s
 
-s_outputs = Parallel(n_jobs=11)(delayed(run_many_sims)(s) for s in s_set)
+if False: ## allows for easy debugging without parallel weirdness.
+    s_outputs = np.empty([s_res,6,l_res,a_res,a_res,2])
+    for s_ in range(s_res):
+        s = s_set[s_]
+        s_outputs[s_] = np.array(run_many_sims(s))
+else:
+    s_outputs = Parallel(n_jobs=11)(delayed(run_many_sims)(s) for s in s_set)
 
 s_outputs = np.array(s_outputs)
 wl_outputs = s_outputs[:,0]
@@ -206,10 +221,18 @@ axes[2,0].set_xticks(range(len(s_set)))
 axes[0,1].set_yticks(range(len(c_set)))
 axes[2,1].set_xticks(range(len(a_set)))
 
-axes[0,0].set_yticklabels(np.round(s_set,2))
-axes[2,0].set_xticklabels(np.round(l_set,2),rotation=45)
-axes[0,1].set_yticklabels(np.round(a_set,2))
-axes[2,1].set_xticklabels(np.round(c_set,2),rotation=45)
+if False:
+    axes[0,0].set_yticklabels(np.round(s_set,2))
+    axes[2,0].set_xticklabels(np.round(l_set,2),rotation=45)
+    axes[0,1].set_yticklabels(np.round(a_set,2))
+    axes[2,1].set_xticklabels(np.round(c_set,2),rotation=45)
+else:
+    axes[0,0].set_yticklabels(np.round(s_set,2))
+    axes[2,0].set_xticklabels(l_labels,rotation=45)
+    axes[2,0].invert_xaxis()
+
+    axes[0,1].set_yticklabels(a_labels)
+    axes[2,1].set_xticklabels(a_labels,rotation=45)
 
 axes[0,0].set_ylabel('s value')
 axes[1,0].set_ylabel('s value')

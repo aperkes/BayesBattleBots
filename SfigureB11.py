@@ -95,10 +95,17 @@ l_list = np.linspace(-1,1,l_res)
 a_list = np.linspace(0,1,a_res)
 c_list = np.linspace(0,1,a_res)
 
+np.set_printoptions(formatter={'all':lambda x: str(x)})
+shifted_l = (l_list + 1)/2
+l_labels = np.round(np.tan(np.array(np.pi/2 - shifted_l*np.pi/2)),1).astype('str')
+l_labels[0] = 'inf' 
+
+a_labels = np.round(np.tan(np.array(a_list)*np.pi/2) * 20,1).astype('str')
+a_labels[-1] = 'inf'
 
 params = Params()
 params.n_rounds = 10 
-params.n_iterations = 100
+params.n_iterations = 3
 
 def run_many_sims(s,params):
     params = copy.deepcopy(params)
@@ -202,7 +209,7 @@ def build_inputs(mean_array,sem_array,init_array):
     c_data = [c_mean,c_sem,c_init]
     return s_data,l_data,a_data,c_data
 
-def make_plots(s_data,l_data,a_data,c_data,ylabel='None',fill_color='gray',l_style=':',fax=None):
+def make_plots(s_data,l_data,a_data,c_data,ylabel='None',fill_color='gray',l_style=None,l_label=None,fax=None):
     if fax is None:
         fig,axes = plt.subplots(1,4,sharey=True)
     else:
@@ -212,29 +219,41 @@ def make_plots(s_data,l_data,a_data,c_data,ylabel='None',fill_color='gray',l_sty
     a_mean,a_sem,a_init = a_data
     c_mean,c_sem,c_init = c_data
 
-    axes[0].plot(s_list,s_mean,color='black')
-    axes[0].plot(s_list,s_init,color='black',linestyle=l_style)
+    axes[0].plot(s_list,s_mean,color='black',linestyle=l_style)
+    axes[0].plot(s_list,s_init,linestyle=':',color=fill_color)
 
     axes[0].fill_between(s_list,s_mean-s_sem,s_mean+s_sem,alpha=0.5,color=fill_color)
     axes[0].set_xlabel('s value')
+    axes[0].set_ylabel(ylabel)
+    axes[0].axvline(0.7,color='red',linestyle=':')
 
-    axes[1].plot(l_list,l_mean,color='black')
-    axes[1].plot(l_list,l_init,color='black',linestyle=l_style)
+    axes[1].plot(l_list,l_mean,color='black',linestyle=l_style)
+    axes[1].plot(l_list,l_init,linestyle=':',color=fill_color)
     axes[1].fill_between(l_list,l_mean-l_sem,l_mean+l_sem,alpha=0.5,color=fill_color)
     axes[1].set_xlabel('l value')
+    axes[1].axvline(-0.8,color='red',linestyle=':')
 
-    axes[2].plot(a_list,a_mean,color='black')
-    axes[2].plot(a_list,a_init,color='black',linestyle=l_style)
+    axes[1].set_xticks(l_list)
+    axes[1].set_xticklabels(l_labels,rotation=45)
+    axes[1].invert_xaxis()
+
+    axes[2].plot(a_list,a_mean,color='black',linestyle=l_style)
+    axes[2].plot(a_list,a_init,linestyle=':',color=fill_color)
     axes[2].fill_between(a_list,a_mean-a_sem,a_mean+a_sem,alpha=0.5,color=fill_color)
+    axes[2].axvline(0.5,color='red',linestyle=':')
+
     axes[2].set_xlabel('self assessment error')
+    axes[2].set_xticklabels(a_labels,rotation=45)
+    axes[2].set_xticks(a_labels)
 
-    axes[3].plot(c_list,c_mean,color='black')
-    axes[3].plot(c_list,c_init,color='black',linestyle=l_style)
+    axes[3].plot(c_list,c_mean,color='black',linestyle=l_style,label=l_label)
+    axes[3].plot(c_list,c_init,linestyle=':',color=fill_color)
     axes[3].fill_between(c_list,c_mean-c_sem,c_mean+c_sem,alpha=0.5,color=fill_color)
+    axes[3].axvline(0.1,color='red',linestyle=':',label='default value')
+
     axes[3].set_xlabel('opp assessment error')
-
-    axes[0].set_ylabel(ylabel)
-
+    axes[3].set_xticks(a_labels)
+    axes[3].set_xticklabels(a_labels,rotation=45)
     return fig,axes
 
 error_info,cost_info,lin_info,stab_info = parse_results(all_results)
@@ -256,14 +275,21 @@ null_stab_inputs = build_inputs(*null_stab_info)
 #lin_inputs = build_inputs(mean_lins,sem_lins,init_lins)
 #stab_inputs = build_inputs(mean_stabs,sem_stabs,init_stabs)
 
-fig1,axes1 = make_plots(*error_inputs,ylabel='Estimate Error',fill_color='tab:blue')
-fig2,axes2 = make_plots(*cost_inputs,ylabel='Mean Contest Cost',fill_color='tab:blue')
-fig3,axes3 = make_plots(*lin_inputs,ylabel='Linearity',fill_color='tab:blue')
-fig4,axes4 = make_plots(*stab_inputs,ylabel='Stability',fill_color='tab:blue')
+fig1,axes1 = make_plots(*null_error_inputs,fill_color='gray',l_style=None,ylabel='Estimate Error')
 
-fig1,axes1 = make_plots(*null_error_inputs,fax=(fig1,axes1),fill_color='gray',l_style=None,ylabel='Estimate Error')
-fig2,axes2 = make_plots(*null_cost_inputs,fax=(fig2,axes2),fill_color='gray',l_style=None,ylabel='Mean Contest Cost')
-fig3,axes3 = make_plots(*null_lin_inputs,fax=(fig3,axes3),fill_color='gray',l_style=None,ylabel='Linearity')
-fig4,axes4 = make_plots(*null_stab_inputs,fax=(fig4,axes4),fill_color='gray',l_style=None,ylabel='Stability')
+fig2,axes2 = make_plots(*null_cost_inputs,fill_color='gray',l_style=None,ylabel='Mean Contest Cost')
+fig3,axes3 = make_plots(*null_lin_inputs,fill_color='gray',l_style=None,ylabel='Linearity')
+fig4,axes4 = make_plots(*null_stab_inputs,fill_color='gray',l_style=None,ylabel='Stability')
+
+
+fig1,axes1 = make_plots(*error_inputs,fax=(fig1,axes1),ylabel='Estimate Error',fill_color='tab:blue',l_style='dashdot',l_label='Bayes Updating')
+fig2,axes2 = make_plots(*cost_inputs,fax=(fig2,axes2),ylabel='Mean Contest Cost',fill_color='tab:blue',l_style='dashdot',l_label='Bayes Updating')
+fig3,axes3 = make_plots(*lin_inputs,fax=(fig3,axes3),ylabel='Linearity',fill_color='tab:blue',l_style='dashdot',l_label='Bayes Updating')
+fig4,axes4 = make_plots(*stab_inputs,fax=(fig4,axes4),ylabel='Stability',fill_color='tab:blue',l_style='dashdot',l_label='Bayes Updating')
+
+fig1.legend()
+fig2.legend()
+fig3.legend()
+fig4.legend()
 
 plt.show()

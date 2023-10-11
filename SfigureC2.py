@@ -83,9 +83,17 @@ a_res = s_res
 c_res = a_res
 
 s_list = np.linspace(0,1,s_res)
-l_list = np.linspace(-1,1,l_res)
+l_list = np.linspace(-1,0,l_res)
 a_list = np.linspace(0,1,a_res)
 c_list = np.linspace(0,1,c_res)
+
+np.set_printoptions(formatter={'all':lambda x: str(x)})
+shifted_l = (l_list + 1)/2
+l_labels = np.round(np.tan(np.array(np.pi/2 - shifted_l*np.pi/2)),1).astype('str')
+l_labels[0] = 'inf' 
+
+a_labels = np.round(np.tan(np.array(a_list)*np.pi/2) * 20,1).astype('str')
+a_labels[-1] = 'inf'
 
 ## The last two are winners/losers x mean/sem
 all_results = np.empty([s_res,l_res,a_res,c_res,2,2])
@@ -142,8 +150,9 @@ axes[0,1].imshow(mean_winners[7,1,:,:],vmin=vmin,vmax=vmax,cmap=cmap)
 axes[1,0].imshow(mean_losers[:,:,5,1],vmin=vmin,vmax=vmax,cmap=cmap)
 axes[1,1].imshow(mean_losers[7,1,:,:],vmin=vmin,vmax=vmax,cmap=cmap)
 
-axes[1,0].set_xticks(range(l_res))
-axes[1,0].set_xticklabels(np.round(l_list,2),rotation=45)
+axes[1,0].set_xticks(range(l_res)) 
+axes[1,0].set_xticklabels(l_labels,rotation=45)
+axes[1,0].invert_xaxis()
 
 axes[0,0].set_yticks(range(s_res))
 axes[0,0].set_yticklabels(np.round(s_list,2))
@@ -153,10 +162,10 @@ axes[1,0].set_ylabel('s value')
 axes[1,0].set_xlabel('l value')
 
 axes[1,1].set_xticks(range(c_res))
-axes[1,1].set_xticklabels(np.round(c_list,2),rotation=45)
+axes[1,1].set_xticklabels(a_labels,rotation=45)
 
-axes[1,0].set_yticks(range(a_res))
-axes[1,0].set_yticklabels(np.round(a_list,2))
+axes[1,1].set_yticks(range(a_res))
+axes[1,1].set_yticklabels(a_labels)
 
 axes[0,1].set_ylabel('a value')
 axes[1,1].set_ylabel('a value')

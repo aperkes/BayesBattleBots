@@ -128,10 +128,20 @@ l_res = s_res
 a_res = s_res
 
 param_set = {'s':np.linspace(0,1,s_res),
-             'l':np.linspace(-1,1,l_res),
+             'l':np.linspace(-1,0,l_res),
              'Sa':np.linspace(0,1,a_res),
              'Sc':np.linspace(0,1,a_res)
 }
+
+
+## Build labels for l and a/c sets
+np.set_printoptions(formatter={'all':lambda x: str(x)})
+shifted_l = (param_set['l'] + 1)/2
+l_labels = np.round(np.tan(np.array(np.pi/2 - shifted_l*np.pi/2)),1).astype('str')
+l_labels[0] = 'inf' 
+
+a_labels = np.round(np.tan(np.array(param_set['Sa'])*np.pi/2) * 20,1).astype('str')
+a_labels[-1] = 'inf'
 
 default_params = [params.outcome_params[0],params.outcome_params[2],params.awareness,params.acuity]
 
@@ -158,10 +168,12 @@ for p_ in range(len(param_list)):
         loss_estimates[p_,i_] = mean_sem(loss_info_array[:,1])
         loss_efforts[p_,i_] = mean_sem(loss_info_array[:,0])
 
-fig,axes = plt.subplots(3,4)
+fig,axes = plt.subplots(3,4,sharex='col')
+
 for p_ in range(len(param_list)):
     p = param_list[p_]
     xs_params = param_set[p]
+    print(p,xs_params)
     plot_fill(xs_params,win_estimates[p_],ax=axes[0,p_],color='gold')
     plot_fill(xs_params,loss_estimates[p_],ax=axes[0,p_],color='darkblue')
 
@@ -172,9 +184,21 @@ for p_ in range(len(param_list)):
     plot_fill(xs_params,loss_outputs[p_],ax=axes[2,p_],color='darkblue')
 
 axes[2,0].set_xlabel('s value')
+axes[2,0].set_xticks(param_set['s'])
+axes[2,0].set_xticklabels(np.round(param_set['s'],1),rotation='45')
+
 axes[2,1].set_xlabel('l value')
+axes[2,1].set_xticks(param_set['l'])
+axes[2,1].set_xticklabels(l_labels,rotation='45')
+axes[2,1].invert_xaxis()
+
 axes[2,2].set_xlabel('Sigma_a value')
+axes[2,2].set_xticks(param_set['Sa'])
+axes[2,2].set_xticklabels(a_labels,rotation='45')
+
 axes[2,3].set_xlabel('Sigma_c value')
+axes[2,3].set_xticks(param_set['Sa'])
+axes[2,3].set_xticklabels(a_labels,rotation='45')
 
 axes[0,0].set_ylabel('Estimate')
 axes[1,0].set_ylabel('Assay effort')
