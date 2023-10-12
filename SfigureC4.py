@@ -32,6 +32,7 @@ print('Median npc size:',np.mean(npc_sizes))
 staged_opp = FishNPC(0,params) ## NPCs by default always invest 0.5 effort
 staged_opp.size = 50
 iterations = 100
+#iterations = 100
 ## Make lots of focal fish with different strategies
 
 s_res = 11
@@ -135,7 +136,7 @@ mean_losers = np.nanmean(outcome_arrays[:,:,:,:,:,:,0],axis=5)
 winner_diff = mean_winners[:,:,:,:,0] - mean_winners[:,:,:,:,1]
 loser_diff = mean_losers[:,:,:,:,0] - mean_losers[:,:,:,:,1]
 
-fig,axes = plt.subplots(2,2)
+fig,axes = plt.subplots(2,2,sharex='col',sharey='col')
 
 vmax = 0.5
 vmin = -0.5
@@ -160,8 +161,8 @@ axes[1,0].set_xlabel('l value')
 axes[1,1].set_xticks(range(c_res))
 axes[1,1].set_xticklabels(a_labels,rotation=45)
 
-axes[1,0].set_yticks(range(a_res))
-axes[1,0].set_yticklabels(a_labels)
+axes[1,1].set_yticks(range(a_res))
+axes[1,1].set_yticklabels(a_labels)
 
 axes[0,1].set_ylabel('a value')
 axes[1,1].set_ylabel('a value')

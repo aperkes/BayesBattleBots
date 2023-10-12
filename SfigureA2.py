@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+from matplotlib import cm
 
 import numpy as np
 from fight import Fight
@@ -111,13 +112,19 @@ xs = np.linspace(0.01,1,100)
 ys = funk(xs)
 
 fig,ax = plt.subplots()
+a_list = [1,2,4,8,16]
+
 if True:
     #for a in [0,0.25,0.5,1,2,4,np.inf]:
-    for a in [1,2,4,8,16]:
+    for a_ in range(len(a_list)):
+        a = a_list[a_]
         F.params.a = a
         ys = funk(xs,a)
 
-        ax.plot(xs,ys,label='a= ' + str(a))
+        cmap = cm.get_cmap('viridis')
+        a_cor = cmap((len(a_list) - a_) / len(a_list))
+
+        ax.plot(xs,ys,color=a_cor,label='a= ' + str(a))
     ax.set_xlabel('Relative wager')
     ax.set_ylabel('Probability of underdog > favorite')
     ax.legend(loc='upper left')
@@ -135,8 +142,8 @@ d2 = stats.norm.pdf(xs,45,8)
 d3 = stats.norm.pdf(xs,50,4)
 d4 = stats.norm.pdf(xs,45,4)
 
-ax2.plot(xs,d1,alpha=0.5,color='tab:red')
-ax2.plot(xs,d2,color='tab:red',label='std=8')
+ax2.plot(xs,d1,color='gold')
+ax2.plot(xs,d2,color='royalblue',label='std=8')
 ax2.set_ylabel('Probability density')
 ax2.set_xlabel('Wager')
 ax2.legend()
@@ -146,8 +153,19 @@ ax2.legend()
 rel_xs = np.linspace(0,1,100)
 fig3,ax3 = plt.subplots()
 
-for l in [0,1/8,1/4,1/2,1,2,4,8]:
-    ax3.plot(rel_xs,ellie(rel_xs,l),label="l = " + str(l))
+l_list = np.linspace(-1,0,11)
+shifted_l = (l_list + 1)/2
+l_list = np.round(np.tan(np.array(np.pi/2 - shifted_l*np.pi/2)),1)
+
+for l_ in range(len(l_list)):
+    l = l_list[::-1][l_]
+    if l > 10000:
+        l_label = 'inf'
+    else:
+        l_label = str(l)
+    cmap = cm.get_cmap('viridis')
+    l_cor = cmap(l_ / len(l_list))
+    ax3.plot(rel_xs,ellie(rel_xs,l),label="l = " + l_label,color=l_cor)
 
 ax3.set_xlabel('Relative wager')
 ax3.set_ylabel('Probability of upset')

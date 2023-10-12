@@ -25,8 +25,8 @@ from joblib import Parallel, delayed
 
 params = Params()
 params.iterations = 100
+#params.iterations = 3
 params.n_fights = 3
-
 
 size_res = 11
 sizes = np.linspace(10,90,size_res)
