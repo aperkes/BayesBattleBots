@@ -91,7 +91,7 @@ l_res = s_res
 a_res = s_res
 
 s_list = np.linspace(0,1,s_res)
-l_list = np.linspace(-1,1,l_res)
+l_list = np.linspace(-1,0,l_res)
 a_list = np.linspace(0,1,a_res)
 c_list = np.linspace(0,1,a_res)
 
@@ -105,7 +105,7 @@ a_labels[-1] = 'inf'
 
 params = Params()
 params.n_rounds = 10 
-params.n_iterations = 3
+params.n_iterations = 100
 
 def run_many_sims(s,params):
     params = copy.deepcopy(params)
@@ -212,47 +212,56 @@ def build_inputs(mean_array,sem_array,init_array):
 def make_plots(s_data,l_data,a_data,c_data,ylabel='None',fill_color='gray',l_style=None,l_label=None,fax=None):
     if fax is None:
         fig,axes = plt.subplots(1,4,sharey=True)
+        red_label = None
     else:
         fig,axes = fax
+        red_label = 'default value'
     s_mean,s_sem,s_init = s_data
     l_mean,l_sem,l_init = l_data
     a_mean,a_sem,a_init = a_data
     c_mean,c_sem,c_init = c_data
 
     axes[0].plot(s_list,s_mean,color='black',linestyle=l_style)
-    axes[0].plot(s_list,s_init,linestyle=':',color=fill_color)
+    if l_label == 'Bayes updating':
+        axes[0].plot(s_list,s_init,linestyle=':',color=fill_color)
 
     axes[0].fill_between(s_list,s_mean-s_sem,s_mean+s_sem,alpha=0.5,color=fill_color)
     axes[0].set_xlabel('s value')
     axes[0].set_ylabel(ylabel)
     axes[0].axvline(0.7,color='red',linestyle=':')
+    axes[0].set_xticks(s_list)
+    axes[0].set_xticklabels(np.round(s_list,2),rotation=45)
 
     axes[1].plot(l_list,l_mean,color='black',linestyle=l_style)
-    axes[1].plot(l_list,l_init,linestyle=':',color=fill_color)
+    if l_label == 'Bayes updating':
+        axes[1].plot(l_list,l_init,linestyle=':',color=fill_color)
+        axes[1].invert_xaxis()
     axes[1].fill_between(l_list,l_mean-l_sem,l_mean+l_sem,alpha=0.5,color=fill_color)
     axes[1].set_xlabel('l value')
     axes[1].axvline(-0.8,color='red',linestyle=':')
 
     axes[1].set_xticks(l_list)
     axes[1].set_xticklabels(l_labels,rotation=45)
-    axes[1].invert_xaxis()
 
     axes[2].plot(a_list,a_mean,color='black',linestyle=l_style)
-    axes[2].plot(a_list,a_init,linestyle=':',color=fill_color)
+    if l_label == 'Bayes updating':
+        axes[2].plot(a_list,a_init,linestyle=':',color=fill_color)
     axes[2].fill_between(a_list,a_mean-a_sem,a_mean+a_sem,alpha=0.5,color=fill_color)
     axes[2].axvline(0.5,color='red',linestyle=':')
 
     axes[2].set_xlabel('self assessment error')
+    axes[2].set_xticks(a_list)
     axes[2].set_xticklabels(a_labels,rotation=45)
-    axes[2].set_xticks(a_labels)
 
     axes[3].plot(c_list,c_mean,color='black',linestyle=l_style,label=l_label)
-    axes[3].plot(c_list,c_init,linestyle=':',color=fill_color)
+    if l_label == 'Bayes updating':
+        axes[3].plot(c_list,c_init,linestyle=':',color=fill_color)
     axes[3].fill_between(c_list,c_mean-c_sem,c_mean+c_sem,alpha=0.5,color=fill_color)
-    axes[3].axvline(0.1,color='red',linestyle=':',label='default value')
+    
+    axes[3].axvline(0.1,color='red',linestyle=':',label=red_label)
 
     axes[3].set_xlabel('opp assessment error')
-    axes[3].set_xticks(a_labels)
+    axes[3].set_xticks(a_list)
     axes[3].set_xticklabels(a_labels,rotation=45)
     return fig,axes
 
@@ -275,17 +284,17 @@ null_stab_inputs = build_inputs(*null_stab_info)
 #lin_inputs = build_inputs(mean_lins,sem_lins,init_lins)
 #stab_inputs = build_inputs(mean_stabs,sem_stabs,init_stabs)
 
-fig1,axes1 = make_plots(*null_error_inputs,fill_color='gray',l_style=None,ylabel='Estimate Error')
+fig1,axes1 = make_plots(*null_error_inputs,fill_color='gray',l_style=None,ylabel='Estimate Error',l_label = 'Fixed estimate')
 
-fig2,axes2 = make_plots(*null_cost_inputs,fill_color='gray',l_style=None,ylabel='Mean Contest Cost')
-fig3,axes3 = make_plots(*null_lin_inputs,fill_color='gray',l_style=None,ylabel='Linearity')
-fig4,axes4 = make_plots(*null_stab_inputs,fill_color='gray',l_style=None,ylabel='Stability')
+fig2,axes2 = make_plots(*null_cost_inputs,fill_color='gray',l_style=None,ylabel='Mean Contest Cost',l_label='Fixed estimate')
+fig3,axes3 = make_plots(*null_lin_inputs,fill_color='gray',l_style=None,ylabel='Linearity',l_label='Fixed estimate')
+fig4,axes4 = make_plots(*null_stab_inputs,fill_color='gray',l_style=None,ylabel='Stability',l_label='Fixed estimate')
 
 
-fig1,axes1 = make_plots(*error_inputs,fax=(fig1,axes1),ylabel='Estimate Error',fill_color='tab:blue',l_style='dashdot',l_label='Bayes Updating')
-fig2,axes2 = make_plots(*cost_inputs,fax=(fig2,axes2),ylabel='Mean Contest Cost',fill_color='tab:blue',l_style='dashdot',l_label='Bayes Updating')
-fig3,axes3 = make_plots(*lin_inputs,fax=(fig3,axes3),ylabel='Linearity',fill_color='tab:blue',l_style='dashdot',l_label='Bayes Updating')
-fig4,axes4 = make_plots(*stab_inputs,fax=(fig4,axes4),ylabel='Stability',fill_color='tab:blue',l_style='dashdot',l_label='Bayes Updating')
+fig1,axes1 = make_plots(*error_inputs,fax=(fig1,axes1),ylabel='Estimate Error',fill_color='tab:blue',l_style='dashdot',l_label='Bayes updating')
+fig2,axes2 = make_plots(*cost_inputs,fax=(fig2,axes2),ylabel='Mean Contest Cost',fill_color='tab:blue',l_style='dashdot',l_label='Bayes updating')
+fig3,axes3 = make_plots(*lin_inputs,fax=(fig3,axes3),ylabel='Linearity',fill_color='tab:blue',l_style='dashdot',l_label='Bayes updating')
+fig4,axes4 = make_plots(*stab_inputs,fax=(fig4,axes4),ylabel='Stability',fill_color='tab:blue',l_style='dashdot',l_label='Bayes updating')
 
 fig1.legend()
 fig2.legend()
