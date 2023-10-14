@@ -188,9 +188,9 @@ def parse_results(all_results):
 
 
 def build_inputs(mean_array,sem_array,init_array):
-    s_mean = mean_array[:,1,5,1]
-    s_sem = sem_array[:,1,5,1]
-    s_init = init_array[:,1,5,1]
+    s_mean = mean_array[:,2,5,1]
+    s_sem = sem_array[:,2,5,1]
+    s_init = init_array[:,2,5,1]
     s_data = [s_mean,s_sem,s_init]
 
     l_mean = mean_array[7,:,5,1]
@@ -198,14 +198,14 @@ def build_inputs(mean_array,sem_array,init_array):
     l_init = init_array[7,:,5,1]
     l_data = [l_mean,l_sem,l_init]
 
-    a_mean = mean_array[7,1,:,1]
-    a_sem = sem_array[7,1,:,1]
-    a_init = init_array[7,1,:,1]
+    a_mean = mean_array[7,2,:,1]
+    a_sem = sem_array[7,2,:,1]
+    a_init = init_array[7,2,:,1]
     a_data = [a_mean,a_sem,a_init]
 
-    c_mean = mean_array[7,1,5,:]
-    c_sem = sem_array[7,1,5,:]
-    c_init = init_array[7,1,5,:]
+    c_mean = mean_array[7,2,5,:]
+    c_sem = sem_array[7,2,5,:]
+    c_init = init_array[7,2,5,:]
     c_data = [c_mean,c_sem,c_init]
     return s_data,l_data,a_data,c_data
 
