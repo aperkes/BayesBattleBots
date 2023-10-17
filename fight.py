@@ -250,8 +250,9 @@ class Fight():
         #p_win = self._wager_curve(min_normed,l)
         #print(min_normed)
         if np.isnan(min_normed):
+            p_win = 0.5
             import pdb;pdb.set_trace()
-        if min_normed == 1:
+        elif min_normed == 1:
             p_win = 0.5
         else:
             p_win = self._wager_func(min_normed,l)
