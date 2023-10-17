@@ -610,10 +610,10 @@ class Fish:
             pass 
             #import pdb;pdb.set_trace()
             #return np.ones_like(self.xs)
-        elif s == -1:
+        if s == 0:
             return np.ones_like(self.xs)
-        elif e == -1:
-            return np.ones_like(self.xs)
+        #elif e == -1:
+        #    return np.ones_like(self.xs)
         if self.effort == 0:
             pass
             x_eff = self.effort
@@ -1061,6 +1061,11 @@ class Fish:
             effort = self.poly_effort_combo(f_opp,fight)
         return effort
 
+    def scale_effort(self,x,a=15,b=1.0,h=0.3):
+        eff = b * (np.tanh(a*(x-h))/2 + 1/2)
+        eff = np.clip(eff,0,1)
+        return eff
+
     def poly_effort_combo(self,f_opp,fight):
         #order = 1
         #print(f_opp.size,self.params.C,self.params.min_size,self.params.max_size)
@@ -1097,7 +1102,7 @@ class Fish:
             rough_wager = fight._SE_func(self.estimate / 100,self.energy) / fight._SE_func(opp_size_guess / 100,self.energy)
             #print(self.estimate,opp_size_guess,rough_wager)
             #effort = fight._wager_curve(rough_wager)
-            if rough_wager == 1:
+            if rough_wager == 1: ## this is relative wager, if 1, effort = 0.5
                 effort = 0.5
             else:
                 effort = fight._wager_func(rough_wager)
@@ -1114,6 +1119,7 @@ class Fish:
                 effort = 0.5
             else:
                 effort = 1 - fight._wager_func(rough_wager)
+        effort = self.scale_effort(effort)
         #est_ratio = self.estimate / opp_size_guess
         #rough_wager = est_ratio ** s * self.energy ** e
         #effort = self.params.poly_param_a * rough_wager ** order + self.params.poly_param_b
@@ -1127,7 +1133,7 @@ class Fish:
         #    confidence_correction = 1 - norm.cdf(-0.1 * self.guess,self.estimate - self.guess,self.params.C + self.prior_std)
         #self.correction = confidence_correction
         #boldness = 1 - self.params.poly_param_c
-        scaled_effort = effort
+        scaled_effort = effort 
         #scaled_effort = (effort * confidence_correction) ** self.params.B
         if np.isnan(effort):
             import pdb;pdb.set_trace()
