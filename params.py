@@ -98,7 +98,10 @@ class Params():
         self.A = np.tan(self.awareness*np.pi/2) * 20 ## this defines std at a = 0.5
         self.C = np.tan(self.acuity*np.pi/2) * 20
         shifted_boldness = (boldness + 1) / 2
-        self.B = np.tan(np.pi/2 - shifted_boldness*np.pi/2) 
+        if self.boldness == 0:
+            self.B = 1
+        else:
+            self.B = np.tan(np.pi/2 - shifted_boldness*np.pi/2) 
 
         self.poly_param_a = poly_param_a
         self.poly_param_b = poly_param_b
@@ -144,9 +147,11 @@ class Params():
         self.L_set = True
 
 
-        shifted_boldness = (self.boldness + 1) / 2
-        self.B = np.tan(np.pi/2 - shifted_boldness*np.pi/2) 
-
+        if self.boldness == 0:
+            self.B = 1
+        else:
+            shifted_boldness = (self.boldness + 1) / 2
+            self.B = np.tan(np.pi/2 - shifted_boldness*np.pi/2) 
         self.A = np.tan(self.awareness*np.pi/2) * 20
         self.C = np.tan(self.acuity*np.pi/2) * 20
 
