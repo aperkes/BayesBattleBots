@@ -1119,7 +1119,7 @@ class Fish:
                 effort = 0.5
             else:
                 effort = 1 - fight._wager_func(rough_wager)
-        effort = self.scale_effort(effort)
+        #effort = self.scale_effort(effort)
         #est_ratio = self.estimate / opp_size_guess
         #rough_wager = est_ratio ** s * self.energy ** e
         #effort = self.params.poly_param_a * rough_wager ** order + self.params.poly_param_b
