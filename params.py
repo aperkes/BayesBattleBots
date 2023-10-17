@@ -10,7 +10,7 @@ class Params():
                 energy_refill=0.5,energy_cost=False,n_fights=10,
                 fitness_ratio=None,death=False,food=0.5,free_food=0,
                 mean_age=None,mean_size=None,sd_size=None,
-                min_size = 1,max_size = 99,
+                min_size = 1,max_size = 100,
                 f_outcome='math',outcome_params=[0.7,0.5,-0.8], ## Fight Params
                 sigmoid_params = [10,4,0.9], #k,a,m
                 effort_method='SmoothPoly',baseline_effort=.5,update_method='bayes',  ## Fish Params
