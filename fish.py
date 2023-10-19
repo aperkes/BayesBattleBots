@@ -25,7 +25,7 @@ from params import Params
 #               True: in which is uses a true mean with mean/5 as the std
 #               an int: in which case it uses the int as the std (10 would be average)
 class Fish:
-    __slots__ = ('idx', 'name', 'params', 'prior', 'likelihood', 'likelihood_dict', 'age', 'xs', 'r_rhp', 'a_growth', 'c_aversion', 'acuity', 'awareness', 'insight', 'size', 'estimate', 'cdf_prior', 'estimate_', 'prior_mean', 'prior_std', 'win_record', 'est_record', 'est_record_', 'sdest_record', 'range_record', 'effort', 'decay', 'decay_all', 'discrete', 'update', '_choose_effort', 'update_method', 'wager', 'boost', 'energy', 'max_energy', 'energy_cost', 'size_record', 'energy_record', 'fitness_record', 'alive', 's_max', 'naive_params', 'naive_prior', 'naive_estimate', 'naive_likelihood', 'guess', 'correction','trunced')
+    __slots__ = ('idx', 'name', 'params', 'prior', 'likelihood', 'likelihood_dict', 'age', 'xs', 'r_rhp', 'a_growth', 'c_aversion', 'acuity', 'awareness', 'insight', 'size', 'estimate', 'cdf_prior', 'estimate_', 'prior_mean', 'prior_std', 'win_record', 'est_record', 'est_record_', 'sdest_record', 'range_record', 'effort', 'decay', 'decay_all', 'discrete', 'update', '_choose_effort', 'update_method', 'wager', 'boost', 'energy', 'max_energy', 'energy_cost', 'size_record', 'energy_record', 'fitness_record', 'alive', 's_max', 'naive_params', 'naive_prior', 'naive_estimate', 'naive_likelihood', 'guess', 'correction','trunced','_scale_func')
     def __init__(self,idx=0,params=None,
                  age=None,size=None,
                  prior=None,likelihood=None,likelihood_dict=None,
@@ -201,6 +201,10 @@ class Fish:
         elif effort_method == 'SmoothPoly':
             #self._choose_effort = self.poly_effort_prob
             self._choose_effort = self.poly_effort_combo
+            self._scale_func = lambda effort: effort
+        elif effort_method == 'ScaledPoly':
+            self._choose_effort = self.poly_effort_combo
+            self._scale_func = self.scale_effort
         elif effort_method == 'LuckyPoly':
             self._choose_effort = self.poly_effort_lucky
         elif effort_method == 'ExplorePoly':
@@ -1061,7 +1065,8 @@ class Fish:
             effort = self.poly_effort_combo(f_opp,fight)
         return effort
 
-    def scale_effort(self,x,a=15,b=1.0,h=0.3):
+    def scale_effort(self,x,a=15,b=1.0,h=None):
+        h = self.params.outcome_params[1]  
         eff = b * (np.tanh(a*(x-h))/2 + 1/2)
         eff = np.clip(eff,0,1)
         return eff
@@ -1119,7 +1124,7 @@ class Fish:
                 effort = 0.5
             else:
                 effort = 1 - fight._wager_func(rough_wager)
-        #effort = self.scale_effort(effort)
+        effort = self._scale_func(effort)
         #est_ratio = self.estimate / opp_size_guess
         #rough_wager = est_ratio ** s * self.energy ** e
         #effort = self.params.poly_param_a * rough_wager ** order + self.params.poly_param_b
@@ -1463,6 +1468,7 @@ class FishNPC(Fish):
         if self.params.baseline_effort == 0 or self.params.baseline_effort is None:
             self.params.baseline_effort = np.random.random()
         self.effort = self.params.baseline_effort
+
         self.energy = 1
         self.max_energy = 1
         self._choose_effort = self.float_jenkins
