@@ -799,7 +799,8 @@ class Fish:
                 print(fight.fish1.wager,fight.fish2.wager)
                 print('calculated p_win:',fight.p_win,'\n')
         if self.energy_cost:
-            self.update_energy(win,fight)
+            pass
+            #self.update_energy(win,fight)
         if win:
             other_fish = fight.loser
         else:
@@ -1111,19 +1112,7 @@ class Fish:
             else:
                 effort = 1 - fight._wager_func(rough_wager)
         effort = self._scale_func(effort)
-        #est_ratio = self.estimate / opp_size_guess
-        #rough_wager = est_ratio ** s * self.energy ** e
-        #effort = self.params.poly_param_a * rough_wager ** order + self.params.poly_param_b
 
-        #confidence_correction = 1/(1+(self.params.poly_param_c)*np.sqrt(self.acuity**2 + self.prior_std**2))
-        #confidence_correction = np.sum(self.prior[self.xs > opp_size_guess])
-        #if self.params.C == 0 and self.prior_std == 0:
-        #    confidence_correction = 1
-        #else:
-## ideally this would be probabiliy of being wrong, but error will have to do.
-        #    confidence_correction = 1 - norm.cdf(-0.1 * self.guess,self.estimate - self.guess,self.params.C + self.prior_std)
-        #self.correction = confidence_correction
-        #boldness = 1 - self.params.poly_param_c
         scaled_effort = effort 
         #scaled_effort = (effort * confidence_correction) ** self.params.B
         if np.isnan(effort):
