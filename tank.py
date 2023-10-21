@@ -180,6 +180,9 @@ class Tank():
         #print('/nbefore:',fight.winner.energy,fight.loser.energy)
         fight.winner.update(True,fight)
         fight.loser.update(False,fight)
+        
+        self.update_size(fight.winner,True)
+        self.update_size(fight.loser,False)
 
         #print('after:',fight.winner.energy,fight.loser.energy)
         #return fight.winner,fight.loser
@@ -187,6 +190,19 @@ class Tank():
         self.history[fight.idx,fight.winner.idx,fight.loser.idx] = 1 ## Note, this works a bit different for 'random' and 'balanced'
         #self.history[fight.idx,fight.loser.idx,fight.winner.idx] = 0 ## Note, this works a bit different for 'random' and 'balanced'
         return 0
+
+    def update_size(self,fish,win):
+        if self.params.r_rhp == 0 and self.params.energy_cost == False:
+            return 0
+        size = fish.size
+        if win:
+            size = size + self.params.r_rhp
+        if self.params.energy_cost is True:
+            size = size - fish.effort
+        elif self.params.energy_cost != False:
+            fish = fish - self.params.energy_cost
+        fish.size = np.clip(size,1,100)
+        fish.size_record.append(fish.size)
 
     def process_hock(self,fight):
         fight.run_outcome()
@@ -254,37 +270,28 @@ class Tank():
         if plot_stuff:
             return fig,ax
 
-    def plot_estimates(self,fish_list=None,food=False):
+    def plot_estimates(self,fish_list=None,food=False,legend=False):
         fig,ax = plt.subplots()
         if fish_list is None:
             fish_list = self.fishes
-        if self.u_method == 'hock':
-            for i in range(len(fish_list)):
-                f = fish_list[i]
-                ax.plot(f.hock_record,color=cm.tab10(i),label=str(i))
-                ax.axhline(f.size/100,color=cm.tab10(i),linestyle=':')
-            ax.set_ylabel('Hock Estimate')
-        else:
-            for i in range(len(fish_list)):
-                if len(fish_list) > 10:
-                    color = cm.viridis(i/len(fish_list))
-                else:
-                    color = cm.tab10(i)
-                f = fish_list[i]
-                ax.plot(f.est_record, color=color,label=str(i))
-                if food:
-                    ax.plot(f.size_record,color=color)
-                else:
-                    ax.axhline(f.size,color=color,linestyle=':')
-                if self.u_method == 'bayes':
-                    #ax.fill_between(np.arange(len(f.est_record_)),np.array(f.est_record_) + np.array(f.sdest_record),
-                    #    np.array(f.est_record_) - np.array(f.sdest_record),color=color,alpha=.3)
-                    f.range_record = np.array(f.range_record)
-                    #ax.fill_between(np.arange(len(f.range_record)),f.range_record[:,0],f.range_record[:,3],color=color,alpha=0.1)
-                    ax.fill_between(np.arange(len(f.range_record)),f.range_record[:,1],f.range_record[:,2],color=color,alpha=0.2)
+        for i in range(len(fish_list)):
+            if len(fish_list) > 10:
+                color = cm.viridis(i/len(fish_list))
+            else:
+                color = cm.tab10(i)
+            f = fish_list[i]
+            ax.plot(f.est_record, color=color,label=str(i),linestyle=':')
+            if food:
+                ax.plot(f.size_record,color=color)
+            else:
+                ax.axhline(f.size,color=color,linestyle=':')
+            if self.u_method == 'bayes':
+                f.range_record = np.array(f.range_record)
+                ax.fill_between(np.arange(len(f.range_record)),f.range_record[:,1],f.range_record[:,2],color=color,alpha=0.2)
             ax.set_ylabel('Estimate')
         ax.set_xlabel('contest number')
-        ax.legend()
+        if legend:
+            ax.legend()
         fig.show()
         return fig,ax
 

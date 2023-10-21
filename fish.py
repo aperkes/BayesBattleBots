@@ -813,28 +813,14 @@ class Fish:
         size_idx = np.argmax(self.xs >= self.size)
         size_possible_pre = self.prior[size_idx] > 0
 ## Establish fishes and impose costs and benefits
-        if self.params.energy_cost:
-            other_fish,cost = self.update_energy(win,fight) # This currently updates win record, not ideal
+        #if self.params.energy_cost:
+        #    other_fish,cost = self.update_energy(win,fight) # This currently updates win record, not ideal
+        if win:
+            other_fish = fight.loser
         else:
-            if win:
-                other_fish = fight.loser
-                #if self.wager < other_fish.wager and fight.p_win == 0: ## this is p(upset). If you're bigger, this is info
-                    #print('Fish.py 783: Check p_win, that should not have happened...')
-                    #import pdb;pdb.set_trace()
-                    #self.win_record.append([other_fish.size,win,self.effort,cost])
-                    #self.est_record.append(self.estimate)
-                    #return self.prior,self.estimate
-            else:
-                other_fish = fight.winner
-                #if self.wager > other_fish.wager and fight.p_win == 0: ## this is p(upset). If you're bigger, this is info
-                    #pass
-                    #print('Fish.py 783: Check p_win, that should not have happened...')
-                    #import pdb;pdb.set_trace()
-                    #self.win_record.append([other_fish.size,win,self.effort,cost])
-                    #self.est_record.append(self.estimate)
-                    #return self.prior,self.estimate
+            other_fish = fight.winner
 
-            cost = self.calculate_cost(win,fight,other_fish)
+        cost = self.calculate_cost(win,fight,other_fish)
 ## Get likelihood function
         #import pdb;pdb.set_trace()
         self.win_record.append([other_fish.size,win,self.effort,cost])
