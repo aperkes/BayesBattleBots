@@ -29,9 +29,6 @@ class Fish:
     def __init__(self,idx=0,params=None,
                  age=None,size=None,
                  prior=None,likelihood=None,likelihood_dict=None,
-#hock_estimate=.5,update_method='bayes',decay=2,decay_all=False,
-                 #effort_method=[1,1],fight_params=[.6,.3,.01],escalation=naive_escalation,xs=np.linspace(7,100,500),
-                 #r_rhp=0,a_growth=True,c_aversion=1,max_energy=1,acuity=10,awareness=10,insight=False,energy_cost=False
                  ):
         self.idx = idx
         self.name = idx
@@ -39,7 +36,6 @@ class Fish:
         if params is None:
             params = Params()
         self.params = params.copy()
-## Over rule params if you want to do that.
         if prior is None:
             self.prior = prior
         else:
@@ -65,8 +61,6 @@ class Fish:
         self.acuity = params.acuity
         self.awareness = params.awareness
         self.insight = params.insight
-        #self.params.poly_param_a = params.poly_param_a
-        #self.params.poly_param_b = params.poly_param_b
 
         if size is not None:
             self.size = size
@@ -78,12 +72,6 @@ class Fish:
         self.size = np.clip(self.size,self.params.min_size,self.params.max_size)
         self.params.size = self.size
         self.trunced = None
-
-        #mu,scale = self.size,self.params.C
-        #a_min,b_max = self.params.min_size,self.params.max_size
-        #a,b = (a_min - mu) / scale,(b_max - mu) / scale
-        #self.trunced = truncnorm(a,b,loc=mu,scale=scale)
-
 
         if np.isinf(self.params.A):
             self.prior = np.ones_like(self.xs) / len(self.xs)
@@ -103,9 +91,7 @@ class Fish:
                 self.prior = self.prior / np.sum(self.prior)
         elif params.prior is not None:
             self.prior = params.prior
-        else:
-           # self.estimate = np.clip(np.random.normal(self.size,self.params.A),self.params.min_size,self.params.max_size)
-
+        else: ## e.g. prior is a string
             
             if self.params.awareness == 0:
                 self.estimate = self.size
@@ -119,14 +105,11 @@ class Fish:
                 a_min,b_max = self.params.min_size,self.params.max_size
                 a,b = (a_min - mu) / scale,(b_max - mu) / scale
                 trunc_prior = truncnorm(a,b,loc=mu,scale=scale)
+
                 self.estimate = trunc_prior.rvs()
                 prior = trunc_prior.pdf(self.xs)
                 self.prior = prior / np.sum(prior)
 
-                #prior = norm.pdf(self.xs,self.estimate,self.params.A)
-                #self.prior = prior/ np.sum(prior)
-            #prior = self._prior_size(self.age,xs=self.xs)
-            #self.prior = prior / np.sum(prior)
         ## Define the rules one when to escalate, based on confidence
         #self.escalation_thresholds = escalation
         self.cdf_prior = self._get_cdf_prior(self.prior)
@@ -134,40 +117,24 @@ class Fish:
         self.estimate_ = self.xs[np.argmax(self.prior)]
         prior_mean,prior_std = self.get_stats()
         self.estimate = prior_mean
-        #if hock_estimate == 'estimate':
-        #    self.hock_estimate = self.estimate
-        #else:
-        #    self.hock_estimate = hock_estimate
-        #self.hock_record = [self.hock_estimate]
+
         self.win_record = []
         self.est_record = [self.estimate]
         self.est_record_ = [self.estimate_]
         self.sdest_record = [prior_std]
         self.range_record = [[est_5,est_25,est_75,est_95]]
         self.effort = None
-        self.decay = 1 ## Deprecated decay
-        self.decay_all = False
-        self.discrete = False
+
         update_method = params.update_method
         effort_method = params.effort_method
         if update_method == 'bayes':
             #print('using bayes')
             self.update = self.update_prior
-        #elif update_method == 'hock':
-        #    self.update = self.update_hock
-        elif update_method == 'fixed':
-            self.update = self._set_boost
-            self.discrete = True
         elif update_method == 'linear':
             self.update = self.update_linear
-        elif update_method == 'decay':
-            self.update = self._set_boost
-            self.discrete = True
         elif update_method == 'size_boost':
             self.update = self._size_boost
-            self.discrete = True
         else:
-            #print('setting no update')
             self.update = self.no_update
 
         #print('setting effort...',effort_method)
@@ -842,16 +809,14 @@ class Fish:
             pass
         else:
             self.prior = self._update(self.prior,likelihood,self.xs) ## this just multiplies prior*likelihood
-        if self.decay_all:
-            print('decaying...')
-            self.prior = self._decay_flat(self.prior)
+
         self.cdf_prior = self._get_cdf_prior(self.prior)
         pre_estimate = self.estimate
         estimate_ = self.xs[np.argmax(self.prior)]
         prior_mean,prior_std = self.get_stats()
         estimate = prior_mean
         post_estimate = estimate
-        #self.estimate_ = np.sum(self.prior * self.xs / np.sum(self.prior))
+
         self.estimate =  estimate
         self.est_record.append(estimate)
         if np.isnan(self.estimate):
@@ -910,44 +875,14 @@ class Fish:
         cost = None
         self.win_record.append([other_fish.size,win,self.effort,cost])
         return self.prior,self.estimate
-
-    def decay_prior(self,store=False):
-        print('decaying..')
-        pre_prior = self.prior
-        self.prior = self._decay_flat(self.prior)
-        self.cdf_prior = self._get_cdf_prior(self.prior)
-        estimate = self.xs[np.argmax(self.prior)]
-
-        self.estimate_ = np.sum(self.prior * self.xs / np.sum(self.prior))
-        if store:
-            prior_mean,prior_std = self.get_stats()
-            self.est_record_.append(prior_mean)
-
-            self.sdest_record.append(prior_std)
-            
-            self.estimate = estimate
-            self.est_record.append(estimate)
-        return self.prior,self.estimate 
-
-    def update_hock(self,win,fight,scale=.1):
-        if win:
-            other_fish = fight.loser
-        else:
-            other_fish = fight.winner
-        h_opp = other_fish.hock_estimate
-        rel_hock = self.hock_estimate / (self.hock_estimate + h_opp)
-        estimate = self.hock_estimate + scale * (win-rel_hock)
-        if estimate < .001:
-            estimate = .001
-        self.hock_estimate = estimate
-        self.hock_record.append(estimate)
-        
+  
     def plot_prior(self,ax=None):
         if ax is None:
             fig,ax = plt.subplots()
         ax.plot(self.xs,self.prior)
         if ax is None:
             fig.show()
+
     def summary(self,print_me): # print off a summary of the fish
         if print_me:
             print('My number is:',self.idx)
@@ -955,102 +890,6 @@ class Fish:
             print('Size estimate:',self.estimate)
             print('Win record:',self.win_record)
         return self.name,self.size,self.estimate,self.win_record
-    
-    ## This needs to be divied up by strategy somehow...
-    def choose_effort_discrete(self,f_opp,fight,strategy=None):
-        if strategy is None:
-            strategy = self.params.effort_method
-        if strategy == [1,0]:
-            effort = self.estimate / 100
-        elif strategy == [1,1]:
-            effort = np.clip(self.estimate / (2 * f_opp.size),0,1)
-        elif strategy == [0,1]:
-            effort = 1 - f_opp.size / 100
-        else:
-            effort = 1
-        effort = self._boost_effort(effort)
-        return effort
-
-    def prob_win_wager(self,my_size,opp_size,fight_params=None,opp_effort=0.5,own_effort=0.5):
-        if fight_params is None:
-            fight_params = self.naive_params
-        s,e,l = fight_params
-        shifted_params = (np.array([s,e,l]) + 1) / 2
-        S,F,L = np.tan(np.pi/2 - shifted_params*np.pi/2)
-        bigger_size = max([my_size,opp_size])
-        my_rel_size = my_size/bigger_size
-        opp_rel_size = opp_size/bigger_size
-## Note that we're conservative on effort, to avoid death vs hawks
-        my_wager = (my_rel_size * S) * (own_effort * F)
-        opp_wager = (opp_rel_size * S) * (opp_effort * F)
-        min_wager = min([my_wager,opp_wager])
-        min_normed = min_wager / max([my_wager,opp_wager,.00001])
-        if my_wager == opp_wager:
-            p_upset = 0.5
-        else:
-            p_upset = self._wager_curve(min_normed,l)
-        if my_wager == min_wager:
-            p_win = p_upset
-        else:
-            p_win = 1 - p_upset 
-        return p_win
-
-## Simpler calculation based on two parameters, which could be solved
-    def poly_effort(self,f_opp,fight,strategy=None):
-        if strategy is None:
-            strategy = self.params.effort_method
-        if strategy == 'EstimatePoly':
-            ## Now you have to estimate with some error
-            #print('ESTIMATING!!!')
-            my_size = self.estimate ## You only have to do this once
-            opp_size = np.random.normal(f_opp.size,self.params.C)
-            opp_size = np.clip(opp_size,7,99)
-        elif strategy == 'PerfectPoly':
-            #print('Nudging perfect!!!')
-            my_size = self.size
-            opp_size = f_opp.size
-        else:
-            print('#### SOMETHING IS WRONG')
-        #s,e,l = self.params.outcome_params
-        #shifted_params = (np.array([s,e,l]) + 1) / 2
-        #S,F,L = np.tan(np.pi/2 - shifted_params*np.pi/2)
-        S,F = self.params.S,self.params.F
-        rough_wager = (my_size / opp_size) ** S * self.energy ** F
-        effort = self.params.poly_param_a * rough_wager ** 2 + self.params.poly_param_b
-        effort = np.clip(effort,0,1)
-        return effort * self.energy
-
-    def prob_bigger(self,mean1,mean2,std1,std2,cutoff=1):
-        est_difference = mean1-mean2
-        if np.isinf(std1) or np.isinf(std2): ## Edge cases...
-            if np.isinf(std1) and np.isinf(std2):
-                return 0.5 - 1/(len(self.xs))
-            elif np.isinf(std1):
-                return (mean2-self.params.xs[0]) / len(self.params.xs)
-            else:
-                return (mean1-self.params.xs[0]) / len(self.params.xs)
-                
-        combined_std = np.sqrt(std1**2+std2**2)
-        #bigger_dist = norm.pdf(np.arange(cutoff,100),est_difference,combined_std)
-        bigger_dist = norm.cdf(np.arange(0,100),est_difference,combined_std)
-        return 1-bigger_dist[cutoff]
-
-## similar to poly effort above, but here we base it on the prob of being bigger
-    def poly_perfect_prob(self,f_opp,fight,cutoff_prop = 0.1):
-        if self.size - f_opp.size > self.size * cutoff_prop:
-            effort = 1
-        else:
-            effort = 0
-        return effort * self.energy
-
-    def poly_explore(self,f_opp,fight):
-        if np.random.random() < self.params.effort_exploration:
-            effort = np.random.random()
-            effort = effort * self.energy
-            self.guess = 0
-        else:
-            effort = self.poly_effort_combo(f_opp,fight)
-        return effort
 
     def scale_effort(self,x,a=15,b=1.0,h=None):
         h = self.params.outcome_params[1]  
@@ -1161,151 +1000,6 @@ class Fish:
             print(f_opp.size,self.guess,self.acuity,self.params.C)
         return scaled_effort * self.energy
 
-
-
-    def poly_effort_prob(self,f_opp,fight,cutoff_prop = 0.1):
-        opp_size_guess = np.random.normal(f_opp.size,self.params.C) 
-        self.guess = opp_size_guess
-        s,e,l = self.params.outcome_params
-        shifted_params = (np.array([s,e,l]) + 1) / 2
-        S,F,L = np.tan(np.pi/2 - shifted_params*np.pi/2)
-
-        cutoff = int(self.estimate * cutoff_prop)
-        p_bigger = self.prob_bigger(self.estimate,opp_size_guess,self.params.A,self.params.C)
-        bigger_odds = p_bigger / (1-p_bigger)
-        #rough_wager = bigger_odds**s * self.energy**e
-        rough_wager = p_bigger**S * self.energy**F
-        a = self.params.poly_param_a
-        b = self.params.poly_param_b
-        c = self.params.poly_param_c
-        effort = a*rough_wager**c + b
-        effort = np.clip(effort,0,1)
-        if False:
-            print('size,guess',f_opp.size,opp_size_guess)
-            print('effort:',effort)
-            print('\n#############')
-            print(self.size,f_opp.size,p_bigger,bigger_odds,effort,self.energy)
-        return effort * self.energy 
-
-## This function has parameters to allow to evolve optimal strategy
-    def nudge_effort(self,f_opp,fight,strategy=None):
-        if strategy is None:
-            strategy = self.params.effort_method
-        baseline_effort = self.params.baseline_effort
-        alpha = self.params.assessment_weight
-        if strategy == 'Estimate':
-            ## Now you have to estimate with some error
-            print('ESTIMATING!!!')
-            #my_size = self.estimate ## You only have to do this once
-            #opp_size = np.random.normal(f_opp.size,self.awareness)
-            #opp_size = np.clip(opp_size,7,99)
-        elif strategy == 'PerfectNudge':
-            #print('Nudging perfect!!!')
-            my_size = self.size
-            opp_size = f_opp.size
-        else:
-            print('#### SOMETHING IS WRONG')
-        p_win = self.prob_win_wager(my_size,opp_size,self.naive_params,opp_effort = baseline_effort,own_effort = 1)
-        #print(my_size,opp_size,f_opp.size,'calculated p_win:',p_win)
-        if p_win >= 0.5:
-            assessment = (1-baseline_effort)*(p_win)
-        else:
-            assessment = -1 * baseline_effort * 2 * (0.5 - p_win)
-        effort = baseline_effort + assessment * alpha
-        effort = np.clip(effort,0,1)
-        #print(self.idx,f_opp.idx,'nudged effort:',effort,'p win',p_win,self.energy,assessment)
-        effort = effort * self.energy
-        return effort
-
-## This function is a mess. Need to break it up for sure.
-    def choose_effort(self,f_opp,fight,strategy=None):
-        if self.discrete:
-            return self.choose_effort_discrete(f_opp,fight,strategy)
-        if strategy is None:
-            strategy = self.params.effort_method
-## The latter strategy here is more in keeping with the probabilistic mutual assessment, just against an average fish
-
-        my_size = self.estimate
-        if self.params.C == 0:
-            opp_size = f_opp.size
-        else:
-            opp_size = np.clip(np.random.normal(f_opp.size,self.params.C),self.params.min_size,self.params.max_size)
-        self.opp_estimate = opp_size
-        if strategy == 'Perfect' or strategy == 'Estimate':
-            #print('Choosing effort:')
-            #print('my size:',self.size)
-            #print('opp size:',f_opp.size)
-            #s,e,l = self.naive_params
-            if strategy == 'Estimate':
-                print('Using Estimte')
-                ## Now you have to estimate with some error
-
-                my_size = self.estimate ## You only have to do this once
-                opp_size = np.random.normal(f_opp.size,self.params.C)
-                opp_size = np.clip(opp_size,7,99)
-                #print('guess vs self:',my_size,self.size)
-                #print('guess vs opp:',opp_size,f_opp.size)
-            else:
-                my_size = self.size
-                opp_size = f_opp.size
-            p_win = self.prob_win_wager(my_size,opp_size,self.naive_params)
-            effort = p_win
-        elif strategy == [1,0]:
-            #effort = self.estimate / 100
-            effort = 1 - self.cdf_prior[np.argmax(self.xs > self.naive_estimate)]
-        elif strategy == [0,1]:
-            effort = 1 - opp_size / 100
-        elif strategy == [1,1]:
-#NOTE: I think cdf_prior is still a bit off, since it's summing to a very large number. 
-
-## Currenty, this is the probability of being bigger. I need the probability of winning.
-            effort = 1 - self.cdf_prior[np.argmax(self.xs > opp_size)]
-            effort = np.round(effort,4)
-            #effort =  np.sum(self.cdf_prior[self.xs > f_opp.size]) / np.sum(self.cdf_prior)
-
-        elif strategy == 'BayesMA':
-## Here, we iterate over the possible conditions. I expect this to be slow...
-            #print('sum of prior:',np.sum(self.prior))
-            p_win = 0
-            sum_of_sizes = 0
-            for x in range(len(self.xs)):
-                #print(self.prior[x],self.prob_win_wager(x,opp_size,self.naive_params))
-                p_x = self.prior[x]
-                p_win_at_x = self.prob_win_wager(self.xs[x],opp_size,self.naive_params)
-
-                sum_of_sizes += p_win_at_x
-                p_win += p_x * p_win_at_x
-                #p_win += self.prior[x] * self.prob_win_wager(x,opp_size,self.naive_params)
-            #print('summed probability:',p_win)
-            #print('mean prob_win_wager:',sum_of_sizes / len(self.xs))
-            effort = p_win
-            if False:
-                print('Bayes p_win for',self.idx,self.estimate_,opp_size,p_win)
-                fig,ax = plt.subplots()
-                ax.plot(self.xs,self.prior)
-                plt.show()
-            #print('self_size,opp_size,opp_guess,effort (pre energy):',self.size,f_opp.size,opp_size,effort)
-        elif strategy == 'ma_c': ## This is the continuous version where there is opponent uncertainty
-            total_prob = 0
-            opp_estimate = self.estimate_opponent(f_opp.size)
-            for i in range(len(f_opp.xs)):
-                s = f_opp.xs[i]
-                total_prop += np.sum(self.cdf_prior[self.xs > s]) * opp_estimate[i]
-            effort =  total_prob
-        else:
-            effort = 1
-        effort = self._boost_effort(effort)
-        #print('effort post boost:',effort)
-        return effort
-    
-    def explore_effort(self,f_opp,fight):
-        if np.random.random() > .9:
-            effort = np.random.random()
-        else:
-            effort = self.choose_effort(f_opp,fight)
-
-        return effort
-
     def choose_effort_energy(self,f_opp,fight,strategy=None):
         effort = self.choose_effort(f_opp,fight,strategy)
 ## A slightly more careful strategy, invests a proportion of available energy, should generally avoid death
@@ -1335,33 +1029,10 @@ class Fish:
         effort = np.random.random() * self.energy
         return effort
 
-## Proc effort and decay when you check it
-## This also allows for nuanced winner loser effects
-    def _boost_effort(self,effort):
-        effort = np.clip(effort + self.boost,0,1)
-        self.boost = self.boost ** self.decay
-        return effort
-
     ## Function to estimate opponent size, should return a prior distribution of opponent size like own prior_cdf
     def estimate_opponent(self,f_opp,fight):
         return f_opp.cdf_prior
-    
-    def escalate_(self,x_opp,level=0): # Decide whether to fight (or escalate a fight) against a bigger fish
-        #print('Choosing whether to escalate...Estimate,opponent:',self.estimate,x_opp)
 
-        #NOTE: Switch this to a cdf estimate (i.e. odds of winning)
-        if self.estimate > x_opp * (level * .2 + 1): ## This is a wierd structure
-            return True
-        else:
-            return False
-    
-    ## This is just a little wrapper for probably_bigger
-    def escalate(self,x_opp,level=0):
-        conf_needed = self.escalation_thresholds[level]
-        if self.probably_bigger(x_opp,conf_needed):
-            return True
-        else:
-            return False
     # Check whether you believe you are bigger with some required confidence
     def probably_bigger(self,x_opp,conf=.5):
         cutoff = self.xs[np.argmax(self.cdf_prior > (1-conf))] ## Calculate cutoff for a given confidence
@@ -1369,20 +1040,7 @@ class Fish:
             return True
         else:
             return False
-    
 
-    def fight(self,x_opp): # Decide if you win against another fish
-        prob_win = self._likelihood_function_size(self.size,x_opp)
-        roll = np.random.random()
-        if roll < prob_win: # This should be right, >= would bias it, < is fair I think
-            return True
-        else:
-            return False
-    def fight_fixed(self,x_opp): # Same as above, but the bigger fish always wins
-        if self.size > x_opp:
-            return True
-        else:
-            return False
     def get_stats(self):
         if self.awareness == 0:
             prior_mean = self.size
@@ -1392,16 +1050,13 @@ class Fish:
             return prior_mean,prior_std
 
         prior_mean = np.sum(self.prior * self.xs / np.sum(self.prior))
-        #prior_std = np.sum((self.xs - prior_mean)**2 * self.prior/(np.sum(self.prior)))
         prior_std = np.sum((self.prior * (self.xs - prior_mean)**2)) ## I need this for confidence correction
-        #prior_std = 0
-        if prior_std < 0:
-            import pdb;pdb.set_trace()
         prior_std = np.sqrt(prior_std)
         self.prior_mean = prior_mean
         self.prior_std = prior_std
         
         return prior_mean,prior_std
+
     def copy(self):
         self.params.prior = np.array(self.prior)
         f = Fish(self.idx,self.params)
@@ -1426,19 +1081,9 @@ class FishNPC(Fish):
             else:
                 self.size = self.params.size
         else:
-            #mean = self._growth_func(self.params.age)
-            #sd = mean/5
             self.size = np.random.normal(self.params.mean_size,self.params.sd_size)
         self.size = np.clip(self.size,self.params.min_size,self.params.max_size)
         self.params.size = self.size
-
-## NOTE, this only works if we assume all agents have the same acuity. 
-# If you change that, focal agents have to do it. 
-# Also, if you reset the size, it breaks. Probably not worth the speed.
-        #mu,scale = self.size,self.params.C
-        #a_min,b_max = self.params.min_size,self.params.max_size
-        #a,b = (a_min - mu) / scale,(b_max - mu) / scale
-        #self.trunced = truncnorm(a,b,loc=mu,scale=scale)
 
         if self.params.baseline_effort == 0 or self.params.baseline_effort is None:
             self.params.baseline_effort = np.random.random()
