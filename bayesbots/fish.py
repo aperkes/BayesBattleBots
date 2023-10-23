@@ -14,7 +14,7 @@ from sklearn.metrics import auc
 import matplotlib.pyplot as plt
 from matplotlib import cm
 
-from params import Params
+from bayesbots import Params
 
 ## Define a fish object
 

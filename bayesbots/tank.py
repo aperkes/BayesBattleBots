@@ -15,9 +15,9 @@ from matplotlib import cm
 
 from tqdm import tqdm
 
-from fish import Fish,FishNPC
-from fight import Fight
-from params import Params
+from bayesbots import Fish,FishNPC
+from bayesbots import Fight
+from bayesbots import Params
 
 class Tank():
     def __init__(self,fishes,params=None,fight_list = None,npc_params=None

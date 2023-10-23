@@ -13,8 +13,8 @@ from sklearn.metrics import auc
 import matplotlib.pyplot as plt
 from matplotlib import cm
 
-from fish import Fish
-from params import Params
+from bayesbots import Fish
+from bayesbots import Params
 
 ## Simple-ish object to keep track of matchups (and decide outcome if necessary)
 class Fight():
