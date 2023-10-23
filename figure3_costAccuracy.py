@@ -11,19 +11,17 @@ from matplotlib import pyplot as plt
 import copy
 from tqdm import tqdm
 
-from fish import Fish
-from fight import Fight
-from tank import Tank
-from simulation import Simulation,SimParams
+from bayesbots import Fish
+from bayesbots import Fight
+from bayesbots import Tank
+from bayesbots import Params
+
 from matplotlib import cm
-from params import Params
-from simulation import Simulation
 
 ## Define some global variables to determine if you will plot and save figures.
 PLOT = True
 SAVE = False
 
-sim = Simulation()
 params = Params()
 params.outcome_params = [0.5,-0.5,-0.8]
 #params.set_L()

@@ -6,9 +6,9 @@
 import numpy as np
 from matplotlib import pyplot as plt
 
-from params import Params
-from fish import Fish,FishNPC
-from fight import Fight
+from bayesbots import Params
+from bayesbots import Fish,FishNPC
+from bayesbots import Fight
 from tqdm import tqdm
 
 sizes = np.linspace(1,100)

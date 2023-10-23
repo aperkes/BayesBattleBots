@@ -2,8 +2,8 @@ import matplotlib.pyplot as plt
 from matplotlib import cm
 
 import numpy as np
-from fight import Fight
-from fish import Fish
+from bayesbots import Fight
+from bayesbots import Fish
 
 F = Fight(Fish(),Fish())
 

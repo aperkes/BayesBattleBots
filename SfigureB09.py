@@ -3,9 +3,9 @@ import numpy as np
 from matplotlib import pyplot as plt
 from scipy import stats
 
-from fish import Fish,FishNPC
-from fight import Fight
-from params import Params
+from bayesbots import Fish,FishNPC
+from bayesbots import Fight
+from bayesbots import Params
 
 from tqdm import tqdm
 import copy

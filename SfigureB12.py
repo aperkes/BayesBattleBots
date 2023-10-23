@@ -1,8 +1,8 @@
 #from fish import Fish
-from fish import Fish
-from tank import Tank
-from fight import Fight
-from params import Params
+from bayesbots import Fish
+from bayesbots import Tank
+from bayesbots import Fight
+from bayesbots import Params
 
 from matplotlib import pyplot as plt
 from joblib import Parallel, delayed

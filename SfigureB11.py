@@ -1,7 +1,7 @@
 
-from fish import Fish
-from tank import Tank
-from params import Params
+from bayesbots import Fish
+from bayesbots import Tank
+from bayesbots import Params
 
 import numpy as np
 from matplotlib import pyplot as plt

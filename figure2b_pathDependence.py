@@ -2,11 +2,10 @@
 
 ## Script to show that under bayes', the duration of the winner effect depends on the about of new info 
 
-from fish import Fish
-from fight import Fight
-from tank import Tank
-from simulation import Simulation
-from params import Params
+from bayesbots import Fish
+from bayesbots import Fight
+from bayesbots import Tank
+from bayesbots import Params
 
 import numpy as np
 from scipy.stats import binom_test
@@ -53,8 +52,6 @@ params.n_fish = 5
 params.f_outcome = 'math'
 params.outcome_params = [s,e,l]
 params.set_params()
-
-#s = Simulation(params)
 
 winners,losers = [],[]
 PLOT = 'estimate'
