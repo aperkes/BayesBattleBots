@@ -7,6 +7,7 @@ from bayesbots import Fight
 from bayesbots import Params
 
 from tqdm import tqdm
+from joblib import Parallel, delayed
 
 ## A couple of helper functions to keep things tidy
 
@@ -15,119 +16,62 @@ def mean_sem(a):
     sem_a = np.nanstd(a) / np.sqrt(len(a))
     return mean_a,sem_a
 
-## Stupid little function to extract blocks of true values from an array
-def get_chunks(x_bool):
-    start = None 
-    i_list = []
-    all_is = []
-    for i_ in range(len(x_bool)):
-        if x_bool[i_] == False:
-            if start is not None:
-                all_is.append(i_list)
-                i_list = []
-                start = None
-        else:
-            if start is None:
-                start = i_
-            i_list.append(i_)
-    if start is not None:
-        all_is.append(i_list)
-    return all_is
-
 def plot_fill(xs,a,fig=None,ax=None,color='grey',alpha=0.5):
     if ax is None:
         fig,ax = plt.subplots()
     ax.plot(xs,a[:,0],color='black')
-    top_line = a[:,0] + a[:,1]
-    bottom_line = a[:,0] - a[:,1]
-    if 'STAT' in color:
-        #import pdb;pdb.set_trace()
-        gold_points = bottom_line > 0
-        blue_points = top_line < 0
-
-        new_xs = np.linspace(min(xs),max(xs),len(xs) * 20)
-        new_bottom = np.interp(new_xs,xs,bottom_line)
-        new_top = np.interp(new_xs,xs,top_line)
-
-        xs = new_xs
-        if color == 'STAT':
-
-            gray_bool = (new_bottom <= 0) & (new_top >= 0)
-            gold_bits = get_chunks(new_bottom > 0)
-            blue_bits = get_chunks(new_top < 0)
-            gray_bits = get_chunks(gray_bool)
-            for c in gray_bits:
-                ax.fill_between(xs[c],new_bottom[c],new_top[c],color='gray',alpha=alpha)
-            for c in gold_bits:
-                ax.fill_between(xs[c],new_bottom[c],new_top[c],color='gold',alpha=alpha)
-            for c in blue_bits:
-                ax.fill_between(xs[c],new_bottom[c],new_top[c],color='darkblue',alpha=alpha)
-        elif color == 'STAT_SIMPLE':
-            gold_bits = get_chunks(new_top > 0)
-            blue_bits = get_chunks(new_bottom < 0)
-            for c in gold_bits:
-                ax.fill_between(xs[c],np.clip(new_bottom[c],0,a_max=None),new_top[c],color='gold',alpha=alpha)
-            for c in blue_bits:
-                ax.fill_between(xs[c],new_bottom[c],np.clip(new_top[c],None,0),color='darkblue',alpha=alpha)
-    else:
-        ax.fill_between(xs,a[:,0] - a[:,1],a[:,0] + a[:,1],facecolor=color,alpha=alpha)
-    y_max = max([np.max(np.abs(a[:,0] - a[:,1])),np.max(np.abs(a[:,0] + a[:,1]))])
-    ax.set_ylim([y_max*-1.1,y_max*1.1])
-   
+    ax.fill_between(xs,a[:,0] - a[:,1],a[:,0] + a[:,1],color=color,alpha=alpha)
     return fig,ax
 
-def run_sim(params):
+def run_sim(params,assay_params):
     iterations = params.iterations
 
     outcome_array = np.empty([iterations,2])
     outcome_array.fill(np.nan)
 
-    win_info_array = np.array(outcome_array)
-    loss_info_array = np.array(outcome_array)
+    WL_info_array = np.array(outcome_array)
+    LW_info_array = np.array(outcome_array)
 
-    for i in tqdm(range(iterations)):
-        focal_winner = Fish(i+2,params)
-        focal_loser = focal_winner.copy() 
+    for i in range(iterations):
+## Fish WL, LW
+        focal_WL = Fish(i+2,params)
+        focal_LW = focal_WL.copy() 
 
-        f_sizes.append(focal_winner.size)
+        #f_sizes.append(focal_winner.size)
 ## Stage a bunch of wins and losses against size-matched fish
 
         staged_opp = Fish(0,params)
         
-        staged_win = Fight(staged_opp,focal_winner,params,outcome=1)
-        staged_win.run_outcome()
-        focal_winner.update(True,staged_win)
+        WL_w = Fight(staged_opp,focal_WL,params,outcome=1)
+        WL_w.run_outcome()
+        focal_WL.update(True,WL_w)
+        
+        WL_l = Fight(staged_opp,focal_WL,params,outcome=0) 
+        WL_l.run_outcome()
+        focal_WL.update(False,WL_l)
 
-        staged_loss = Fight(staged_opp,focal_loser,params,outcome=0)
-        staged_loss.run_outcome()
-        focal_loser.update(False,staged_loss)
+        LW_l = Fight(staged_opp,focal_LW,params,outcome=0) 
+        LW_l.run_outcome()
+        focal_LW.update(False,LW_l)
+
+        LW_w = Fight(staged_opp,focal_LW,params,outcome=1) 
+        LW_w.run_outcome()
+        focal_LW.update(True,LW_w)
 
 ## Assay against size matched fish
         assay_fish = Fish(1,assay_params)
 
-        assay_winner = Fight(assay_fish,focal_winner,params)
-        winner_output = assay_winner.run_outcome()
-        outcome_array[i,1] = winner_output
+        assay_WL = Fight(assay_fish,focal_WL,params)
+        WL_output = assay_WL.run_outcome()
+        outcome_array[i,1] = WL_output
 
-        assay_loser = Fight(assay_fish,focal_loser,params)
-        loser_output = assay_loser.run_outcome()
-        outcome_array[i,0] = loser_output
+        assay_LW = Fight(assay_fish,focal_LW,params)
+        LW_output = assay_LW.run_outcome()
+        outcome_array[i,0] = LW_output
 
-        win_info_array[i] = focal_winner.effort,focal_winner.estimate 
-        loss_info_array[i] = focal_loser.effort,focal_loser.estimate 
-
-        #if assay_fish.wager > focal_winner.wager:
-        #    w_probs.append(assay_winner.p_win)
-        #else:
-        #    w_probs.append(1-assay_winner.p_win)
-
-        #if assay_fish.wager > focal_loser.wager:
-        #    l_probs.append(assay_loser.p_win)
-        #else:
-        #    l_probs.append(1-assay_loser.p_win)
-
-
-    return outcome_array,win_info_array,loss_info_array
+        WL_info_array[i] = focal_WL.effort,focal_WL.estimate 
+        LW_info_array[i] = focal_LW.effort,focal_LW.estimate 
+    return outcome_array,WL_info_array,LW_info_array
 
 
 iterations = 1000
@@ -138,151 +82,170 @@ params.size = 50
 
 assay_params = params.copy()
 
-print(params.awareness)
-print(params.outcome_params)
-
-#assay_params.baseline_effort = 0.535
-#assay_params.prior = True
-
-outcome_array = np.empty([iterations,2])
-outcome_array.fill(np.nan)
-
-win_info_array = np.array(outcome_array)
-loss_info_array = np.array(outcome_array)
-w_probs,l_probs = [],[]
-
-f_sizes = []
-
 s_res = 10+1
+a_res = s_res
+
 s_params = np.linspace(0,1.00,s_res)
 
-win_estimates = np.empty([4,s_res,2])
-win_efforts = np.empty_like(win_estimates)
-win_outputs = np.empty_like(win_estimates)
+wl_estimates = np.empty([s_res,s_res,a_res,a_res,2])
+wl_efforts = np.empty_like(wl_estimates)
+wl_outputs = np.empty_like(wl_estimates)
 
-loss_estimates = np.empty_like(win_estimates)
-loss_efforts = np.empty_like(win_estimates)
-loss_outputs = np.empty_like(win_estimates)
-
-def set_custom_params(params,name,value):
-    if name == 's':
-        params.outcome_params[0] = value
-    if name == 'l':
-        params.outcome_params[2] = value
-    if name == 'Sa':
-        params.awareness = value
-    if name == 'Sc':
-        params.acuity = value
-    params.set_params()
-    return params
-
-param_list = ['s','l','Sa','Sc']
+lw_estimates = np.empty_like(wl_estimates)
+lw_efforts = np.empty_like(wl_estimates)
+lw_outputs = np.empty_like(wl_estimates)
 
 l_res = s_res
 a_res = s_res
 
-param_set = {'s':np.linspace(0,1,s_res),
-             'l':np.linspace(-1,0,l_res),
-             'Sa':np.linspace(0,1,a_res),
-             'Sc':np.linspace(0,1,a_res)
-}
+s_set = np.linspace(0,1,s_res)
+l_set = np.linspace(-1,0,l_res)
+a_set = np.linspace(0,1,a_res)
+c_set = np.linspace(0,1,a_res)
 
-print(param_set['l'])
-print(param_set['Sa'])
 
 np.set_printoptions(formatter={'all':lambda x: str(x)})
-shifted_l = (param_set['l'] + 1)/2
+shifted_l = (l_set + 1)/2
 l_labels = np.round(np.tan(np.array(np.pi/2 - shifted_l*np.pi/2)),1).astype('str')
 l_labels[0] = 'inf' 
 
-a_labels = np.round(np.tan(np.array(param_set['Sa'])*np.pi/2) * 20,1).astype('str')
+a_labels = np.round(np.tan(np.array(a_set)*np.pi/2) * 20,1).astype('str')
 a_labels[-1] = 'inf'
-print(l_labels,a_labels)
+
 
 default_params = [params.outcome_params[0],params.outcome_params[2],params.awareness,params.acuity]
 
-for p_ in range(len(param_list)):
-    params = Params()
-    params.iterations = iterations
-    params.size = 50
-    assay_params = params.copy()
+def run_many_sims(s):
+    wl_estimates_s = np.empty([s_res,a_res,a_res,2])
+    wl_efforts_s = np.empty_like(wl_estimates_s)
+    wl_outputs_s = np.empty_like(wl_estimates_s)
 
-    p = param_list[p_]
-    param_space = param_set[p]
-    for i_ in range(len(s_params)):
-        i = param_space[i_]
-        print(p,i)
-        params = set_custom_params(params,p,i)
-        print(params.outcome_params[0],params.L,params.A,params.C)
-        outcome_array,win_info_array,loss_info_array = run_sim(params)
+    lw_estimates_s = np.empty_like(wl_estimates_s)
+    lw_efforts_s = np.empty_like(wl_estimates_s)
+    lw_outputs_s = np.empty_like(wl_estimates_s)
+
+
+    for l_ in tqdm(range(l_res)):
+        l = l_set[l_]
+        for a_ in range(a_res):
+            awareness = a_set[a_]
+            for c_ in range(a_res):
+                acuity = c_set[c_]
+                params = Params()
+                params.acuity = acuity
+                params.awareness = awareness
+                params.outcome_params = [s,0.5,l]
+                params.set_params()
+
+                params.iterations = iterations
+                params.size = 50
+                assay_params = params.copy()
+
+## I may need to run this in parallel
+                outcome_array,wl_info_array,lw_info_array = run_sim(params,assay_params)
 ## get win stats, using little helper function
-        win_outputs[p_,i_] = mean_sem(outcome_array[:,1])
-        win_estimates[p_,i_] = mean_sem(win_info_array[:,1])
-        win_efforts[p_,i_] = mean_sem(win_info_array[:,0])
+                wl_outputs_s[l_,a_,c_] = mean_sem(outcome_array[:,1])
+                wl_estimates_s[l_,a_,c_] = mean_sem(wl_info_array[:,1])
+                wl_efforts_s[l_,a_,c_] = mean_sem(wl_info_array[:,0])
 
-        loss_outputs[p_,i_] = mean_sem(outcome_array[:,0])
-        loss_estimates[p_,i_] = mean_sem(loss_info_array[:,1])
-        loss_efforts[p_,i_] = mean_sem(loss_info_array[:,0])
+                lw_outputs_s[l_,a_,c_] = mean_sem(outcome_array[:,0])
+                lw_estimates_s[l_,a_,c_] = mean_sem(lw_info_array[:,1])
+                lw_efforts_s[l_,a_,c_] = mean_sem(lw_info_array[:,0])
 
-fig,axes = plt.subplots(3,4,sharex='col')
+   
+    return wl_outputs_s,wl_estimates_s,wl_efforts_s,lw_outputs_s,lw_estimates_s,lw_efforts_s
 
-for p_ in range(len(param_list)):
-    p = param_list[p_]
-    xs_params = param_set[p]
-    est_array = np.empty_like(win_estimates[p_])
-    effort_array =np.empty_like(est_array)
-    output_array = np.empty_like (est_array)
+if False: ## allows for easy debugging without parallel weirdness.
+    s_outputs = np.empty([s_res,6,l_res,a_res,a_res,2])
+    for s_ in range(s_res):
+        s = s_set[s_]
+        s_outputs[s_] = np.array(run_many_sims(s))
+else:
+    s_outputs = Parallel(n_jobs=11)(delayed(run_many_sims)(s) for s in s_set)
 
-    est_array[:,0] = (win_estimates[p_,:,0] - 50) - (50-loss_estimates[p_,:,0])
-    effort_array[:,0] = (win_efforts[p_,:,0] - 0.5) - (0.5 - loss_efforts[p_,:,0])
-    output_array[:,0] = (win_outputs[p_,:,0] - 0.5) - (0.5 - loss_outputs[p_,:,0])
+s_outputs = np.array(s_outputs)
+wl_outputs = s_outputs[:,0]
+wl_estimates = s_outputs[:,1]
+wl_efforts = s_outputs[:,2]
+lw_outputs = s_outputs[:,3]
+lw_estimates = s_outputs[:,4]
+lw_efforts = s_outputs[:,5]
 
-    est_array[:,1] = win_estimates[p_,:,1] + loss_estimates[p_,:,1]
-    effort_array[:,1] = win_efforts[p_,:,1] + loss_efforts[p_,:,1]
-    output_array[:,1] = win_outputs[p_,:,1] + loss_outputs[p_,:,1]
+est_diff = lw_estimates[:,:,:,:,0] - wl_estimates[:,:,:,:,0]
+eff_diff = lw_efforts[:,:,:,:,0] - wl_efforts[:,:,:,:,0]
+out_diff = lw_outputs[:,:,:,:,0] - wl_outputs[:,:,:,:,0]
 
-    #plot_fill(xs_params,est_array,ax=axes[0,p_],color='STAT')
-    plot_fill(xs_params,est_array,ax=axes[0,p_],color='STAT_SIMPLE')
-    plot_fill(xs_params,effort_array,ax=axes[1,p_],color='STAT_SIMPLE')
-    plot_fill(xs_params,output_array,ax=axes[2,p_],color='STAT_SIMPLE')
-    #plot_fill(xs_params,output_array,ax=axes[2,p_],color='gray')
+est_diff_sl = est_diff[:,:,5,1]
+est_diff_ac = est_diff[7,1,:,:]
 
-    '''
-    plot_fill(xs_params[est_array > 0],est_array[est_array > 0],ax=axes[0,p_],color='gold')
-    plot_fill(xs_params[est_array <= 0],est_array[est_array <= 0],ax=axes[0,p_],color='darkblue')
+eff_diff_sl = eff_diff[:,:,5,1]
+eff_diff_ac = eff_diff[7,1,:,:]
 
-    plot_fill(xs_params[effort_array > 0],effort_array[effort_array > 0],ax=axes[1,p_],color='gold')
-    plot_fill(xs_params[effort_array <= 0],effort_array[effort_array <= 0],ax=axes[1,p_],color='darkblue')
+out_diff_sl = out_diff[:,:,5,1]
+out_diff_ac = out_diff[7,1,:,:]
 
-    plot_fill(xs_params[output_array > 0],output_array[output_array > 0],ax=axes[2,p_],color='gold')
-    plot_fill(xs_params[output_array <= 0],output_array[output_array <= 0],ax=axes[2,p_],color='blue')
-    '''
-axes[2,0].set_xlabel('s value')
-axes[2,0].set_xticks(param_set['s'])
-axes[2,0].set_xticklabels(np.round(param_set['s'],1),rotation='45')
+es_sl_max = np.max(np.abs(est_diff_sl))
+ef_sl_max = np.max(np.abs(eff_diff_sl))
+ot_sl_max = np.max(np.abs(out_diff_sl))
 
-axes[2,1].set_xlabel('l value')
-axes[2,1].set_xticks(param_set['l'])
-axes[2,1].set_xticklabels(l_labels,rotation='45')
-axes[2,1].invert_xaxis()
+es_ac_max = np.max(np.abs(est_diff_ac))
+ef_ac_max = np.max(np.abs(eff_diff_ac))
+ot_ac_max = np.max(np.abs(out_diff_ac))
 
-axes[2,2].set_xlabel('Sigma_a value')
-axes[2,2].set_xticks(param_set['Sa'])
-axes[2,2].set_xticklabels(a_labels,rotation='45')
+est_max = max(es_sl_max,es_ac_max)
+eff_max = max(ef_sl_max,ef_ac_max)
+out_max = max(ot_sl_max,ot_ac_max)
 
-axes[2,3].set_xlabel('Sigma_c value')
-axes[2,3].set_xticks(param_set['Sa'])
-axes[2,3].set_xticklabels(a_labels,rotation='45')
+fig,axes = plt.subplots(3,2,sharex='col',sharey='col')
 
-axes[0,0].set_ylabel('Estimate')
-axes[1,0].set_ylabel('Assay effort')
-axes[2,0].set_ylabel('Assay win rate')
+est_slim = axes[0,0].imshow(est_diff_sl,vmin = -1*es_sl_max,vmax=es_sl_max,cmap='RdBu_r')
+est_acim = axes[0,1].imshow(est_diff_ac,vmin = -1*es_ac_max,vmax=es_ac_max,cmap='RdBu_r')
+#plt.colorbar(ax=axes[:,1])
 
-for c_ in range(4):
-    for r_ in range(3):
-        ax = axes[r_,c_]
-        y_max = 0
-        ax.axvline(default_params[c_],color='red',linestyle=':')
-        ax.axhline(0,color='black',alpha=0.2,linestyle=':')
+eff_slim = axes[1,0].imshow(eff_diff_sl,vmin = -1*ef_sl_max,vmax=ef_sl_max,cmap='RdBu_r')
+eff_acim = axes[1,1].imshow(eff_diff_ac,vmin = -1*ef_ac_max,vmax=ef_ac_max,cmap='RdBu_r')
+
+out_slim = axes[2,0].imshow(out_diff_sl,vmin = -1*ot_sl_max,vmax=ot_sl_max,cmap='RdBu_r')
+out_acim = axes[2,1].imshow(out_diff_ac,vmin = -1*ot_ac_max,vmax=ot_ac_max,cmap='RdBu_r')
+
+fig.colorbar(est_slim,ax=axes[0,0])
+fig.colorbar(eff_slim,ax=axes[1,0])
+fig.colorbar(out_slim,ax=axes[2,0])
+
+fig.colorbar(est_acim,ax=axes[0,1])
+fig.colorbar(eff_acim,ax=axes[1,1])
+fig.colorbar(out_acim,ax=axes[2,1])
+
+axes[0,0].set_yticks(range(len(l_set)))
+axes[2,0].set_xticks(range(len(s_set)))
+axes[0,1].set_yticks(range(len(c_set)))
+axes[2,1].set_xticks(range(len(a_set)))
+
+if False:
+    axes[0,0].set_yticklabels(np.round(s_set,2))
+    axes[2,0].set_xticklabels(np.round(l_set,2),rotation=45)
+    axes[0,1].set_yticklabels(np.round(a_set,2))
+    axes[2,1].set_xticklabels(np.round(c_set,2),rotation=45)
+else:
+    axes[0,0].set_yticklabels(np.round(s_set,2))
+    axes[2,0].set_xticklabels(l_labels,rotation=45)
+    axes[2,0].invert_xaxis()
+
+    axes[0,1].set_yticklabels(a_labels)
+    axes[2,1].set_xticklabels(a_labels,rotation=45)
+
+axes[0,0].set_ylabel('s value')
+axes[1,0].set_ylabel('s value')
+axes[2,0].set_ylabel('s value')
+axes[2,0].set_xlabel('l value')
+
+axes[0,1].set_ylabel('awareness value')
+axes[1,1].set_ylabel('awareness value')
+axes[2,1].set_ylabel('awareness value')
+axes[2,1].set_xlabel('acuity value')
 
 plt.show()
+print('all done, do you want to check anything?')
+
+#import pdb;pdb.set_trace()
+print('Done.')

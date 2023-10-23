@@ -1,6 +1,7 @@
 
 import numpy as np
 from matplotlib import pyplot as plt
+from scipy import stats
 
 from bayesbots import Fish,FishNPC
 from bayesbots import Fight
@@ -8,6 +9,7 @@ from bayesbots import Params
 
 from tqdm import tqdm
 import copy
+from joblib import Parallel, delayed
 
 ## A couple of helper functions to keep things tidy
 
@@ -23,47 +25,62 @@ def plot_fill(xs,a,fig=None,ax=None,color='grey',alpha=0.5):
     ax.fill_between(xs,a[:,0] - a[:,1],a[:,0] + a[:,1],color=color,alpha=alpha)
     return fig,ax
 
-def run_sim(params):
+def run_sim(params,opp_params,npc_size_list = [50],npc_effort_list = [0.5]):
     iterations = params.iterations
 
-    outcome_array = np.empty([iterations,2])
-    outcome_array.fill(np.nan)
-
-    WL_info_array = np.array(outcome_array)
-    LW_info_array = np.array(outcome_array)
-
 ## Fish WL, LW
-    focal_WW = Fish(1,params)
-    focal_LL = Fish(2,params)
+    focal_winner = Fish(1,params)
+    focal_loser = Fish(2,params)
 
-## This only works if acuity is 0 and prior = True
-    staged_opp = Fish(0,params)
+## Cant pre run the first two fights against NPC if I want acuity
+    staged_opp = FishNPC(0,opp_params)
+    max_rounds = 100
+
+    random_opp = FishNPC(1,opp_params)
+    results = np.empty([iterations,2])
     for i in range(iterations):
-        focal_WL = copy.deepcopy(focal_WW)
-        focal_LW = copy.deepcopy(focal_LL)
+        focal_W = copy.deepcopy(focal_winner)
+        focal_L = copy.deepcopy(focal_loser)
+
+        staged_win = Fight(staged_opp,focal_W,params,outcome=1)
+        staged_win.run_outcome()
+        focal_W.update(True,staged_win)
+
+        staged_loss = Fight(staged_opp,focal_L,params,outcome=0)
+        staged_loss.run_outcome()
+        focal_L.update(False,staged_loss)
+
         #f_sizes.append(focal_winner.size)
 ## Stage a bunch of wins and losses against size-matched fish
-        W_l = Fight(staged_opp,focal_WL,params,outcome=0) 
-        W_l.run_outcome()
-        focal_WL.update(False,W_l)
-        
-        L_w = Fight(staged_opp,focal_LW,params,outcome=1) 
-        L_w.run_outcome()
-        focal_LW.update(True,L_w)
-
-        #print(params.outcome_params,params.awareness,i,focal_WL.estimate,focal_LW.estimate)
-        if focal_WL.estimate >= focal_LW.estimate:
-            return i
-
-        W_w = Fight(staged_opp,focal_WW,params,outcome=1)
-        W_w.run_outcome()
-        focal_WW.update(True,W_w)
-
-        L_l = Fight(staged_opp,focal_LL,params,outcome=0) 
-        L_l.run_outcome()
-        focal_LL.update(False,L_l)
-
-    return iterations
+        W_thresh = 60
+        L_thresh = 40
+        w_rounds,l_rounds = np.nan,np.nan
+        npc_sizes = np.random.choice(npc_size_list,max_rounds)
+        npc_efforts = np.random.choice(npc_effort_list,max_rounds)
+        for n in range(max_rounds):
+            if ~np.isnan(w_rounds) and ~np.isnan(l_rounds):
+                break
+            npc = random_opp
+            npc.params.baseline_effort = npc_efforts[n]
+            npc.size = npc_sizes[n]
+            if np.isnan(w_rounds):
+                if focal_W.estimate <= W_thresh:
+                    w_rounds = n
+                else:
+## Run a random fight
+                    random_fight = Fight(npc,focal_W,params) 
+                    outcome = random_fight.run_outcome()
+                    focal_W.update(outcome,random_fight)
+            if np.isnan(l_rounds):
+                if focal_L.estimate >= L_thresh:
+                    l_rounds = n
+                else:
+                    random_fight = Fight(npc,focal_L,params)
+                    outcome = random_fight.run_outcome()
+                    focal_L.update(outcome,random_fight)
+        #import pdb;pdb.set_trace()
+        results[i] = w_rounds,l_rounds
+    return results
 
 #iterations = 2
 iterations = 100
@@ -74,57 +91,123 @@ params.size = 50
 params.acuity = 0
 params.prior = True
 
-assay_params = params.copy()
+opp_params = params.copy()
 
 s_res = 10+1
-l_res = s_res
-a_res = s_res
+e_res = s_res
 
-s_set = np.linspace(0,1,s_res)
-l_set = np.linspace(-1,1,l_res)
-a_set = np.linspace(0,1,a_res)
-s_set[0] = 0.01
-a_set[0] = 0.01
-#c_set = np.linspace(0,1,a_res)
+s_set = np.linspace(0,100,s_res)
+e_set = np.linspace(0,1,e_res)
+e_set[0] = 0.01
+s_set[0] = 1
 
 default_params = [params.outcome_params[0],params.outcome_params[2],params.awareness,params.acuity]
 
-n_repeats = np.zeros([s_res,a_res,l_res])
+all_results = np.empty([s_res,e_res,iterations,2])
 
-for s_ in tqdm(range(s_res)):
-    for a_ in range(a_res):
-        for l_ in range(l_res):
-            params.outcome_params = [s_set[s_],0.5,l_set[l_]]
-            params.awareness = a_set[a_]
-            params.set_params()
+def build_trunc(mu,std,lower,upper):
+    X = stats.truncnorm((lower-mu)/std,(upper-mu)/std,loc=mu,scale=std)
+    return X
 
-            n_repeats[s_,a_,l_] = run_sim(params)
+mu_s,std_s = 50,10
+lower_s,upper_s = 1,100
 
-v_max = np.nanmax(n_repeats) 
-## Plot stuff
-repeats_l8 = n_repeats[:,:,1]
+mu_e,std_e = 0.5,0.1
+lower_e,upper_e = 0.001,1
 
-#fig,ax = plt.subplots(1,3,sharey=True,sharex=True)
-fig,ax = plt.subplots()
+## Using the truncated distribution prevents weird bunching up at edge
+#X_size = build_trunc(mu_s,std_s,lower_s,upper_s)
+#X_eff = build_trunc(mu_e,std_e,lower_e,upper_e)
+#npc_size_list = X_size.rvs(100)
+#npc_effort_list = X_eff.rvs(100)
 
-im = ax.imshow(repeats_l8,vmin=0,vmax=v_max)
-#im1 = axes[1].imshow(n_repeats[:,:,5],vmin=0,vmax=v_max)
-#im2 = axes[2].imshow(n_repeats[:,:,9],vmin=0,vmax=v_max)
+mu_slist = [25,50,75]
+mu_elist = [0.1,0.5,0.9]
+std_elist  = np.linspace(0.01,1,11)
 
-fig.colorbar(im,ax=ax)
+def run_many_sims(std_s):
+    #some_results = np.empty([e_res,iterations,2])
+    opp_params = params.copy()
+    some_results = np.empty([3,3,e_res,iterations,2])
+## Naming convention is a bit crap here, sorry, but us_ is the mu_slist index, etc
+    for se_ in tqdm(range(len(std_elist))):
+        std_e = std_elist[se_]
+        for ue_ in range(len(mu_elist)):
+            mu_e = mu_elist[ue_]
+            X_eff = build_trunc(mu_e,std_e,lower_e,upper_e)
+            npc_effort_list = X_eff.rvs(100)
+            for us_ in range(len(mu_slist)):
+                mu_s = mu_slist[us_]
+                X_size = build_trunc(mu_s,std_s,lower_s,upper_s)
+                npc_size_list = X_size.rvs(100)
+                some_results[us_,ue_,se_] = run_sim(params,opp_params,npc_size_list,npc_effort_list)
+    return some_results
 
-axes = [ax]
-axes[0].set_xticks(range(s_res))
-axes[0].set_yticks(range(a_res))
+stdx_set = [2**n for n in np.arange(-1,10).astype(float)]
+std_xs = [n for n in np.arange(-1,10).astype(int)]
 
-axes[0].set_xticklabels(np.round(a_set,2))
-axes[0].set_yticklabels(np.round(s_set,2))
+all_results = Parallel(n_jobs=11)(delayed(run_many_sims)(std_x) for std_x in stdx_set)
+all_results = np.array(all_results)
 
-axes[0].set_xlabel('Awareness value')
-axes[0].set_ylabel('s value')
+mean_results = np.nanmean(all_results,axis=4)
+sem_results = np.nanstd(all_results,axis=4) / np.sqrt(iterations)
 
-plt.show()
-print('all done, do you want to check anything?')
+mean_winners = mean_results[:,:,:,:,0]
+sem_winners = sem_results[:,:,:,:,0]
+
+mean_losers = mean_results[:,:,:,:,1]
+sem_losers = sem_results[:,:,:,:,1]
 
 #import pdb;pdb.set_trace()
-print('Done.')
+
+## Plot stuff
+
+#fig,ax = plt.subplots(1,3,sharey=True,sharex=True)
+fig,axes = plt.subplots(2,2,sharey=True,sharex=True)
+
+styles = ['solid','dotted','dashdot']
+
+for i_ in range(len(mu_slist)):
+    mu_s = mu_slist[i_]
+    mu_e = mu_elist[i_]
+    style = styles[i_]
+
+    mean_00 = mean_winners[:,i_,0,5]
+    sem_00 = sem_winners[:,i_,0,5]
+    up_00,down_00 = mean_00 + sem_00, mean_00 - sem_00
+
+    mean_10 = mean_losers[:,i_,2,5]
+    sem_10 = sem_losers[:,i_,2,5]
+    up_10,down_10 = mean_10 + sem_10, mean_10 - sem_10
+
+    mean_01 = mean_winners[5,0,i_,:]
+    sem_01 = sem_winners[5,0,i_,:]
+    up_01,down_01 = mean_01 + sem_01, mean_01 - sem_01
+
+    mean_11 = mean_losers[5,2,i_,:]
+    sem_11 = sem_losers[5,2,i_,:]
+    up_11,down_11 = mean_11 + sem_11, mean_11 - sem_11
+
+    axes[0,0].plot(std_xs,mean_winners[:,i_,0,5],label='mu_s = ' + str(mu_s),linestyle=style,color='black')
+    axes[0,0].fill_between(std_xs,down_00,up_00,alpha=0.3)
+
+    axes[1,0].plot(std_xs,mean_losers[:,i_,2,5],label='mu_s = ' + str(mu_s),linestyle=style,color='black')
+    axes[1,0].fill_between(std_xs,down_10,up_10,alpha=0.3)
+
+    axes[0,1].plot(std_xs,mean_winners[5,0,i_,:],label='mu_e = ' + str(mu_e),linestyle=style,color='black')
+    axes[0,1].fill_between(std_xs,down_01,up_01,alpha=0.3)
+
+    axes[1,1].plot(std_xs,mean_losers[5,2,i_,:],label='mu_e = ' + str(mu_e),linestyle=style,color='black')
+    axes[1,1].fill_between(std_xs,down_11,up_11,alpha=0.3)
+
+axes[0,0].legend()
+axes[0,1].legend()
+
+axes[0,0].set_ylabel('n rounds to recover')
+axes[1,0].set_ylabel('n rounds to recover')
+axes[1,0].set_xlabel('STD of opp sizes')
+axes[1,1].set_xlabel('STD of opp effort')
+
+plt.show()
+
+print('done!')
