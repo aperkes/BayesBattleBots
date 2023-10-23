@@ -21,9 +21,6 @@ from bayesbots import Params
 
 class Tank():
     def __init__(self,fishes,params=None,fight_list = None,npc_params=None
-                 #n_fights = 10,
-                 #f_method='balanced',f_outcome='math',f_params=[.3,.3,.3],
-                 #effort_method=[1,1],u_method='bayes',scale=.1,fitness_ratio=None,death=False,food=1
                  ):
         if params is None:
             params = Params()
@@ -35,14 +32,7 @@ class Tank():
         self.f_method = params.f_method
         self.f_outcome = params.f_outcome
         self.f_params = params.outcome_params
-        #if not self.params.L_set:
-        #    self.params.set_L() ## confirm that the L is right
-            #for f in fishes:
-            #    if not f.params.L_set:
-            #        print('Warning!! Tank just set L and fish Ls are not set!!!')
-            #        break
         self.u_method = params.update_method
-        #self.scale = params.scale
         self.win_record = np.zeros([len(fishes),len(fishes)])
         self.fitness_ratio=params.fitness_ratio
         self.death = params.death
@@ -55,19 +45,13 @@ class Tank():
         else:
             self.fight_list = self.get_matchups(self.f_method,self.f_outcome,params.n_rounds)
 
-            #if n_fights is None:
-                ## if n is not defined, just run each one once
-            #    self.fight_list = self.get_matchups(self.f_method,self.f_outcome,scale=self.scale)
-            #else:
-            #    self.fight_list = self.get_matchups(f_method,f_outcome,n_fights)
             self.n_fights = len(self.fight_list)
         if self.f_method == 'balanced' or self.f_method == 'shuffled':
-            #self.n_rounds = int(len(self.fight_list) / (self.n_fish * (self.n_fish-1) / 2))
             self.n_rounds = self.fight_list[-1].idx+1
         else:
             self.n_rounds = len(self.fight_list)
         self.history = np.zeros([self.n_rounds,len(fishes),len(fishes)])
-        #self.history.fill(np.nan)
+
 ## Frustratingly long table to calculate linearity
         self._applebys = {
             3:{0:0.750},
@@ -109,26 +93,6 @@ class Tank():
                 24:0.131
             }
             }
-
-
-
-## Define a likelihood dict
-## Input is focal fish vs other fish, output is likelihood of focal fish *win*
-    def _initialize_likelihood(self):
-        #print('initializing likelihood for all possible match-ups ')
-        likelihood_dict = {}
-        for i in range(len(self.fishes)):
-            for j in range(len(self.fishes)):
-                max_idx = np.argmax([self.fishes[i].size,self.fishes[j].size])
-                min_idx = 1-max_idx
-                max_size = self.fishes[max_idx].size
-                min_size = self.fishes[min_idx].size
-## Frustratingly, we have to queue up a little dummy fight here
-                fight=Fight(self.fishes[i],self.fishes[j],self.params,outcome=0)
-                fight.winner,fight.loser = self.fishes[i],self.fishes[j]
-                likelihood_dict[i,j] = self.fishes[i]._define_likelihood_mutual(fight)
-        for f in self.fishes:
-            f.likelihood_dict = likelihood_dict
 
     def get_npc_fights(self,n_npcs=0,n_fights=10):
         fight_list = []
@@ -177,18 +141,14 @@ class Tank():
 
     def process_fight(self,fight): ## This works without returning because of how objects work in python
         fight.run_outcome()
-        #print('/nbefore:',fight.winner.energy,fight.loser.energy)
         fight.winner.update(True,fight)
         fight.loser.update(False,fight)
         
         self.update_size(fight.winner,True)
         self.update_size(fight.loser,False)
 
-        #print('after:',fight.winner.energy,fight.loser.energy)
-        #return fight.winner,fight.loser
         self.win_record[fight.winner.idx,fight.loser.idx] += 1
         self.history[fight.idx,fight.winner.idx,fight.loser.idx] = 1 ## Note, this works a bit different for 'random' and 'balanced'
-        #self.history[fight.idx,fight.loser.idx,fight.winner.idx] = 0 ## Note, this works a bit different for 'random' and 'balanced'
         return 0
 
     def update_size(self,fish,win):
@@ -203,13 +163,6 @@ class Tank():
             fish = fish - self.params.energy_cost
         fish.size = np.clip(size,1,100)
         fish.size_record.append(fish.size)
-
-    def process_hock(self,fight):
-        fight.run_outcome()
-        fight.winner.update_hock(True,fight,fight.level)
-        fight.loser.update_hock(False,fight,fight.level)
-        self.win_record[fight.winner.idx,fight.loser.idx] += 1
-        self.history[fight.idx,fight.winner.idx,fight.loser.idx] = 1 ## Note, this works a bit different for 'random' and 'balanced'
 
     def print_status(self):
         for f in self.fishes:
@@ -234,31 +187,7 @@ class Tank():
             iterator = range(cutoff)
         for i in iterator:
             c = self.fight_list[i]
-            if self.death:
-                if not c.fish1.alive or not c.fish2.alive:
-                    #if c.fish1.effort_method == 'Perfect' or c.fish2.effort_method == 'Perfect':
-                    #    pass
-                    if c.fish1.alive:
-                        c.outcome = 0 
-                        c.level = 0
-                        c.winner = c.fish1
-                        c.loser=c.fish2
-                        c.fish1.no_update(True,c)
-                    elif c.fish2.alive: 
-                        c.outcome = 1
-                        c.level = 0
-                        c.winner = c.fish2,
-                        c.loser=c.fish1
-                        c.fish2.no_update(True,c)
-                    else:
-                        c.outcome = None
-                    continue
             process(c)
-            if False:
-                if c.loser.params.mutant is True and c.loser.effort > 0:
-                    print('Loser Mutants!')
-                    import pdb
-                    pdb.set_trace()
             if plot_stuff:
                 if c.fish1.idx == 0:
                     ax.plot(c.fish1.naive_likelihood,alpha=.2)
@@ -314,27 +243,6 @@ class Tank():
         fig.show()
         return fig,ax
 
-    ## Function to calculate winner effect. s allows you to calculate n-steps into the future
-    def calc_winner_effect(self,s=1):
-        we_by_fish = []
-        le_by_fish = []
-        mean_by_fish = []
-        size_by_fish = []
-        for f in self.fishes:
-            win_record = np.array(f.win_record)
-            record_post_win = win_record[s:][win_record[0:-s,1] == 1]
-            record_post_loss = win_record[s:][win_record[0:-s,1] == 0]
-            mean_record = np.mean(win_record[:,1])
-            mean_post_win = np.mean(record_post_win)
-            mean_post_loss = np.mean(record_post_loss)
-            winner_effect = mean_post_win / mean_record
-            loser_effect = mean_post_loss / (1-mean_record)
-            we_by_fish.append(winner_effect)
-            le_by_fish.append(loser_effect)
-            mean_by_fish.append(mean_record)
-            size_by_fish.append(f.size)
-        return we_by_fish,le_by_fish,mean_by_fish,size_by_fish
-     
     def _calc_linearity(self,idx=None): ## idx is a slice object
         n_fish = len(self.fishes)
         h_matrix = np.zeros([n_fish,n_fish])
@@ -398,14 +306,9 @@ class Tank():
         proportion_consistent = np.sum(np.abs(binary_mean) == 1) / (self.n_fish * (self.n_fish - 1))
 ## Use nCr formulat to get the total number of possible interactions
         total_interactions = len(binary_bins) * self.n_fish * (self.n_fish-1) 
-        #binary_difference = np.clip(np.abs(binary_bins - binary_final),0,1)
         binary_difference = np.abs(binary_bins - binary_final) == 2
         number_consistent = total_interactions - np.sum(binary_difference)
-        #proportion_consistent = number_consistent / total_interactions 
-        #stability = np.mean(np.std(binned_history,axis=0))
-        #import pdb;pdb.set_trace()
         return proportion_consistent, binary_final
- 
     
     def __getitem__(self,idx):
         return self.fishes[idx]
