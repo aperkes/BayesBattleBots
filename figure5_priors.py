@@ -149,7 +149,7 @@ for n in tqdm(range(params.iterations)):
         b_out = big_fight.run_outcome()
         s_out = small_fight.run_outcome()
 
-        if True:
+        if False:
             p.update(p_out,self_fight)
             s.update(s_out,small_fight)
             b.update(b_out,big_fight)
@@ -236,9 +236,10 @@ for i in [0,1,2,3,4]:
     fit_line = np.poly1d(np.polyfit(sizes,np.mean(effort_array[:,i],axis=1),1))
     if i == 0:
         color='red'
+        ax.plot(all_sizes[i],fit_line(np.array(sizes)),color=color,linestyle=':')
     else:
         color = 'red'
-    ax.plot(all_sizes[i],fit_line(np.array(sizes)),color=color,linestyle=':')
+        #ax.plot(all_sizes[i],fit_line(np.array(sizes)),color=color,linestyle=':')
 #ax.boxplot([n_norms,g_norms,p_norms,s_norms,b_norms],positions=[0.5,1.5,2.5,3.25,3.72],widths=0.1)
 
 
