@@ -252,7 +252,7 @@ for i in [0,1,2,3,4]:
 
 offsets = [0.5,1.5,2.5,3.5,4.5]
 ax.set_xticks(offsets)
-ax.set_xticklabels(['Uniform\nprior','Random\nprior','Self-informed\nprior','Small-informed\nprior','Big-informed\nprior'],rotation=45)
+ax.set_xticklabels(['Uninformed\nprior','Misinformed\nprior','Self-informed\nprior','Small-informed\nprior','Big-informed\nprior'],rotation=45)
 ax.axvline(2.0,linestyle=':',color='black')
 #ax2.scatter([f.guess for f in prior_fishes],[f.effort for f in prior_fishes])
 #ax3.scatter([f.estimate for f in prior_fishes],[f.effort for f in prior_fishes])
