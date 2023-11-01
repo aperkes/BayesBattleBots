@@ -310,6 +310,19 @@ class Tank():
         number_consistent = total_interactions - np.sum(binary_difference)
         return proportion_consistent, binary_final
     
+    def _calc_error(self):
+        n_fishes = len(self.fishes)
+        n_fights = len(self.fishes[0].range_record)
+        e_array = np.empty([n_fishes,n_fights])
+        for f_ in range(n_fishes):
+            fish_f = self.fishes[f_]
+            for r_ in range(n_fights):
+                fight_r = fish_f.range_record[r_]
+                e1,e2 = fight_r[1:3]
+                f_error = (e1 - fish_f.size)**2 + (e2 - fish_f.size)**2
+                e_array[f_,r_] = f_error
+        return e_array
+
     def __getitem__(self,idx):
         return self.fishes[idx]
     
