@@ -18,29 +18,14 @@ from bayesbots import Params
 
 from matplotlib import cm
 
+
 ## Define some global variables to determine if you will plot and save figures.
 PLOT = True
-SAVE = False
 
 params = Params()
-params.outcome_params = [0.5,-0.5,-0.8]
-#params.set_L()
-params.awareness = 0.5
-params.acuity = 0.1
-#params.update_method = 'Dont'
-
+plt.rcParams.update({'font.size': params.fig_font})
 
 params.set_params()
-#params.size=50
-#params.prior = True
-
-#params.effort_method = [None,'!']
-#params.effort_method = 'ExplorePoly'
-params.effort_method = 'SmoothPoly'
-params.poly_param_c = 0
-
-params.post_acuity = True
-params.f_method = 'shuffled'
 
 params.n_fish = 5
 params.n_rounds = 30
@@ -66,8 +51,8 @@ for i in tqdm(range(params.iterations)):
     null_tank = Tank(null_fishes,null_params)
     null_tank.run_all(progress=False)
 
-    error_array[i] = sim._calc_error(tank)
-    error_array_null[i] = sim._calc_error(null_tank)
+    error_array[i] = tank._calc_error()
+    error_array_null[i] = null_tank._calc_error()
     for f in range(len(fishes)):
         cost_array[i,f] = np.array(tank.fishes[f].win_record)[:,3]
         cost_array_null[i,f] = np.array(null_tank.fishes[f].win_record)[:,3]
@@ -88,8 +73,6 @@ ax.fill_between(range(len(mean_int_null)),mean_int_null-sem_int_null,mean_int_nu
 
 ax.set_xlabel('Contest number')
 ax.set_ylabel('Mean fight Intensity\n(+/- SEM of iterations')
-ax.set_title('Fight intensity decreases over repeated contests')
-
 
 ## Plot error
 mean_err = np.mean(error_array,axis=(0,1))
@@ -106,9 +89,11 @@ ax1.fill_between(range(len(mean_err_null)),mean_err_null-sem_err_null,mean_err_n
 
 ax1.set_xlabel('Contest number')
 ax1.set_ylabel('Mean error \n(+/- SEM of iterations')
-ax1.set_title('Estimate error decreases over repeated contests')
 
-#fig.savefig('./figures/figure2c_intensity.png',dpi=300)
+fig.set_size_inches(6.5,3)
+fig.tight_layout()
+fig.savefig('./figures/fig3_IntenseAccuracy.png',dpi=300)
+fig.savefig('./figures/fig3_IntenseAccuracy.svg')
 
 if PLOT:
     plt.show()
