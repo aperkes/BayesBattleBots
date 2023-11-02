@@ -184,13 +184,13 @@ ax3.legend()
 fig3.set_size_inches(3,2.5)
 fig3.tight_layout()
 
-fig.savefig('./figures/figA1a_cdf.png',dpi=300)
-fig.savefig('./figures/figA1a_cdf.svg')
+fig.savefig('./figures/figA2a_cdf.png',dpi=300)
+fig.savefig('./figures/figA2a_cdf.svg')
 
-fig2.savefig('./figures/figA1b_dist.png',dpi=300)
-fig2.savefig('./figures/figA1b_dist.svg')
+fig2.savefig('./figures/figA2b_dist.png',dpi=300)
+fig2.savefig('./figures/figA2b_dist.svg')
 
-fig3.savefig('./figures/figA1c_exp.png',dpi=300)
-fig3.savefig('./figures/figA1c_exp.svg')
+fig3.savefig('./figures/figA2c_exp.png',dpi=300)
+fig3.savefig('./figures/figA2c_exp.svg')
 
 #plt.show()
