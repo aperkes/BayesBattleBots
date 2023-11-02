@@ -4,7 +4,7 @@ import numpy as np
 import copy
 
 class Params():
-    __slots__ = ('n_iterations', 'iterations', 'print_me', 'mutant_effort', 'mutant_update', 'mutant_prior', 'n_fish', 'n_npcs', 'n_rounds', 'f_method', 'mean_age', 'min_size', 'max_size', 'mean_size', 'sd_size', 'energy_refill', 'energy_cost', 'n_fights', 'fitness_ratio', 'death', 'food', 'free_food', 'f_outcome', 'outcome_params', 'scaled_params', 'S', 'F', 'L', 'L_set', 'outcome', 'effort_method', 'effort_exploration', 'baseline_effort', 'update_method', 'age', 'size', 'prior', 'likelihood', 'likelihood_dict', 'xs', 'r_rhp', 'a_growth', 'c_aversion', 'max_energy', 'start_energy', 'acuity', 'pre_acuity', 'post_acuity', 'awareness', 'insight', 'poly_param_a', 'poly_param_b', 'poly_param_c','boldness','A','B','C','poly_param_m', 'poly_step', 'verbose', 'mutant','S_set','F_set','A_set','B_set','C_set','sigmoid_params','K','k','m','a')
+    __slots__ = ('n_iterations', 'iterations', 'print_me', 'mutant_effort', 'mutant_update', 'mutant_prior', 'n_fish', 'n_npcs', 'n_rounds', 'f_method', 'mean_age', 'min_size', 'max_size', 'mean_size', 'sd_size', 'energy_refill', 'energy_cost', 'n_fights', 'fitness_ratio', 'death', 'food', 'free_food', 'f_outcome', 'outcome_params', 'scaled_params', 'S', 'F', 'L', 'L_set', 'outcome', 'effort_method', 'effort_exploration', 'baseline_effort', 'update_method', 'age', 'size', 'prior', 'likelihood', 'likelihood_dict', 'xs', 'r_rhp', 'a_growth', 'c_aversion', 'max_energy', 'start_energy', 'acuity', 'pre_acuity', 'post_acuity', 'awareness', 'insight', 'poly_param_a', 'poly_param_b', 'poly_param_c','boldness','A','B','C','poly_param_m', 'poly_step', 'verbose', 'mutant','S_set','F_set','A_set','B_set','C_set','sigmoid_params','K','k','m','a','fig_font')
     def __init__(self,iterations=1000,print_me=False,     ## Sim Params
                 n_fish=5,n_rounds=20,f_method='shuffled',    ## Tank params
                 energy_refill=0.5,energy_cost=False,n_fights=10,
@@ -22,7 +22,7 @@ class Params():
                 #poly_param_a = 3,poly_param_b=-2.4,poly_param_c=0.1,
                 poly_param_a = 5,poly_param_b=0,poly_param_c=0.3,poly_param_m=0.1,
                 mutant_effort=[1,1],mutant_update='bayes',mutant_prior=None,
-
+                fig_font = 10,
                 verbose=False):                             ## Other params
 ## Sim params
         self.n_iterations = iterations ## Deprecated
@@ -112,7 +112,7 @@ class Params():
 ## General Params
         self.verbose=verbose
         self.mutant=False
-        
+        self.fig_font = fig_font 
     def copy(self):
         return copy.copy(self)
 
