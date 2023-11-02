@@ -113,8 +113,24 @@ ax.set_xlabel('s value')
 
 ax.legend()
 
-fig.set_size_inches(2,4)
+fig.set_size_inches(2,2)
 fig.tight_layout()
 
-plt.show()
+fishes = [Fish(i,params) for i in range(len(sizes))]
+for f_ in range(len(sizes)):
+    f = fishes[f_]
+    f.size = sizes[f_]
+
+tank = Tank(fishes,params)
+tank.run_all()
+fig0,ax0 = tank.plot_estimates()
+fig0.set_size_inches(2,2)
+fig0.tight_layout()
+
+fig0.savefig('./figures/figB11c_intrinsicEx.png',dpi=300)
+fig0.savefig('./figures/figB11c_intrinsicEx.svg')
+
+fig.savefig('./figures/figB11f_intrinsic.png',dpi=300)
+fig.savefig('./figures/figB11f_intrinsic.svg')
+#plt.show()
 
