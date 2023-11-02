@@ -249,8 +249,8 @@ axes[2,1].set_xlabel('acuity value')
 fig.set_size_inches(6.5,6.9)
 fig.tight_layout()
 
-plt.show()
-print('all done, do you want to check anything?')
+fig.savefig('./figures/figB04_recency.png',dpi=300)
+fig.savefig('./figures/figB04_recency.svg')
+#plt.show()
 
-#import pdb;pdb.set_trace()
-print('Done.')
+print('Done!')

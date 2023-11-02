@@ -141,6 +141,8 @@ fig.colorbar(im,ax=axes)
 fig.set_size_inches(6.5,3)
 fig.tight_layout()
 
-plt.show()
+fig.savefig('./figures/figB16_effCorr.png',dpi=300)
+fig.savefig('./figures/figB16_effCorr.svg')
+#plt.show()
 
-import pdb;pdb.set_trace()
+#import pdb;pdb.set_trace()

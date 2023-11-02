@@ -107,6 +107,7 @@ fig.tight_layout()
 
 ax.set_ylabel('Self-Estimate')
 ax.set_xlabel('n contests')
-fig.show()
-#fig.savefig('./figures/fig4a_persistance.png',dpi=300)
-plt.show()
+
+fig.savefig('./figures/figB05_PeristEx.png',dpi=300)
+fig.savefig('./figures/figB05_PersistEx.svg')
+#plt.show()

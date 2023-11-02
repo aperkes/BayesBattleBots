@@ -142,5 +142,8 @@ ax.set_ylabel('Proportion of wins in assay contest')
 fig.set_size_inches(6.5,3)
 fig.tight_layout()
 
+fig.savefig('./figures/figB03_lossBias.png',dpi=300)
+fig.savefig('./figures/figB03_lossBias.svg')
+
 plt.show()
 

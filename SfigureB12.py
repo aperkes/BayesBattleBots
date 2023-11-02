@@ -82,8 +82,11 @@ ax.legend()
 fig.set_size_inches(4.5,3)
 fig.tight_layout()
 
+fig.savefig('./figures/figB12_discrepencyEx.png',dpi=300)
+fig.savefig('./figures/figB12_discrepencyEx.svg')
+
 #fig.savefig('./figures/fig6a_discrepency.png',dpi=300)
-plt.show()
+#plt.show()
 ## Check against a fair fish
 ## Run them against a naive, size-matched fish to test for winner effect  
 # (do I do win percent, or just contrast winner vs loser)

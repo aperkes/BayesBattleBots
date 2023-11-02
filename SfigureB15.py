@@ -175,4 +175,7 @@ fig.colorbar(im,ax=axes)
 fig.set_size_inches(6,5)
 fig.tight_layout()
 
-plt.show()
+fig.savefig('./figures/figB15_experience.png',dpi=300)
+fig.savefig('./figures/figB15_experience.svg')
+
+#plt.show()

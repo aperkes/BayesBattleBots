@@ -290,4 +290,7 @@ for c_ in range(4):
         ax.axvline(default_params[c_],color='red',linestyle=':')
         ax.axhline(0,color='black',alpha=0.2,linestyle=':')
 
-plt.show()
+
+fig.savefig('./figures/figB02_WinvLoss.png',dpi=300)
+fig.savefig('./figures/figB02_WinvLoss.svg')
+#plt.show()

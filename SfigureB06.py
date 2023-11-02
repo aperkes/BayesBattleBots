@@ -213,6 +213,8 @@ axes[1,1].set_xlabel('STD of opp effort')
 fig.set_size_inches(6,5)
 fig.tight_layout()
 
-plt.show()
+fig.savefig('./figures/figB06_recovery.png',dpi=300)
+fig.savefig('./figures/figB06_recovery.svg')
+#plt.show()
 
 print('done!')

@@ -193,4 +193,4 @@ fig2.savefig('./figures/figA1b_dist.svg')
 fig3.savefig('./figures/figA1c_exp.png',dpi=300)
 fig3.savefig('./figures/figA1c_exp.svg')
 
-plt.show()
+#plt.show()

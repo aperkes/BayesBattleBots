@@ -286,15 +286,15 @@ null_stab_inputs = build_inputs(*null_stab_info)
 #lin_inputs = build_inputs(mean_lins,sem_lins,init_lins)
 #stab_inputs = build_inputs(mean_stabs,sem_stabs,init_stabs)
 
-fig1,axes1 = make_plots(*null_error_inputs,fill_color='gray',l_style=None,ylabel='Estimate Error',l_label = 'Fixed estimate')
+fig1,axes1 = make_plots(*null_error_inputs,fill_color='gray',l_style=None,ylabel='Self-assessment error',l_label = 'Fixed estimate')
 
-fig2,axes2 = make_plots(*null_cost_inputs,fill_color='gray',l_style=None,ylabel='Mean Contest Cost',l_label='Fixed estimate')
+fig2,axes2 = make_plots(*null_cost_inputs,fill_color='gray',l_style=None,ylabel='Contest intensity',l_label='Fixed estimate')
 fig3,axes3 = make_plots(*null_lin_inputs,fill_color='gray',l_style=None,ylabel='Linearity',l_label='Fixed estimate')
 fig4,axes4 = make_plots(*null_stab_inputs,fill_color='gray',l_style=None,ylabel='Stability',l_label='Fixed estimate')
 
 
-fig1,axes1 = make_plots(*error_inputs,fax=(fig1,axes1),ylabel='Estimate Error',fill_color='tab:blue',l_style='dashdot',l_label='Bayes updating')
-fig2,axes2 = make_plots(*cost_inputs,fax=(fig2,axes2),ylabel='Mean Contest Cost',fill_color='tab:blue',l_style='dashdot',l_label='Bayes updating')
+fig1,axes1 = make_plots(*error_inputs,fax=(fig1,axes1),ylabel='Self-assessment error',fill_color='tab:blue',l_style='dashdot',l_label='Bayes updating')
+fig2,axes2 = make_plots(*cost_inputs,fax=(fig2,axes2),ylabel='Contest intensity',fill_color='tab:blue',l_style='dashdot',l_label='Bayes updating')
 fig3,axes3 = make_plots(*lin_inputs,fax=(fig3,axes3),ylabel='Linearity',fill_color='tab:blue',l_style='dashdot',l_label='Bayes updating')
 fig4,axes4 = make_plots(*stab_inputs,fax=(fig4,axes4),ylabel='Stability',fill_color='tab:blue',l_style='dashdot',l_label='Bayes updating')
 
@@ -315,4 +315,14 @@ fig3.tight_layout()
 fig4.set_size_inches(6.5,4)
 fig4.tight_layout()
 
-plt.show()
+fig1.savefig('./figures/figB07_error.png',dpi=300)
+fig1.savefig('./figures/figB07_error.svg')
+
+fig2.savefig('./figures/figB08_intensity.png',dpi=300)
+fig2.savefig('./figures/figB08_intensity.svg')
+fig3.savefig('./figures/figB09_linearity.png',dpi=300)
+fig3.savefig('./figures/figB09_linearity.svg')
+fig4.savefig('./figures/figB10_stability.png',dpi=300)
+fig4.savefig('./figures/figB10_stability.svg')
+
+#plt.show()

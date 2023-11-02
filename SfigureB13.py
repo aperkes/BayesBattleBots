@@ -177,4 +177,6 @@ fig.colorbar(im,ax=axes)
 fig.set_size_inches(6,4.8)
 fig.tight_layout()
 
-plt.show()
+fig.savefig('./figures/figB13_discrepency.png',dpi=300)
+fig.savefig('./figures/figB13_discrepency.svg')
+#plt.show()

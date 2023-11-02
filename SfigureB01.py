@@ -215,4 +215,7 @@ for c_ in range(4):
         ax = axes[r_,c_]
         ax.axvline(default_params[c_],color='red',linestyle=':')
 
-plt.show()
+fig.savefig('./figures/figB01_WinLoss.png',dpi=300)
+fig.savefig('./figures/figB01_WinLoss.svg')
+
+#plt.show()
