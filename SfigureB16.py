@@ -23,6 +23,8 @@ import itertools
 from joblib import Parallel, delayed
 
 params = Params()
+plt.rcParams.update({'font.size': params.fig_font})
+
 params.iterations = 100
 #params.iterations = 3
 params.n_fights = 3
@@ -135,6 +137,9 @@ axes[1].set_ylabel('a value')
 axes[1].set_xlabel('c value')
 
 fig.colorbar(im,ax=axes)
+
+fig.set_size_inches(6.5,3)
+fig.tight_layout()
 
 plt.show()
 

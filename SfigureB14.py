@@ -18,6 +18,8 @@ from joblib import Parallel, delayed
 n_fight_list = np.arange(0,50,5)
 
 params = Params()
+plt.rcParams.update({'font.size': params.fig_font})
+
 opp_params = Params()
 #opp_params.baseline_effort = 0.5
 
@@ -124,6 +126,9 @@ ax.axhline(0.5,color='black',linestyle=':')
 ax.set_xlabel('Number of fights prior to assay')
 ax.set_ylabel('Probability of winning vs. size-matched opponent')
 ax.legend()
+
+fig.set_size_inches(4,3)
+fig.tight_layout()
 
 #fig.savefig('./figures/fig6b_experience.png',dpi=300)
 plt.show()

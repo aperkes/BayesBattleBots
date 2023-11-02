@@ -13,6 +13,9 @@ from tqdm import tqdm
 
 iterations = 1000
 params = Params()
+
+plt.rcParams.update({'font.size': params.fig_font})
+
 params.effort_method='ScaledPoly'
 
 e_res = 11
@@ -135,6 +138,9 @@ ax.axhline(0.5,color='gray',linestyle=':')
 ax.legend()
 ax.set_xlabel('value of h')
 ax.set_ylabel('Proportion of wins in assay contest')
+
+fig.set_size_inches(6.5,3)
+fig.tight_layout()
 
 plt.show()
 

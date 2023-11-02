@@ -76,6 +76,8 @@ def run_sim(params,assay_params):
 
 iterations = 1000
 params = Params()
+plt.rcParams.update({'font.size': params.fig_font})
+
 params.iterations = iterations
 
 params.size = 50
@@ -243,6 +245,9 @@ axes[0,1].set_ylabel('awareness value')
 axes[1,1].set_ylabel('awareness value')
 axes[2,1].set_ylabel('awareness value')
 axes[2,1].set_xlabel('acuity value')
+
+fig.set_size_inches(6.5,6.9)
+fig.tight_layout()
 
 plt.show()
 print('all done, do you want to check anything?')

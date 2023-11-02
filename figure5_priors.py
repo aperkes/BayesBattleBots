@@ -20,9 +20,11 @@ from tqdm import tqdm
 import random, copy
 import itertools
 
+
 #s,e,l = .6,.3,.1
 
 params = Params()
+plt.rcParams.update({'font.size': params.fig_font})
 #if True:
     #params.effort_method = 'SmoothPoly'
 
@@ -149,7 +151,7 @@ for n in tqdm(range(params.iterations)):
         b_out = big_fight.run_outcome()
         s_out = small_fight.run_outcome()
 
-        if True:
+        if False:
             p.update(p_out,self_fight)
             s.update(s_out,small_fight)
             b.update(b_out,big_fight)
@@ -211,11 +213,13 @@ g_norms = np.mean(effort_array[:,2],axis=1)
 b_norms = np.mean(effort_array[:,3],axis=1)
 s_norms = np.mean(effort_array[:,4],axis=1)
 
-p_sizes = [self_fishes[f].size/100+2.0 for f in range(params.iterations)]
-n_sizes = [null_fishes[f].size/100+0.0 for f in range(params.iterations)]
-g_sizes = [guess_fishes[f].size/100+1 for f in range(params.iterations)]
-b_sizes = [big_fishes[f].size/100+4.00 for f in range(params.iterations)]
-s_sizes = [small_fishes[f].size/100+3.00 for f in range(params.iterations)]
+offsets = [0.0,1.25,2.5,3.75,5]
+
+p_sizes = [self_fishes[f].size/100+offsets[2]-0.5 for f in range(params.iterations)]
+n_sizes = [null_fishes[f].size/100+offsets[0]-0.5 for f in range(params.iterations)]
+g_sizes = [guess_fishes[f].size/100+offsets[1]-0.5 for f in range(params.iterations)]
+b_sizes = [big_fishes[f].size/100+offsets[4]-0.5 for f in range(params.iterations)]
+s_sizes = [small_fishes[f].size/100+offsets[3]-0.5 for f in range(params.iterations)]
 
 all_sizes = [p_sizes,n_sizes,g_sizes,b_sizes,s_sizes]
 cors = ['tab:blue','lightgray','black','darkblue','darkblue']
@@ -236,9 +240,10 @@ for i in [0,1,2,3,4]:
     fit_line = np.poly1d(np.polyfit(sizes,np.mean(effort_array[:,i],axis=1),1))
     if i == 0:
         color='red'
+        ax.plot(all_sizes[i],fit_line(np.array(sizes)),color=color,linestyle=':')
     else:
         color = 'red'
-    ax.plot(all_sizes[i],fit_line(np.array(sizes)),color=color,linestyle=':')
+        #ax.plot(all_sizes[i],fit_line(np.array(sizes)),color=color,linestyle=':')
 #ax.boxplot([n_norms,g_norms,p_norms,s_norms,b_norms],positions=[0.5,1.5,2.5,3.25,3.72],widths=0.1)
 
 
@@ -250,13 +255,15 @@ for i in [0,1,2,3,4]:
 
 #ax.scatter([self_fishes[f].size/100+0.5 for f in range(params.iterations)],np.mean(effort_array[:,1],axis=1))
 
-offsets = [0.5,1.5,2.5,3.5,4.5]
 ax.set_xticks(offsets)
-ax.set_xticklabels(['Uniform\nprior','Random\nprior','Self-informed\nprior','Small-informed\nprior','Big-informed\nprior'],rotation=45)
-ax.axvline(2.0,linestyle=':',color='black')
+ax.set_xticklabels(['Uninformed\nprior','Misinformed\nprior','Self-informed\nprior','Small-informed\nprior','Big-informed\nprior']) #,rotation=45)
+ax.axvline((offsets[1] + offsets[2]) / 2,linestyle=':',color='black')
 #ax2.scatter([f.guess for f in prior_fishes],[f.effort for f in prior_fishes])
 #ax3.scatter([f.estimate for f in prior_fishes],[f.effort for f in prior_fishes])
-ax.set_ylabel('Effort')
+ax.set_ylabel('Aggressive behavior (effort)')
+
+fig.set_size_inches(6.5,3)
 fig.tight_layout()
-fig.show()
+fig.savefig('./figures/fig5_priors.png',dpi=300)
+fig.savefig('./figures/fig5_priors.svg')
 plt.show()

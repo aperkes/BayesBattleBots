@@ -10,6 +10,8 @@ import numpy as np
 from tqdm import tqdm
 
 params = Params()
+plt.rcParams.update({'font.size': params.fig_font})
+
 params.n_rounds = 30
 
 params.size = None
@@ -110,5 +112,9 @@ ax.set_ylabel('Linearity')
 ax.set_xlabel('s value')
 
 ax.legend()
+
+fig.set_size_inches(2,4)
+fig.tight_layout()
+
 plt.show()
 

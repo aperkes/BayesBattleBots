@@ -85,6 +85,8 @@ def run_sim(params,opp_params,npc_size_list = [50],npc_effort_list = [0.5]):
 #iterations = 2
 iterations = 100
 params = Params()
+plt.rcParams.update({'font.size': params.fig_font})
+
 params.iterations = iterations
 
 params.size = 50
@@ -207,6 +209,9 @@ axes[0,0].set_ylabel('n rounds to recover')
 axes[1,0].set_ylabel('n rounds to recover')
 axes[1,0].set_xlabel('STD of opp sizes')
 axes[1,1].set_xlabel('STD of opp effort')
+
+fig.set_size_inches(6,5)
+fig.tight_layout()
 
 plt.show()
 

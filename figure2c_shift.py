@@ -20,6 +20,7 @@ import copy
 #s,e,l=-0.9,-0.5,-0.7
 
 params = Params()
+plt.rcParams.update({'font.size': params.fig_font})
 params.mean_size = 50
 params.sd_size = 10
 #params.poly_param_c = 0
@@ -82,13 +83,16 @@ for s_ in range(len(opp_sizes)):
     ax.plot(xs,est_mean,color='black',linestyle=styles[s_]) #,label=opp_sizes[s_])
     ax.fill_between(xs,est_mean-est_sem,est_mean+est_sem,alpha=0.5,color=cor,label=opp_sizes[s_])
 
-ax.axhline(65,color='gray',linestyle=':')
-ax.axhline(75,color='gray',linestyle=':')
+ax.axhline(60,color='gray',linestyle=':')
+ax.axhline(55,color='gray',linestyle=':')
 ax.axhline(50,color='black',linestyle=':')
 ax.legend()
 
 ax.set_ylabel('Self-Estimate')
 ax.set_xlabel('n contests')
+fig.set_size_inches(3,2.5)
+fig.tight_layout()
 fig.show()
-fig.savefig('./figures/fig4a_persistance.png',dpi=300)
+fig.savefig('./figures/fig2c_persistance.png',dpi=300)
+fig.savefig('./figures/fig2c_persistance.svg')
 plt.show()

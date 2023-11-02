@@ -18,6 +18,8 @@ from joblib import Parallel, delayed
 sizes = [40,60]
 
 params = Params()
+plt.rcParams.update({'font.size': params.fig_font})
+
 params.prior = True
 params.size = 50
 
@@ -172,8 +174,7 @@ axes[1,1].set_ylabel('a value')
 axes[1,1].set_xlabel('c value')
 
 fig.colorbar(im,ax=axes)
-plt.show()
+fig.set_size_inches(6,4.8)
+fig.tight_layout()
 
-## Check against a fair fish
-## Run them against a naive, size-matched fish to test for winner effect  
-# (do I do win percent, or just contrast winner vs loser)
+plt.show()

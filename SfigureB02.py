@@ -132,6 +132,8 @@ def run_sim(params):
 
 iterations = 3
 params = Params()
+plt.rcParams.update({'font.size': params.fig_font})
+
 params.iterations = iterations
 
 params.size = 50
@@ -277,6 +279,9 @@ axes[2,3].set_xticklabels(a_labels,rotation='45')
 axes[0,0].set_ylabel('Estimate')
 axes[1,0].set_ylabel('Assay effort')
 axes[2,0].set_ylabel('Assay win rate')
+
+fig.set_size_inches(6.5,4)
+fig.tight_layout()
 
 for c_ in range(4):
     for r_ in range(3):

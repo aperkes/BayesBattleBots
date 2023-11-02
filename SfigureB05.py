@@ -20,6 +20,9 @@ import copy
 #s,e,l=-0.9,-0.5,-0.7
 
 params = Params()
+
+plt.rcParams.update({'font.size': params.fig_font})
+
 params.mean_size = 50
 params.sd_size = 10
 #params.poly_param_c = 0
@@ -98,6 +101,9 @@ ax.axhline(50,color='black',linestyle=':')
 ax.axhline(45,color='gray',linestyle=':')
 
 ax.legend()
+
+fig.set_size_inches(4,3)
+fig.tight_layout()
 
 ax.set_ylabel('Self-Estimate')
 ax.set_xlabel('n contests')

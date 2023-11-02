@@ -111,6 +111,8 @@ print(hugh(0.001),hugh(0.5),hugh(.99))
 xs = np.linspace(0.01,1,100)
 ys = funk(xs)
 
+plt.rcParams.update({'font.size': F.params.fig_font})
+
 fig,ax = plt.subplots()
 a_list = [1,2,4,8,16]
 
@@ -126,12 +128,15 @@ if True:
 
         ax.plot(xs,ys,color=a_cor,label='a= ' + str(a))
     ax.set_xlabel('Relative wager')
-    ax.set_ylabel('Probability of underdog > favorite')
+    ax.set_ylabel('Probability of upset')
     ax.legend(loc='upper left')
 
 #plt.legend()
 #plt.plot(xs,ys)
 #plt.axvline(m)
+
+fig.set_size_inches(3,2.5)
+fig.tight_layout()
 
 fig2,ax2 = plt.subplots()
 
@@ -142,18 +147,22 @@ d2 = stats.norm.pdf(xs,45,8)
 d3 = stats.norm.pdf(xs,50,4)
 d4 = stats.norm.pdf(xs,45,4)
 
-ax2.plot(xs,d1,color='gold')
-ax2.plot(xs,d2,color='royalblue',label='std=8')
+ax2.plot(xs,d1,color='gold',label='Larger')
+ax2.plot(xs,d2,color='royalblue',label='Smaller')
 ax2.set_ylabel('Probability density')
 ax2.set_xlabel('Wager')
-ax2.legend()
+#ax2.legend(loc='upper left')
 #ax2.plot(xs,d3,color='tab:blue',label='std=4')
 #ax2.plot(xs,d4,color='tab:blue')
+
+fig2.set_size_inches(3,2.5)
+fig2.tight_layout()
 
 rel_xs = np.linspace(0,1,100)
 fig3,ax3 = plt.subplots()
 
 l_list = np.linspace(-1,0,11)
+L_sublist = ['1.0','4.2','6.3','12.7','inf']
 shifted_l = (l_list + 1)/2
 l_list = np.round(np.tan(np.array(np.pi/2 - shifted_l*np.pi/2)),1)
 
@@ -165,10 +174,23 @@ for l_ in range(len(l_list)):
         l_label = str(l)
     cmap = cm.get_cmap('viridis')
     l_cor = cmap(l_ / len(l_list))
-    ax3.plot(rel_xs,ellie(rel_xs,l),label="l = " + l_label,color=l_cor)
+    if l_label in L_sublist:
+        ax3.plot(rel_xs,ellie(rel_xs,l),label="l = " + l_label,color=l_cor)
 
 ax3.set_xlabel('Relative wager')
 ax3.set_ylabel('Probability of upset')
 
 ax3.legend()
+fig3.set_size_inches(3,2.5)
+fig3.tight_layout()
+
+fig.savefig('./figures/figA1a_cdf.png',dpi=300)
+fig.savefig('./figures/figA1a_cdf.svg')
+
+fig2.savefig('./figures/figA1b_dist.png',dpi=300)
+fig2.savefig('./figures/figA1b_dist.svg')
+
+fig3.savefig('./figures/figA1c_exp.png',dpi=300)
+fig3.savefig('./figures/figA1c_exp.svg')
+
 plt.show()

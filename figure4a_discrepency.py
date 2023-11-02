@@ -12,9 +12,12 @@ from bayesbots import Fight
 
 from tqdm import tqdm
 
+
 sizes = np.linspace(1,100)
 
 params = Params()
+plt.rcParams.update({'font.size': params.fig_font})
+
 params.prior = True
 params.size = 50
 
@@ -59,13 +62,17 @@ for s_ in range(len(strategies)):
     ax.plot(sizes,mean_outcome,label=strategies[s_],color='black',linestyle=styles[s_])            
     ax.fill_between(sizes,mean_outcome - sem_outcome,mean_outcome+sem_outcome,alpha=0.5,color=cors[s_])
 
-ax.set_xlabel('Size of opponent for staged win')
-ax.set_ylabel('Probability of winning vs. size-matched opponent')
+ax.set_xlabel('Size of treatment opponent')
+ax.set_ylabel('Assay win rate')
 ax.axhline(0.5,color='black')
 
-ax.legend()
+#ax.legend()
 
-fig.savefig('./figures/fig6a_discrepency.png',dpi=300)
+fig.set_size_inches(3.25,3)
+fig.tight_layout()
+
+fig.savefig('./figures/fig4a_discrepency.png',dpi=300)
+fig.savefig('./figures/fig4a_discrepency.svg')
 plt.show()
 ## Check against a fair fish
 ## Run them against a naive, size-matched fish to test for winner effect  

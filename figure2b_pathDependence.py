@@ -19,6 +19,7 @@ from tqdm import tqdm
 import random, copy
 import itertools
 
+
 #s,e,l = .6,.3,.1
 
 #s,e,l = -0.5,0.5,-0.9
@@ -27,6 +28,7 @@ e= 0.7
 l= -0.8
 
 params = Params()
+plt.rcParams.update({'font.size': params.fig_font})
 
 params.acuity = 0
 #params.boldness = 0.7
@@ -154,13 +156,15 @@ for r in range(params.n_rounds):
 ax.set_xticks(list(range(params.n_rounds)))
 ax.set_xlim([-0.1,params.n_rounds - 0.5])
 ax.set_ylabel('Estimate (mm)')
-ax.set_xlabel('Repeated contests')
+ax.set_xlabel('Contest round')
 
 #ax.set_ylim([y_min - 1.5,y_max+1.5])
 ax.set_ylim([y_min - 1.5,y_max+1.5])
 #ax.set_title('Fish estimates are path dependent and have recency bias')
-fig.savefig('./figures/fig3_pathDep.png',dpi=300)
-fig.savefig('./figures/fig3_pathDep.svg')
+fig.set_size_inches(3,2.5)
+fig.tight_layout()
+fig.savefig('./figures/fig2b_pathDep.png',dpi=300)
+fig.savefig('./figures/fig2b_pathDep.svg')
 if True:
     fig.show()
     plt.show()

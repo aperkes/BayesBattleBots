@@ -104,6 +104,8 @@ a_labels = np.round(np.tan(np.array(a_list)*np.pi/2) * 20,1).astype('str')
 a_labels[-1] = 'inf'
 
 params = Params()
+plt.rcParams.update({'font.size': params.fig_font})
+
 params.n_rounds = 10 
 params.n_iterations = 100
 
@@ -300,5 +302,17 @@ fig1.legend()
 fig2.legend()
 fig3.legend()
 fig4.legend()
+
+fig1.set_size_inches(6.5,4)
+fig1.tight_layout()
+
+fig2.set_size_inches(6.5,4)
+fig2.tight_layout()
+
+fig3.set_size_inches(6.5,4)
+fig3.tight_layout()
+
+fig4.set_size_inches(6.5,4)
+fig4.tight_layout()
 
 plt.show()

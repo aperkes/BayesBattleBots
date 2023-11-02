@@ -11,8 +11,12 @@ from bayesbots import Params
 
 from tqdm import tqdm
 
+
 iterations = 1000
 params = Params()
+
+plt.rcParams.update({'font.size': params.fig_font})
+
 #params.outcome_params = [0.7,0,-0.8]
 #params.outcome_params = [0.9,0,-0.8]
 #params.awareness =  0.8
@@ -106,12 +110,19 @@ ax.bar([0,1],means,yerr = sems,bottom = 0.5,color = ['darkblue','gold'])
 ax.axhline(0.5,color='black',linestyle=':')
 
 ax.set_xticks([0,1])
-ax.set_xticklabels(['Loser','Winner'])
-ax.set_ylabel('Probability of win vs size-matched fish')
+ax.set_xticklabels(['Post-loss','Post-win'])
+ax.set_xlabel('_')
+#ax.set_ylabel('Probability of win\n vs size-matched fish')
+ax.set_ylabel('Assay win rate')
 ax.set_ylim([0,1])
 #fig.savefig('./figures/fig3b_winvloss.png',dpi=300)
 print('win effort, win estimate')
 print(np.mean(win_info_array,axis=0))
 print(np.mean(loss_info_array,axis=0))
+fig.set_size_inches(3,2.5)
+fig.tight_layout()
+
+fig.savefig('./figures/fig2a_WinVLoss.png',dpi=300)
+fig.savefig('./figures/fig2a_WinVLoss.svg')
 if True:
     plt.show()

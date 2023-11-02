@@ -14,6 +14,8 @@ from tqdm import tqdm
 sizes = np.linspace(1,100)
 
 params = Params()
+plt.rcParams.update({'font.size': params.fig_font})
+
 params.prior = True
 params.size = 50
 
@@ -77,6 +79,8 @@ ax.set_ylabel('Probability of winning vs. size-matched opponent')
 ax.axhline(0.5,color='black')
 
 ax.legend()
+fig.set_size_inches(4.5,3)
+fig.tight_layout()
 
 #fig.savefig('./figures/fig6a_discrepency.png',dpi=300)
 plt.show()
