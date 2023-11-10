@@ -209,9 +209,9 @@ class Tank():
             else:
                 color = cm.tab10(i)
             f = fish_list[i]
-            ax.plot(f.est_record, color=color,label=str(i),linestyle=':')
+            ax.plot(f.est_record, color=color,label=str(i))
             if food:
-                ax.plot(f.size_record,color=color)
+                ax.plot(f.size_record,color=color,linestyle=':')
             else:
                 ax.axhline(f.size,color=color,linestyle=':')
             if self.u_method == 'bayes':
