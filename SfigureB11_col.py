@@ -5,12 +5,20 @@ from bayesbots import Fight
 from bayesbots import Params
 
 from matplotlib import pyplot as plt
+import matplotlib
+
 from joblib import Parallel, delayed
 import numpy as np
 from tqdm import tqdm
 
 params = Params()
 plt.rcParams.update({'font.size': params.fig_font})
+plt.rcParams.update({'lines.linewidth': 1})
+
+tick_size = (params.fig_font * 2/3)
+
+matplotlib.rc('xtick', labelsize=tick_size) 
+matplotlib.rc('ytick', labelsize=tick_size) 
 
 params.n_rounds = 30
 
@@ -27,14 +35,17 @@ params.prior = fish0.prior
 
 params.set_params()
 fishes = []
-sizes = [20,35,50,65,80]
-#sizes = [50,50,50,50,50]
-if False:
+food = True
+SIZES = False
+if SIZES:
+    sizes = [20,35,50,65,80] ## Different sizes (3 col)
+else:
+    sizes = [50,50,50,50,50] ## Same sizes (1,2 col)
+
+if food: ## RHP feedback (col 2)
     params.r_rhp = 1
     params.energy_cost = True
     food = True
-else:
-    food = False
 
 #fishes = [Fish(f,params) for f in range(5)]
 params.size = 50
@@ -111,7 +122,7 @@ ax.set_ylim([0.5,1])
 ax.set_ylabel('Linearity')
 ax.set_xlabel('s value')
 
-ax.legend()
+#ax.legend()
 
 fig.set_size_inches(2,2)
 fig.tight_layout()
@@ -123,14 +134,25 @@ for f_ in range(len(sizes)):
 
 tank = Tank(fishes,params)
 tank.run_all()
-fig0,ax0 = tank.plot_estimates()
+fig0,ax0 = tank.plot_estimates(food=food)
 fig0.set_size_inches(2,2)
 fig0.tight_layout()
 
-fig0.savefig('./figures/figB11c_intrinsicEx.png',dpi=300)
-fig0.savefig('./figures/figB11c_intrinsicEx.svg')
+#import pdb;pdb.set_trace()
+if food:
+    f0_path = './figures/figB11b_FeedbackEx.png'
+    f_path = './figures/figB11e_Feedback.png'
+elif SIZES:
+    f0_path = './figures/figB11c_IntrinsicEx.png'
+    f_path = './figures/figB11f_Intrinsic.png'
+else:
+    f0_path = './figures/figB11a_FixedEx.png'
+    f_path = './figures/figB11d_Fixed.png'
 
-fig.savefig('./figures/figB11f_intrinsic.png',dpi=300)
-fig.savefig('./figures/figB11f_intrinsic.svg')
+fig0.savefig(f0_path,dpi=300)
+fig0.savefig(f0_path.replace('png','svg'))
+fig.savefig(f_path,dpi=300)
+fig.savefig(f_path.replace('png','svg'),dpi=300)
+
 #plt.show()
 

@@ -1,6 +1,7 @@
 
 import numpy as np
 from matplotlib import pyplot as plt
+import matplotlib
 
 from bayesbots import Fish,FishNPC
 from bayesbots import Fight
@@ -77,6 +78,13 @@ def run_sim(params,assay_params):
 iterations = 1000
 params = Params()
 plt.rcParams.update({'font.size': params.fig_font})
+plt.rcParams.update({'font.size': params.fig_font})
+plt.rcParams.update({'lines.linewidth': 1})
+
+tick_size = (params.fig_font * 2/3)
+
+matplotlib.rc('xtick', labelsize=tick_size) 
+matplotlib.rc('ytick', labelsize=tick_size) 
 
 params.iterations = iterations
 

@@ -4,6 +4,7 @@
 
 import numpy as np
 from matplotlib import pyplot as plt
+import matplotlib
 
 from bayesbots import Fish,FishNPC
 from bayesbots import Fight
@@ -15,7 +16,11 @@ iterations = 1000
 params = Params()
 
 plt.rcParams.update({'font.size': params.fig_font})
+plt.rcParams.update({'lines.linewidth': 1})
 
+tick_size = int(params.fig_font * 3/4)
+matplotlib.rc('xtick', labelsize=tick_size) 
+matplotlib.rc('ytick', labelsize=tick_size) 
 params.effort_method='ScaledPoly'
 
 e_res = 11
@@ -120,7 +125,7 @@ ax0.plot(xs,high_e,color='red',label='h=0.7')
 ax0.plot(xs,low_e,color='orange',linestyle='dashed',label='h=0.3')
 ax0.set_xlabel('Estimated probabilty of winning')
 ax0.set_ylabel('Effort')
-ax0.legend()
+ax0.legend(fontsize=tick_size)
 
 winner_mean = results_array[:,1,0]
 winner_sem = results_array[:,1,1]
@@ -128,16 +133,16 @@ winner_sem = results_array[:,1,1]
 loser_mean = results_array[:,0,0]
 loser_sem = results_array[:,0,1]
 
-ax.plot(e_list,results_array[:,0,0],color='black',label='Post-win')
+ax.plot(e_list,winner_mean,color='black',label='Post-win')
 ax.fill_between(e_list,winner_mean - winner_sem,winner_mean + winner_sem,color='gold',alpha=0.5)
 
-ax.plot(e_list,results_array[:,1,0],color='black',linestyle='dashed',label='Post-loss')
+ax.plot(e_list,loser_mean,color='black',linestyle='dashed',label='Post-loss')
 ax.fill_between(e_list,loser_mean - loser_sem,loser_mean + loser_sem,color='darkblue',alpha=0.5)
 
 ax.axhline(0.5,color='gray',linestyle=':')
-ax.legend()
-ax.set_xlabel('value of h')
-ax.set_ylabel('Proportion of wins in assay contest')
+ax.legend(fontsize=tick_size)
+ax.set_xlabel('Value of h')
+ax.set_ylabel('Assay win rate')
 
 fig.set_size_inches(6.5,3)
 fig.tight_layout()
@@ -145,5 +150,5 @@ fig.tight_layout()
 fig.savefig('./figures/figB03_lossBias.png',dpi=300)
 fig.savefig('./figures/figB03_lossBias.svg')
 
-plt.show()
+#plt.show()
 

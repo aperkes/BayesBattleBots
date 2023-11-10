@@ -1,6 +1,7 @@
 
 import numpy as np
 from matplotlib import pyplot as plt
+import matplotlib
 
 from bayesbots import Fish,FishNPC
 from bayesbots import Fight
@@ -130,9 +131,15 @@ def run_sim(params):
     return outcome_array,win_info_array,loss_info_array
 
 
-iterations = 3
+iterations = 1000 
 params = Params()
 plt.rcParams.update({'font.size': params.fig_font})
+plt.rcParams.update({'lines.linewidth': 1})
+
+tick_size = (params.fig_font * 2/3)
+
+matplotlib.rc('xtick', labelsize=tick_size) 
+matplotlib.rc('ytick', labelsize=tick_size) 
 
 params.iterations = iterations
 
@@ -226,7 +233,7 @@ for p_ in range(len(param_list)):
         loss_estimates[p_,i_] = mean_sem(loss_info_array[:,1])
         loss_efforts[p_,i_] = mean_sem(loss_info_array[:,0])
 
-fig,axes = plt.subplots(3,4,sharex='col')
+fig,axes = plt.subplots(3,4,sharex='col',sharey='row')
 
 for p_ in range(len(param_list)):
     p = param_list[p_]
@@ -260,25 +267,37 @@ for p_ in range(len(param_list)):
     plot_fill(xs_params[output_array <= 0],output_array[output_array <= 0],ax=axes[2,p_],color='blue')
     '''
 axes[2,0].set_xlabel('s value')
-axes[2,0].set_xticks(param_set['s'])
-axes[2,0].set_xticklabels(np.round(param_set['s'],1),rotation='45')
+axes[2,0].set_xticks(param_set['s'][1::2])
+axes[2,0].set_xticklabels(np.round(param_set['s'],1)[1::2],rotation='45')
 
 axes[2,1].set_xlabel('l value')
-axes[2,1].set_xticks(param_set['l'])
-axes[2,1].set_xticklabels(l_labels,rotation='45')
+axes[2,1].set_xticks(param_set['l'][::2])
+axes[2,1].set_xticklabels(l_labels[::2],rotation='45')
 axes[2,1].invert_xaxis()
 
 axes[2,2].set_xlabel('Sigma_a value')
-axes[2,2].set_xticks(param_set['Sa'])
-axes[2,2].set_xticklabels(a_labels,rotation='45')
+axes[2,2].set_xticks(param_set['Sa'][1::2])
+axes[2,2].set_xticklabels(a_labels[1::2],rotation='45')
 
 axes[2,3].set_xlabel('Sigma_c value')
-axes[2,3].set_xticks(param_set['Sa'])
-axes[2,3].set_xticklabels(a_labels,rotation='45')
+axes[2,3].set_xticks(param_set['Sa'][1::2])
+axes[2,3].set_xticklabels(a_labels[1::2],rotation='45')
 
 axes[0,0].set_ylabel('Estimate')
 axes[1,0].set_ylabel('Assay effort')
 axes[2,0].set_ylabel('Assay win rate')
+
+axes[0,0].set_ylim([-2.1,2.1])
+axes[0,0].set_yticks([-2.00,-1.00,0.00,1.00,2.00])
+#axes[0,0].set_yticklabels(['-2.00','-1.00','0.00','1.00','2.00'])
+#axes[0,0].set_yticklabels(np.round(np.arange(-2,2.1),4))
+
+axes[1,0].set_ylim([-0.061,0.061])
+axes[1,0].set_yticks([-0.06,-0.03,0,0.03,0.06])
+
+axes[2,0].set_ylim([-0.11,.11])
+axes[2,0].set_yticks([-0.10,-0.05,0,0.05,0.10])
+
 
 fig.set_size_inches(6.5,4)
 fig.tight_layout()

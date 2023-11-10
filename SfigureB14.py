@@ -124,7 +124,7 @@ ax.set_ylim([0,1.0])
 ax.axhline(0.5,color='black',linestyle=':')
 
 ax.set_xlabel('Number of fights prior to assay')
-ax.set_ylabel('Probability of winning vs. size-matched opponent')
+ax.set_ylabel('Assay win rate')
 ax.legend()
 
 fig.set_size_inches(4,3)

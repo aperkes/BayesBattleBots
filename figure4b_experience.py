@@ -19,6 +19,11 @@ plt.rcParams.update({'font.size': 10})
 
 n_fight_list = np.arange(0,50,5)
 
+# It turns out the exact extent of the decay for linear depends on the size distribution of the generated opponents, which I only do one time to save time.
+## I could force the size distribution to be balanced, but it's easier to just roll the dice.
+# And it works most of the time, but I wanted the figure to be consistent.
+np.random.seed(3)
+
 params = Params()
 opp_params = Params()
 #opp_params.baseline_effort = 0.5
@@ -81,27 +86,34 @@ outcome_array = np.array(outcome_arrays)
 fig,ax = plt.subplots()
 
 cors = ['tab:blue','tab:green','grey']
-styles = ['solid','dashed','dashdot']
+styles = ['dashed','dashdot','solid']
 
 for s_ in range(len(strategies)):
     mean_outcome = np.mean(outcome_array[:,s_],axis=1)
     sem_outcome = np.std(outcome_array[:,s_],axis=1) / np.sqrt(iterations)
-    ax.plot(n_fight_list,mean_outcome,label=strategies[s_],color='black',linestyle=styles[s_])            
+    ax.plot(n_fight_list,mean_outcome,label=strategies[s_],color='black',linestyle=styles[s_],linewidth=1)
     ax.fill_between(n_fight_list,mean_outcome - sem_outcome,mean_outcome+sem_outcome,alpha=0.5,color=cors[s_])
 
 ax.set_ylim([0.45,1.0])
 ax.axhline(0.5,color='black',linestyle=':')
 
 ax.set_xlabel('Number of fights prior to assay')
-ax.set_ylabel('Assay win-rate')
-ax.legend()
+ax.set_ylabel('Assay win rate')
+
+tick_size = int(params.fig_font * 3/4)
+
+plt.xticks(fontsize=tick_size)
+plt.yticks(fontsize=tick_size)
+
+ax.legend(fontsize=tick_size)
 
 fig.set_size_inches(3.25,3)
 fig.tight_layout()
 
 fig.savefig('./figures/fig4b_experience.png',dpi=300)
 fig.savefig('./figures/fig4b_experience.svg')
-plt.show()
+print('Done!')
+#plt.show()
 ## Check against a fair fish
 ## Run them against a naive, size-matched fish to test for winner effect  
 # (do I do win percent, or just contrast winner vs loser)

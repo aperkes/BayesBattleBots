@@ -1,6 +1,8 @@
 
 import numpy as np
 from matplotlib import pyplot as plt
+import matplotlib
+
 from scipy import stats
 
 from bayesbots import Fish,FishNPC
@@ -86,6 +88,13 @@ def run_sim(params,opp_params,npc_size_list = [50],npc_effort_list = [0.5]):
 iterations = 100
 params = Params()
 plt.rcParams.update({'font.size': params.fig_font})
+plt.rcParams.update({'lines.linewidth': 1})
+
+tick_size = (params.fig_font * 2/3)
+
+matplotlib.rc('xtick', labelsize=tick_size) 
+matplotlib.rc('ytick', labelsize=tick_size) 
+
 
 params.iterations = iterations
 
@@ -190,25 +199,25 @@ for i_ in range(len(mu_slist)):
     sem_11 = sem_losers[5,2,i_,:]
     up_11,down_11 = mean_11 + sem_11, mean_11 - sem_11
 
-    axes[0,0].plot(std_xs,mean_winners[:,i_,0,5],label='mu_s = ' + str(mu_s),linestyle=style,color='black')
+    axes[0,0].plot(std_xs,mean_winners[:,i_,0,5],label='u = ' + str(mu_s),linestyle=style,color='black')
     axes[0,0].fill_between(std_xs,down_00,up_00,alpha=0.3)
 
-    axes[1,0].plot(std_xs,mean_losers[:,i_,2,5],label='mu_s = ' + str(mu_s),linestyle=style,color='black')
+    axes[1,0].plot(std_xs,mean_losers[:,i_,2,5],label='u = ' + str(mu_s),linestyle=style,color='black')
     axes[1,0].fill_between(std_xs,down_10,up_10,alpha=0.3)
 
-    axes[0,1].plot(std_xs,mean_winners[5,0,i_,:],label='mu_e = ' + str(mu_e),linestyle=style,color='black')
+    axes[0,1].plot(std_xs,mean_winners[5,0,i_,:],label='u = ' + str(mu_e),linestyle=style,color='black')
     axes[0,1].fill_between(std_xs,down_01,up_01,alpha=0.3)
 
-    axes[1,1].plot(std_xs,mean_losers[5,2,i_,:],label='mu_e = ' + str(mu_e),linestyle=style,color='black')
+    axes[1,1].plot(std_xs,mean_losers[5,2,i_,:],label='u = ' + str(mu_e),linestyle=style,color='black')
     axes[1,1].fill_between(std_xs,down_11,up_11,alpha=0.3)
 
-axes[0,0].legend()
-axes[0,1].legend()
+axes[0,0].legend(fontsize=tick_size)
+axes[0,1].legend(fontsize=tick_size)
 
 axes[0,0].set_ylabel('n rounds to recover')
 axes[1,0].set_ylabel('n rounds to recover')
-axes[1,0].set_xlabel('STD of opp sizes')
-axes[1,1].set_xlabel('STD of opp effort')
+axes[1,0].set_xlabel('STD of opponent sizes')
+axes[1,1].set_xlabel('STD of oppenent effort')
 
 fig.set_size_inches(6,5)
 fig.tight_layout()

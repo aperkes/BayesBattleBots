@@ -108,6 +108,7 @@ plt.rcParams.update({'font.size': params.fig_font})
 
 params.n_rounds = 10 
 params.n_iterations = 100
+#params.n_iterations = 3
 
 def run_many_sims(s,params):
     params = copy.deepcopy(params)
@@ -231,8 +232,8 @@ def make_plots(s_data,l_data,a_data,c_data,ylabel='None',fill_color='gray',l_sty
     axes[0].set_xlabel('s value')
     axes[0].set_ylabel(ylabel)
     axes[0].axvline(0.7,color='red',linestyle=':')
-    axes[0].set_xticks(s_list)
-    axes[0].set_xticklabels(np.round(s_list,2),rotation=45)
+    axes[0].set_xticks(s_list[::2])
+    axes[0].set_xticklabels(np.round(s_list,2)[::2],rotation=45)
 
     axes[1].plot(l_list,l_mean,color='black',linestyle=l_style)
     if l_label == 'Bayes updating':
@@ -242,8 +243,8 @@ def make_plots(s_data,l_data,a_data,c_data,ylabel='None',fill_color='gray',l_sty
     axes[1].set_xlabel('l value')
     axes[1].axvline(-0.8,color='red',linestyle=':')
 
-    axes[1].set_xticks(l_list)
-    axes[1].set_xticklabels(l_labels,rotation=45)
+    axes[1].set_xticks(l_list[::2])
+    axes[1].set_xticklabels(l_labels[::2],rotation=45)
 
     axes[2].plot(a_list,a_mean,color='black',linestyle=l_style)
     if l_label == 'Bayes updating':
@@ -252,8 +253,8 @@ def make_plots(s_data,l_data,a_data,c_data,ylabel='None',fill_color='gray',l_sty
     axes[2].axvline(0.5,color='red',linestyle=':')
 
     axes[2].set_xlabel('self assessment error')
-    axes[2].set_xticks(a_list)
-    axes[2].set_xticklabels(a_labels,rotation=45)
+    axes[2].set_xticks(a_list[::2])
+    axes[2].set_xticklabels(a_labels[::2],rotation=45)
 
     axes[3].plot(c_list,c_mean,color='black',linestyle=l_style,label=l_label)
     if l_label == 'Bayes updating':
@@ -263,8 +264,8 @@ def make_plots(s_data,l_data,a_data,c_data,ylabel='None',fill_color='gray',l_sty
     axes[3].axvline(0.1,color='red',linestyle=':',label=red_label)
 
     axes[3].set_xlabel('opp assessment error')
-    axes[3].set_xticks(a_list)
-    axes[3].set_xticklabels(a_labels,rotation=45)
+    axes[3].set_xticks(a_list[::2])
+    axes[3].set_xticklabels(a_labels[::2],rotation=45)
     return fig,axes
 
 error_info,cost_info,lin_info,stab_info = parse_results(all_results)
@@ -298,10 +299,10 @@ fig2,axes2 = make_plots(*cost_inputs,fax=(fig2,axes2),ylabel='Contest intensity'
 fig3,axes3 = make_plots(*lin_inputs,fax=(fig3,axes3),ylabel='Linearity',fill_color='tab:blue',l_style='dashdot',l_label='Bayes updating')
 fig4,axes4 = make_plots(*stab_inputs,fax=(fig4,axes4),ylabel='Stability',fill_color='tab:blue',l_style='dashdot',l_label='Bayes updating')
 
-fig1.legend()
-fig2.legend()
-fig3.legend()
-fig4.legend()
+#fig1.legend()
+#fig2.legend()
+#fig3.legend()
+#fig4.legend()
 
 fig1.set_size_inches(6.5,4)
 fig1.tight_layout()

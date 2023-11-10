@@ -119,7 +119,7 @@ final_estimates = []
 for f in fishes:
     jitter = np.random.randn() * 1
     jitter = 0
-    ax.plot(np.array(f.est_record)[:] + jitter,alpha=.02,color='black')
+    ax.plot(np.array(f.est_record)[:] + jitter,alpha=.02,color='black',linewidth=1)
     if False:
         if f.win_record[0][1] == 1: ## If you won the first fight
             if f.win_record[1][1] == 0: # but lost the second fight
@@ -132,7 +132,7 @@ for f in fishes:
         else:
             loser_estimates.append(f.est_record[1])
         final_estimates.append(f.est_record[-1])
-[ax.axvline(f,color='black',linestyle=':') for f in range(params.n_rounds)]
+[ax.axvline(f,color='black',linewidth=1,linestyle=':') for f in range(params.n_rounds)]
 
 if False:
     y_max = max(winner_estimates)
@@ -155,17 +155,20 @@ for r in range(params.n_rounds):
 
 ax.set_xticks(list(range(params.n_rounds)))
 ax.set_xlim([-0.1,params.n_rounds - 0.5])
-ax.set_ylabel('Estimate (mm)')
+ax.set_ylabel('Estimate')
 ax.set_xlabel('Contest round')
 
 #ax.set_ylim([y_min - 1.5,y_max+1.5])
 ax.set_ylim([y_min - 1.5,y_max+1.5])
 #ax.set_title('Fish estimates are path dependent and have recency bias')
-fig.set_size_inches(3,2.5)
+plt.xticks(fontsize=int(params.fig_font * 3/4))
+plt.yticks(fontsize=int(params.fig_font * 3/4))
+
+fig.set_size_inches(2.2,2.2)
 fig.tight_layout()
 fig.savefig('./figures/fig2b_pathDep.png',dpi=300)
 fig.savefig('./figures/fig2b_pathDep.svg')
-if True:
+if False:
     fig.show()
     plt.show()
 

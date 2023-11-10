@@ -5,6 +5,7 @@
 
 import numpy as np
 from matplotlib import pyplot as plt
+import matplotlib
 
 from bayesbots import Params
 from bayesbots import Fish,FishNPC
@@ -15,6 +16,12 @@ sizes = np.linspace(1,100)
 
 params = Params()
 plt.rcParams.update({'font.size': params.fig_font})
+plt.rcParams.update({'lines.linewidth': 1})
+
+tick_size = (params.fig_font * 2/3)
+
+matplotlib.rc('xtick', labelsize=tick_size) 
+matplotlib.rc('ytick', labelsize=tick_size) 
 
 params.prior = True
 params.size = 50
@@ -76,6 +83,7 @@ for win in [0,1]:
 
 ax.set_xlabel('Size of opponent for staged win')
 ax.set_ylabel('Probability of winning vs. size-matched opponent')
+ax.set_ylabel('Assay win rate')
 ax.axhline(0.5,color='black')
 
 ax.legend()

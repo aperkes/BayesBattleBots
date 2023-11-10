@@ -112,6 +112,7 @@ xs = np.linspace(0.01,1,100)
 ys = funk(xs)
 
 plt.rcParams.update({'font.size': F.params.fig_font})
+tick_size = int(F.params.fig_font * 3/4)
 
 fig,ax = plt.subplots()
 a_list = [1,2,4,8,16]
@@ -126,16 +127,18 @@ if True:
         cmap = cm.get_cmap('viridis')
         a_cor = cmap((len(a_list) - a_) / len(a_list))
 
-        ax.plot(xs,ys,color=a_cor,label='a= ' + str(a))
+        ax.plot(xs,ys,color=a_cor,label='SD = ' + str(a),linewidth=1)
     ax.set_xlabel('Relative wager')
     ax.set_ylabel('Probability of upset')
-    ax.legend(loc='upper left')
+    ax.legend(loc='upper left',fontsize=tick_size)
 
 #plt.legend()
 #plt.plot(xs,ys)
 #plt.axvline(m)
 
-fig.set_size_inches(3,2.5)
+ax.tick_params(axis='both', which='major', labelsize=tick_size)
+
+fig.set_size_inches(2.1,2.1)
 fig.tight_layout()
 
 fig2,ax2 = plt.subplots()
@@ -151,11 +154,12 @@ ax2.plot(xs,d1,color='gold',label='Larger')
 ax2.plot(xs,d2,color='royalblue',label='Smaller')
 ax2.set_ylabel('Probability density')
 ax2.set_xlabel('Wager')
+ax2.tick_params(axis='both', which='major', labelsize=tick_size)
 #ax2.legend(loc='upper left')
 #ax2.plot(xs,d3,color='tab:blue',label='std=4')
 #ax2.plot(xs,d4,color='tab:blue')
 
-fig2.set_size_inches(3,2.5)
+fig2.set_size_inches(2.1,2.1)
 fig2.tight_layout()
 
 rel_xs = np.linspace(0,1,100)
@@ -180,8 +184,9 @@ for l_ in range(len(l_list)):
 ax3.set_xlabel('Relative wager')
 ax3.set_ylabel('Probability of upset')
 
-ax3.legend()
-fig3.set_size_inches(3,2.5)
+ax3.tick_params(axis='both', which='major', labelsize=tick_size)
+ax3.legend(fontsize=tick_size)
+fig3.set_size_inches(2.1,2.1)
 fig3.tight_layout()
 
 fig.savefig('./figures/figA2a_cdf.png',dpi=300)

@@ -54,18 +54,23 @@ for o_ in tqdm(range(len(sizes))):
 fig,ax = plt.subplots()
 
 cors = ['tab:blue','tab:green','grey']
-styles = ['solid','dashed','dashdot']
+styles = ['dashed','dashdot','solid']
 
 for s_ in range(len(strategies)):
     mean_outcome = np.mean(outcome_array[:,s_],axis=1)
     sem_outcome = np.std(outcome_array[:,s_],axis=1) / np.sqrt(iterations)
-    ax.plot(sizes,mean_outcome,label=strategies[s_],color='black',linestyle=styles[s_])            
+    ax.plot(sizes,mean_outcome,label=strategies[s_],color='black',linestyle=styles[s_],linewidth=1)
     ax.fill_between(sizes,mean_outcome - sem_outcome,mean_outcome+sem_outcome,alpha=0.5,color=cors[s_])
 
+ax.set_ylim([0.45,1])
 ax.set_xlabel('Size of treatment opponent')
 ax.set_ylabel('Assay win rate')
-ax.axhline(0.5,color='black')
+ax.axhline(0.5,color='black',linestyle=':')
 
+tick_size = int(params.fig_font * 3/4)
+
+plt.xticks(fontsize=tick_size)
+plt.yticks(fontsize=tick_size)
 #ax.legend()
 
 fig.set_size_inches(3.25,3)
@@ -73,7 +78,7 @@ fig.tight_layout()
 
 fig.savefig('./figures/fig4a_discrepency.png',dpi=300)
 fig.savefig('./figures/fig4a_discrepency.svg')
-plt.show()
+#plt.show()
 ## Check against a fair fish
 ## Run them against a naive, size-matched fish to test for winner effect  
 # (do I do win percent, or just contrast winner vs loser)

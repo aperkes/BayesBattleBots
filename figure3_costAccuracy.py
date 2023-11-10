@@ -20,7 +20,7 @@ from matplotlib import cm
 
 
 ## Define some global variables to determine if you will plot and save figures.
-PLOT = True
+#PLOT = True
 
 params = Params()
 plt.rcParams.update({'font.size': params.fig_font})
@@ -65,14 +65,14 @@ sem_int = np.nanstd(cost_array,axis=(0,1)) / np.sqrt(params.iterations)
 mean_int_null = np.nanmean(cost_array_null,axis=(0,1))
 sem_int_null = np.nanstd(cost_array_null,axis=(0,1)) / np.sqrt(params.iterations)
 
-ax.plot(mean_int,color='black',linestyle='dashed')
+ax.plot(mean_int,color='black',linewidth=1,linestyle='dashed')
 ax.fill_between(range(len(mean_int)),mean_int-sem_int,mean_int+sem_int,color='royalblue',alpha=0.5)
 
-ax.plot(mean_int_null,color='black',linestyle='solid')
+ax.plot(mean_int_null,color='black',linewidth=1,linestyle='solid')
 ax.fill_between(range(len(mean_int_null)),mean_int_null-sem_int_null,mean_int_null+sem_int_null,color='gray',alpha=0.5)
 
 ax.set_xlabel('Contest number')
-ax.set_ylabel('Mean fight Intensity\n(+/- SEM of iterations')
+ax.set_ylabel('Contest intensity') #\n(+/- SEM of iterations')
 
 ## Plot error
 mean_err = np.mean(error_array,axis=(0,1))
@@ -81,19 +81,32 @@ sem_err = np.std(error_array,axis=(0,1)) / np.sqrt(params.iterations)
 mean_err_null = np.mean(error_array_null,axis=(0,1))
 sem_err_null = np.std(error_array_null,axis=(0,1)) / np.sqrt(params.iterations)
 
-ax1.plot(mean_err,color='black',linestyle='dashed')
+tick_size = int(params.fig_font * 3/4)
+
+ax.tick_params(axis='both', which='major', labelsize=tick_size)
+
+
+ax1.plot(mean_err,color='black',linewidth=1,linestyle='dashed',label='bayes')
 ax1.fill_between(range(len(mean_err)),mean_err-sem_err,mean_err+sem_err,color='royalblue',alpha=0.5)
 
-ax1.plot(mean_err_null,color='black')
+ax1.plot(mean_err_null,color='black',linewidth=1,label='no update')
 ax1.fill_between(range(len(mean_err_null)),mean_err_null-sem_err_null,mean_err_null+sem_err_null,color='gray',alpha=0.5)
 
+ax1.set_ylim([min(mean_err) - 10,max(mean_err_null) + 75])
 ax1.set_xlabel('Contest number')
-ax1.set_ylabel('Mean error \n(+/- SEM of iterations')
+ax1.set_ylabel('Estimate error')# \n(+/- SEM of iterations')
+
+
+ax1.tick_params(axis='both', which='major', labelsize=tick_size)
+
+
+ax1.legend(loc='upper right',fontsize=tick_size)
+
 
 fig.set_size_inches(6.5,3)
 fig.tight_layout()
 fig.savefig('./figures/fig3_IntenseAccuracy.png',dpi=300)
 fig.savefig('./figures/fig3_IntenseAccuracy.svg')
 
-if PLOT:
+if False:
     plt.show()

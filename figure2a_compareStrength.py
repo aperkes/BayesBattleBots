@@ -115,14 +115,16 @@ ax.set_xlabel('_')
 #ax.set_ylabel('Probability of win\n vs size-matched fish')
 ax.set_ylabel('Assay win rate')
 ax.set_ylim([0,1])
+plt.yticks(fontsize=int(params.fig_font * 3/4))
+
 #fig.savefig('./figures/fig3b_winvloss.png',dpi=300)
 print('win effort, win estimate')
 print(np.mean(win_info_array,axis=0))
 print(np.mean(loss_info_array,axis=0))
-fig.set_size_inches(3,2.5)
+fig.set_size_inches(2.2,2.2)
 fig.tight_layout()
 
 fig.savefig('./figures/fig2a_WinVLoss.png',dpi=300)
 fig.savefig('./figures/fig2a_WinVLoss.svg')
-if True:
+if False:
     plt.show()

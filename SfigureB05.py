@@ -91,7 +91,7 @@ for w_ in range(2):
         cor = cm.viridis((s_+1) / len(opp_sizes))
         ax.plot(xs,est_mean,color='black',linestyle=styles[s_]) #,label=opp_sizes[s_])
         if w_ == 1:
-            ax.fill_between(xs,est_mean-est_sem,est_mean+est_sem,alpha=0.5,color=cor,label=opp_sizes[s_])
+            ax.fill_between(xs,est_mean-est_sem,est_mean+est_sem,alpha=0.5,color=cor,label='x = ' + str(opp_sizes[s_]))
         else:
             ax.fill_between(xs,est_mean-est_sem,est_mean+est_sem,alpha=0.5,color=cor)
 
@@ -100,13 +100,14 @@ ax.axhline(75,color='gray',linestyle=':')
 ax.axhline(50,color='black',linestyle=':')
 ax.axhline(45,color='gray',linestyle=':')
 
+ax.set_ylabel('Estimate')
+ax.set_xlabel('Contest round')
+
 ax.legend()
 
 fig.set_size_inches(4,3)
 fig.tight_layout()
 
-ax.set_ylabel('Self-Estimate')
-ax.set_xlabel('n contests')
 
 fig.savefig('./figures/figB05_PeristEx.png',dpi=300)
 fig.savefig('./figures/figB05_PersistEx.svg')

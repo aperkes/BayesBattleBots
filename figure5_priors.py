@@ -22,7 +22,7 @@ import itertools
 
 
 #s,e,l = .6,.3,.1
-
+UPDATE = True
 params = Params()
 plt.rcParams.update({'font.size': params.fig_font})
 #if True:
@@ -151,7 +151,7 @@ for n in tqdm(range(params.iterations)):
         b_out = big_fight.run_outcome()
         s_out = small_fight.run_outcome()
 
-        if False:
+        if UPDATE:
             p.update(p_out,self_fight)
             s.update(s_out,small_fight)
             b.update(b_out,big_fight)
@@ -262,8 +262,17 @@ ax.axvline((offsets[1] + offsets[2]) / 2,linestyle=':',color='black')
 #ax3.scatter([f.estimate for f in prior_fishes],[f.effort for f in prior_fishes])
 ax.set_ylabel('Aggressive behavior (effort)')
 
+tick_size = int(params.fig_font * 3/4)
+
+#plt.xticks(fontsize=tick_size)
+plt.yticks(fontsize=tick_size)
+
 fig.set_size_inches(6.5,3)
 fig.tight_layout()
-fig.savefig('./figures/fig5_priors.png',dpi=300)
-fig.savefig('./figures/fig5_priors.svg')
-plt.show()
+if UPDATE is False:
+    fig.savefig('./figures/fig5_priors.png',dpi=300)
+    fig.savefig('./figures/fig5_priors.svg')
+else:
+    fig.savefig('./figures/figB17_shiftingPriors.png',dpi=300)
+    fig.savefig('./figures/figB17_shiftingPrior.svg')
+#plt.show()
