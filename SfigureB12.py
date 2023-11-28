@@ -86,7 +86,7 @@ ax.set_ylabel('Probability of winning vs. size-matched opponent')
 ax.set_ylabel('Assay win rate')
 ax.axhline(0.5,color='black')
 
-ax.legend()
+ax.legend(fontsize=tick_size,loc='lower left')
 fig.set_size_inches(4.5,3)
 fig.tight_layout()
 
