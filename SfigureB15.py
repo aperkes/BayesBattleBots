@@ -173,7 +173,7 @@ axes[1,1].set_xlabel('c value')
 
 fig.colorbar(im,ax=axes)
 fig.set_size_inches(6,5)
-fig.tight_layout()
+#fig.tight_layout()
 
 fig.savefig('./figures/figB15_experience.png',dpi=300)
 fig.savefig('./figures/figB15_experience.svg')
